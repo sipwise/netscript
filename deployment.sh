@@ -451,11 +451,18 @@ if $NGCP_INSTALLER ; then
 
   # install and execute ngcp-installer
   if $PRO_EDITION ; then
+    # TODO - support customisation of arguments for ngcp-installer
+    export $ROLE
+    export IP1=192.168.1.52
+    export IP2=192.168.1.53
+    export EADDR=192.168.1.101
+    export EIFACE=eth0
+
     cat << EOT | grml-chroot $TARGET /bin/bash
 PKG=ngcp-installer-latest.deb
 wget http://deb.sipwise.com/sppro/\$PKG
 dpkg -i \$PKG
-yes | ngcp-installer \$IP1 \$IP2 \$EXTIP
+ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE
 RC=\$?
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
