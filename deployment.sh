@@ -18,6 +18,7 @@ PRO_EDITION=false
 CE_EDITION=false
 NGCP_INSTALLER=false
 INTERACTIVE=false
+LOCAL_MIRROR=false
 
 ### helper functions {{{
 CMD_LINE=$(cat /proc/cmdline)
@@ -156,6 +157,12 @@ for param in $* ; do
   shift
 done
 
+if ! $NGCP_INSTALLER ; then
+  unset PRO_EDITION
+  unset CE_EDITION
+  unset ROLE
+fi
+
 echo "Deployment Settings:
 
   Install ngcp:    $NGCP_INSTALLER
@@ -170,6 +177,7 @@ echo "Deployment Settings:
 "
 
 if $INTERACTIVE ; then
+  echo "WARNING: Execution will override any existing data!"
   echo "Settings OK? y/N"
   read a
   if [[ "$a" != "y" ]] ; then
@@ -332,9 +340,74 @@ ia32-libs
 EOF
 fi
 
+# provide Debian mirror
+if [ -d /srv/mirror/debs ] ; then
+  cd /srv/mirror/
+  if ! [ -d /srv/mirror/debian ] ; then
+    mkdir -p /srv/mirror/debian/conf/
+    cat > /srv/mirror/debian/conf/distributions << EOF
+Origin: Debian
+Label: Debian
+Suite: stable
+Version: 6.0
+Codename: squeeze
+Architectures: amd64 source
+Components: main contrib non-free
+Description: Debian Mirror
+Log: logfile
+EOF
+
+    for f in /srv/mirror/debs/*deb ; do
+      reprepro --silent -b /srv/mirror/debian includedeb squeeze "$f"
+    done
+  fi
+
+  # run local webserver
+  if ps aux | grep -q '[p]ython -m SimpleHTTPServer' ; then
+    kill $(ps aux | grep '[p]ython -m SimpleHTTPServer' | awk '{print $2}')
+  fi
+  python -m SimpleHTTPServer &>/dev/null &
+  sleep 1
+  if wget -O /dev/null http://localhost:8000/debian/dists/squeeze/main/binary-amd64/Packages &>/dev/null ; then
+    echo "Found functional local mirror, using for first stage installation."
+    MIRROR="http://localhost:8000/debian/"
+    LOCAL_MIRROR=true
+  fi
+
+fi
+
+if [ -z "$MIRROR" ] ; then
+  MIRROR="http://debian.inode.at/debian/"
+fi
+
+if $LOCAL_MIRROR ; then
+  mkdir -p /etc/debootstrap/pre-scripts
+  cat > /etc/debootstrap/pre-scripts/adjust_sources_list << EOT
+cat > \$MNTPOINT/etc/apt/sources.list << EOF
+# deployed via ngcp-deployment [net]script
+# to override partial-only local mirror
+deb http://debian.inode.at/debian squeeze main contrib non-free
+deb http://security.debian.org squeeze/updates main contrib non-free
+EOF
+chroot \$MNTPOINT apt-get -y update
+chroot \$MNTPOINT apt-get -y upgrade
+EOT
+  chmod +x /etc/debootstrap/pre-scripts/adjust_sources_list
+fi
+
 # install Debian squeeze
-yes | grml-debootstrap --grub /dev/sda --hostname "${TARGET_HOSTNAME}" --mirror http://debian.inode.at/debian/ -r squeeze -t /dev/sda1 --password sipwise 2>&1 | tee -a /tmp/grml-debootstrap.log
-if [ $? -ne 0 ]; then
+echo y | grml-debootstrap \
+  --grub /dev/sda \
+  --hostname "${TARGET_HOSTNAME}" \
+  --mirror "$MIRROR" \
+  --debopt '--no-check-gpg' \
+  --pre-scripts '/etc/debootstrap/pre-scripts' \
+  --keep_src_list \
+  -r 'squeeze' \
+  -t '/dev/sda1' \
+  --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
+
+if [ ${PIPESTATUS[1]} -ne 0 ]; then
   echo "Error during installation of Debian squeeze." >&2
   echo "Details: mount /dev/sda1 $TARGET ; ls $TARGET/debootstrap/*.log" >&2
   exit 1
@@ -347,6 +420,7 @@ mount /dev/sda1 $TARGET
 chroot $TARGET apt-get --purge -y remove \
 ca-certificates console-tools openssl tcpd xauth \
 firmware-linux firmware-linux-free firmware-linux-nonfree
+# TODO - keep firmware* on pro installation?
 
 # get rid of automatically installed packages
 chroot $TARGET apt-get --purge -y autoremove
@@ -377,10 +451,9 @@ if $NGCP_INSTALLER ; then
 
   # install and execute ngcp-installer
   if $PRO_EDITION ; then
-    # TODO - WIP!
     cat << EOT | grml-chroot $TARGET /bin/bash
-PKG=ngcp-installer-pro_0.4.1_all.deb
-wget http://grml:foobar@deb.sipwise.com/debs/mprokop/squeeze/\$PKG
+PKG=ngcp-installer-latest.deb
+wget http://deb.sipwise.com/sppro/\$PKG
 dpkg -i \$PKG
 yes | ngcp-installer \$IP1 \$IP2 \$EXTIP
 RC=\$?
@@ -531,6 +604,18 @@ if [ -n "$start_seconds" ] ; then
   echo "Finished on $(date) - installation was running for ${SECONDS} seconds."
 fi
 echo
+
+if $PRO_EDITION ; then
+  echo "Execute:
+
+  asu64 set BootOrder.BootOrder 'Hard Disk 0=USB Storage=CD/DVD Rom'
+
+to boot from hard disk on next boot sequence, or
+
+  asu64 set BootOrder.BootOrder 'USB Storage=Hard Disk 0=CD/DVD Rom'
+
+to boot from USB storage on next boot."
+fi
 
 echo "Do you want to halt the system now? Y/n"
 read a
