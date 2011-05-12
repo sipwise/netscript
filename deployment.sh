@@ -144,7 +144,7 @@ for param in $* ; do
     *-h*|*--help*|*help*) usage ; exit 0;;
     *ngcpip=*) DEVIP=$(echo $param | sed 's/ngcpip=//');;
     *ngcpsp1*) ROLE=sp1 ; PRO_EDITION=true; CE_EDITION=false ;;
-    *ngcpsp2*) ROLE=sp2 ; PRO_EDITION=true; CE_EDITION=false ;;
+    *ngcpsp2*) ROLE=sp2 ; TARGET_HOSTNAME=sp2; PRO_EDITION=true; CE_EDITION=false ;;
     *ngcppro*) PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
     *ngcpce*) PRO_EDITION=false; CE_EDITION=true ; TARGET_HOSTNAME=spce ; ROLE='' ; NGCP_INSTALLER=true ;;
     *nongcp*) NGCP_INSTALLER=false;;
