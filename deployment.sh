@@ -337,6 +337,9 @@ firmware-bnx2x
 
 # support 32bit binaries, e.g. for firmware upgrades
 ia32-libs
+
+# improve entropy source when running corosync-keygen
+haveged
 EOF
 fi
 
