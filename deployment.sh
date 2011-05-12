@@ -452,7 +452,7 @@ if $NGCP_INSTALLER ; then
   # install and execute ngcp-installer
   if $PRO_EDITION ; then
     # TODO - support customisation of arguments for ngcp-installer
-    export $ROLE
+    export ROLE=$ROLE
     export IP1=192.168.1.52
     export IP2=192.168.1.53
     export EADDR=192.168.1.101
