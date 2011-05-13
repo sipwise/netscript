@@ -5,8 +5,17 @@
 # * rename kantan host into spce (bootoption in ISO)
 # * support configuration via wget-able config file
 
+# Never ever execute the script outside of a
+# running Grml live system because partitioning
+# disks might destroy data. Seriously.
+if ! [ -r /etc/grml_cd ] ; then
+  echo "Not running inside Grml, better safe than sorry. Sorry." >&2
+  exit 1
+fi
+
+# Exit on any error. Horrible for programming,
+# but be as defense as possible. Murhpy, you know.
 set -e
-# set -x
 
 # better safe than sorry
 export LC_ALL=C
