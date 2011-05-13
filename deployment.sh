@@ -357,9 +357,7 @@ ucf
 linux-headers-2.6-amd64
 
 # packages d-i installs but we ignore/skip:
-#acpi
-#acpid
-#acpi-support-base
+#acpi acpid acpi-support-base # installed in PRO
 #discover
 #gettext-base
 #installation-report
@@ -376,6 +374,9 @@ firmware-bnx2x
 
 # support 32bit binaries, e.g. for firmware upgrades
 ia32-libs
+
+# support acpi
+acpi acpid acpi-support-base
 EOF
 fi
 
@@ -729,9 +730,10 @@ to boot from USB storage by default."
 fi
 
 echo "Do you want to halt the system now? Y/n"
+unset a
 read a
 case "$a" in
-  n|N)
+  *n*|*N*)
     echo "Not halting system as requested. Please do not forget to shut down."
     ;;
   *)
