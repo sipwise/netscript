@@ -28,6 +28,8 @@ CE_EDITION=false
 NGCP_INSTALLER=false
 INTERACTIVE=false
 LOCAL_MIRROR=false
+DHCP=false
+export DISK=sda # will be configured as /dev/sda
 
 ### helper functions {{{
 CMD_LINE=$(cat /proc/cmdline)
@@ -97,12 +99,8 @@ if checkBootParam ngcpinst ; then
 fi
 
 # configure static network in installed system?
-# WFM code right now, depends on 192.168.51.X!
-if checkBootParam ngcpip ; then
-  DEVIP="$(getBootParam ngcpip)" || true
-  if [ -z "$DEVIP" ] ; then
-    DEVIP="$(getProxmoxBootParam ngcpip)"
-  fi
+if checkBootParam ngcpnw.dhcp ; then
+  export DHCP=true
 fi
 
 if checkBootParam ngcphostname ; then
@@ -131,6 +129,8 @@ fi
 usage() {
   echo "$0 - automatically deploy Debian squeeze and (optionally) ngcp ce/pro.
 
+Control installation parameters:
+
   ngcppro          - install Pro Edition
   ngcpsp1          - install first node (Pro Edition only)
   ngcpsp2          - install second node (Pro Edition only)
@@ -138,20 +138,40 @@ usage() {
   nongcp           - do not install NGCP but install plain Debian only
   noinstall        - do not install neither Debian nor NGCP
   ngcpinst         - force usage of NGCP installer
-  ngcpip=...       - set IP address of installed system (defaults to dhcp) (WIP)
-  ngcphostname=... - set hostname of installed system (defaults to ngcp/sp[1,2])
   ngcpprofile=...  - download additional configuration profile (WIP)
+
+Control target system:
+
+  ngcpnw.dhcp      - use DHCP as network configuration in installed system
+                     NOTE: defaults to IP address of installed node in Pro Edition
+  ngcphostname=... - hostname of installed system (defaults to ngcp/sp[1,2])
+                     NOTE: do NOT use when installing Pro Edition, WIP!
+  ngcpeiface=ethX  - external interface device (e.g. eth0)
+  ngcpip1=...      - IP address of first node
+  ngcpip2=...      - IP address of second node
+  ngcpeaddr=...    - Cluster IP address
 
 The command line options correspond with the available bootoptions.
 Command line overrides any present bootoption.
 
+Usage examples:
+
+
+  # ngcp-deployment ngcpce ngcpnw.dhcp
+
+  # netcardconfig # configure eth0 with static configuration
+  # ngcp-deployment ngcppro ngcpsp1 ngcpip1=192.168.1.101 \\
+      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=eth0
+
+  # netcardconfig # configure eth0 with static configuration
+  # ngcp-deployment ngcppro ngcpsp2 ngcpip1=192.168.1.101 \\
+      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=eth0
 "
 }
 
 for param in $* ; do
   case $param in
     *-h*|*--help*|*help*) usage ; exit 0;;
-    *ngcpip=*) DEVIP=$(echo $param | sed 's/ngcpip=//');;
     *ngcpsp1*) ROLE=sp1 ; PRO_EDITION=true; CE_EDITION=false ;;
     *ngcpsp2*) ROLE=sp2 ; TARGET_HOSTNAME=sp2; PRO_EDITION=true; CE_EDITION=false ;;
     *ngcppro*) PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
@@ -162,6 +182,11 @@ for param in $* ; do
     *ngcpinst*) NGCP_INSTALLER=true;;
     *ngcphostname=*) TARGET_HOSTNAME=$(echo $param | sed 's/ngcphostname=//');;
     *ngcpprofile=*) PROFILE=$(echo $param | sed 's/ngcpprofile=//');;
+    *ngcpeiface=*) export EIFACE=$(echo $param | sed 's/ngcpeiface=//');;
+    *ngcpeaddr=*) export EADDR=$(echo $param | sed 's/ngcpeaddr=//');;
+    *ngcpip1=*) export IP1=$(echo $param | sed 's/ngcpip1=//');;
+    *ngcpip2=*) export IP2=$(echo $param | sed 's/ngcpip2=//');;
+    *ngcpnw.dhcp*) export DHCP=true;;
   esac
   shift
 done
@@ -174,13 +199,18 @@ fi
 
 echo "Deployment Settings:
 
-  Install ngcp:    $NGCP_INSTALLER
-  IP of host:      $DEVIP
-  Host Role:       $ROLE
-  Hostname:        $TARGET_HOSTNAME
-  Profile:         $PROFILE
-  Installer - pro: $PRO_EDITION
-  Installer - ce:  $CE_EDITION
+  Install ngcp:      $NGCP_INSTALLER
+  Installer - pro:   $PRO_EDITION
+  Installer - ce:    $CE_EDITION
+  Hostname:          $TARGET_HOSTNAME
+  Host Role:         $ROLE
+  Profile:           $PROFILE
+
+  1st host IP:       $IP1
+  2nd host IP:       $IP2
+  Ext host IP:       $EADDR
+  Network iface:     $EIFACE
+  Use DHCP in host:  $DHCP
 
   $CHASSIS
 "
@@ -203,8 +233,8 @@ if $PRO_EDITION ; then
   fi
 fi
 
+# TODO
 # if checkBootParam ngcpfirmware ; then
-# not enabled for now
 #  # uefi firmware upgrade
 #  if hwinfo --bios  | grep -q 'UEFI Primary Version -\[P9' ; then
 #    ./ibm_fw_uefi_p9e149a_linux_32-64.bin -s
@@ -215,23 +245,23 @@ fi
 #   ./ibm_fw_sraidmr_10ie-11.0.1-0040.01_linux_32-64.bin -s
 #  fi
 # fi
-
+#
 # wget http://delivery04.dhe.ibm.com/sar/CMA/XSA/02gcs/1/ibm_utl_asu_asut72l_linux_x86-64.tgz
 # unp ibm_utl_asu_asut72l_linux_x86-64.tgz
 # ./asu64 set BootOrder.BootOrder 'Hard Disk 0=USB Storage=CD/DVD Rom'
 
 # run in according environment only
 if [[ $(imvirt) == "Physical" ]] ; then
-  # FIXME: hardcoded for now, needs better check to support !ServeRAID-MR10ie as well
-  if ! grep -q 'ServeRAID-MR10ie' /sys/block/sda/device/model ; then
-    echo "Error: /dev/sda does not look like a ServeRAID disk." >&2
+  # TODO / FIXME  hardcoded for now, needs better check to support !ServeRAID[-MR10ie] as well
+  if ! grep -q 'ServeRAID' /sys/block/${DISK}/device/model ; then
+    echo "Error: /dev/${DISK} does not look like a ServeRAID disk." >&2
     echo "Exiting to avoid possible data damage." >&2
     exit 1
   fi
 else
   # make sure it runs only within qemu/kvm
-  if ! grep -q 'QEMU HARDDISK' /sys/block/sda/device/model ; then
-    echo "Error: /dev/sda does not look like a virtual disk." >&2
+  if ! grep -q 'QEMU HARDDISK' /sys/block/${DISK}/device/model ; then
+    echo "Error: /dev/${DISK} does not look like a virtual disk." >&2
     echo "Exiting to avoid possible data damage." >&2
     exit 1
   fi
@@ -240,9 +270,8 @@ fi
 # measure time of installation procedure - everyone loves stats!
 start_seconds=$(cut -d . -f 1 /proc/uptime)
 
-# when using ip=....:$HOSTANEM:eth0:off file /etc/hosts doesn't contain the
+# when using ip=....:$HOSTNAME:eth0:off file /etc/hosts doesn't contain the
 # hostname by default, avoid warning/error messages in the host system
-
 if [ -x /usr/bin/ifdata ] ; then
   IP="$(ifdata -pa eth0)"
 else
@@ -260,6 +289,7 @@ if checkBootParam ngcpprofile ; then
   . $PROFILE
 fi
 
+# relevant only while deployment, will be overriden later
 if [ -n "$HOSTNAME" ] ; then
   cat > /etc/hosts << EOF
 127.0.0.1       grml    localhost
@@ -279,33 +309,33 @@ fi
 /etc/init.d/ssh start >/dev/null &
 echo "root:grml2011" | chpasswd
 
-# partition disk
-# do not depend on static value (like 33554432 for 16GB)
+## partition disk
+# physical installation
 if [[ $(imvirt) == "Physical" ]] || $PRO_EDITION ; then
   # remove existing partitioning
-  #  dd if=/dev/zero of=/dev/sda bs=512 count=1
-  #  partprobe /dev/sda ; sync
+  #  dd if=/dev/zero of=/dev/${DISK} bs=512 count=1
+  #  partprobe /dev/${DISK} ; sync
 
-  parted -s /dev/sda mktable msdos
-  # hw-raid with 1 rootfs and 1 swap partition
-  parted -s /dev/sda 'mkpart primary ext4 2048s 95%'
-  parted -s /dev/sda 'mkpart primary linux-swap 95% -1'
+  parted -s /dev/${DISK} mktable msdos
+  # hw-raid with rootfs + swap partition
+  parted -s /dev/${DISK} 'mkpart primary ext4 2048s 95%'
+  parted -s /dev/${DISK} 'mkpart primary linux-swap 95% -1'
 
-else
+else # virtual installation
   # just one disk, assuming VM installation without swap partition
-  disksize=$(cat /sys/block/sda/size)
+  # do not depend on static value (like 33554432 for 16GB)
+  disksize=$(cat /sys/block/${DISK}/size)
   disksize=$(echo $(($disksize-2048))) # proper alignment for grub and performance
 
-  sfdisk /dev/sda <<ENDDISK
-# partition table of /dev/sda
+  sfdisk /dev/${DISK} <<ENDDISK
+# partition table of /dev/${DISK}
 unit: sectors
 
-/dev/sda1 : start=     2048, size= ${disksize}, Id=83
-/dev/sda2 : start=        0, size=        0, Id= 0
-/dev/sda3 : start=        0, size=        0, Id= 0
-/dev/sda4 : start=        0, size=        0, Id= 0
+/dev/${DISK}1 : start=     2048, size= ${disksize}, Id=83
+/dev/${DISK}2 : start=        0, size=        0, Id= 0
+/dev/${DISK}3 : start=        0, size=        0, Id= 0
+/dev/${DISK}4 : start=        0, size=        0, Id= 0
 ENDDISK
-
 fi
 
 sync
@@ -354,8 +384,10 @@ fi
 
 # provide Debian mirror
 if [ -d /srv/mirror/debs ] ; then
+  echo "Debian directory /srv/mirror/debs found."
   cd /srv/mirror/
   if ! [ -d /srv/mirror/debian ] ; then
+    echo "Setting up configuration for reprepro."
     mkdir -p /srv/mirror/debian/conf/
     cat > /srv/mirror/debian/conf/distributions << EOF
 Origin: Debian
@@ -369,6 +401,7 @@ Description: Debian Mirror
 Log: logfile
 EOF
 
+    echo "Building local Debian mirror based on packages found in /srv/mirror/debs."
     for f in /srv/mirror/debs/*deb ; do
       reprepro --silent -b /srv/mirror/debian includedeb squeeze "$f"
     done
@@ -385,7 +418,6 @@ EOF
     MIRROR="http://localhost:8000/debian/"
     LOCAL_MIRROR=true
   fi
-
 fi
 
 if [ -z "$MIRROR" ] ; then
@@ -409,30 +441,35 @@ fi
 
 # install Debian squeeze
 echo y | grml-debootstrap \
-  --grub /dev/sda \
+  --grub /dev/${DISK} \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
   --debopt '--no-check-gpg' \
   --pre-scripts '/etc/debootstrap/pre-scripts' \
   --keep_src_list \
   -r 'squeeze' \
-  -t '/dev/sda1' \
+  -t "/dev/${DISK}1" \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
 
 if [ ${PIPESTATUS[1]} -ne 0 ]; then
   echo "Error during installation of Debian squeeze." >&2
-  echo "Details: mount /dev/sda1 $TARGET ; ls $TARGET/debootstrap/*.log" >&2
+  echo "Details: mount /dev/${DISK}1 $TARGET ; ls $TARGET/debootstrap/*.log" >&2
   exit 1
 fi
 
 sync
-mount /dev/sda1 $TARGET
+mount /dev/${DISK}1 $TARGET
 
 # removals: packages which debootstrap installs but d-i doesn't
 chroot $TARGET apt-get --purge -y remove \
-ca-certificates console-tools openssl tcpd xauth \
-firmware-linux firmware-linux-free firmware-linux-nonfree
-# TODO - keep firmware* on pro installation?
+ca-certificates console-tools openssl tcpd xauth
+
+if $PRO_EDITION ; then
+  echo "Pro edition: keeping firmware* packages."
+else
+  chroot $TARGET apt-get --purge -y remove \
+  firmware-linux firmware-linux-free firmware-linux-nonfree
+fi
 
 # get rid of automatically installed packages
 chroot $TARGET apt-get --purge -y autoremove
@@ -463,12 +500,14 @@ if $NGCP_INSTALLER ; then
 
   # install and execute ngcp-installer
   if $PRO_EDITION ; then
-    # TODO - support customisation of arguments for ngcp-installer
     export ROLE=$ROLE
-    export IP1=192.168.1.52
-    export IP2=192.168.1.53
-    export EADDR=192.168.1.101
-    export EIFACE=eth0
+
+    # hopefully set via bootoption/cmdline,
+    # otherwise fall back to hopefully-safe-defaults
+    [ -n "$IP1" ] || export IP1=192.168.1.101
+    [ -n "$IP2" ] || export IP2=192.168.1.102
+    [ -n "$EADDR" ] || export EADDR=192.168.1.103
+    [ -n "$EIFACE" ] || export EIFACE=eth0
 
     cat << EOT | grml-chroot $TARGET /bin/bash
 PKG=ngcp-installer-latest.deb
@@ -504,7 +543,6 @@ EOT
     echo "Details: $TARGET/tmp/ngcp-installer.log" >&2
     exit 1
   fi
-
 
   # we require those packages for dkms, so do NOT remove them:
   # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
@@ -555,27 +593,7 @@ cat > $TARGET/etc/hostname << EOF
 ${TARGET_HOSTNAME}
 EOF
 
-if [ -n "$DEVIP" ] ; then
-  cat > $TARGET/etc/network/interfaces << EOF
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-# The loopback network interface
-auto lo
-iface lo inet loopback
-
-# The primary network interface
-allow-hotplug eth0
-iface eth0 inet static
-        address $DEVIP
-        netmask 255.255.255.0
-        network 192.168.51.0
-        broadcast 192.168.51.255
-        gateway 192.168.51.1
-        # dns-* options are implemented by the resolvconf package, if installed
-        dns-nameservers 192.168.51.2 192.168.51.3
-        dns-search sipwise.com
-EOF
-else
+if $DHCP ; then
   cat > $TARGET/etc/network/interfaces << EOF
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
@@ -587,9 +605,36 @@ iface lo inet loopback
 allow-hotplug eth0
 iface eth0 inet dhcp
 EOF
+else
+  # assume host system has a valid configuration
+  cp /etc/network/interfaces $TARGET/etc/network/interfaces
+
+  # provide example configuration
+  cat  > $TARGET/etc/network/interfaces.examples << EOF
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+allow-hotplug eth0
+iface eth0 inet static
+        address 192.168.1.101
+        netmask 255.255.255.0
+        network 192.168.1.0
+        broadcast 192.168.1.255
+        gateway 192.168.1.1
+        # dns-* options are implemented by the resolvconf package, if installed
+        dns-nameservers 195.58.160.194 195.58.161.122
+        dns-search sipwise.com
+
+# auto eth1
+# iface eth1 inet dhcp
+EOF
 fi
 
-# set final hostname
+# finalise hostname configuration
 cat > $TARGET/etc/hosts << EOF
 127.0.0.1 localhost
 127.0.0.1 ${TARGET_HOSTNAME}.sipwise.com ${TARGET_HOSTNAME}
@@ -600,7 +645,17 @@ fe00::0 ip6-localnet
 ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
+
 EOF
+
+# append hostnames of sp1/sp2 so they can talk to each other
+# in the HA setup
+if $PRO_EDITION ; then
+  cat >> $TARGET/etc/hosts << EOF
+$IP1 sp1
+$IP2 sp2
+EOF
+fi
 
 # don't leave any mountpoints
 sync
@@ -629,11 +684,11 @@ if $PRO_EDITION ; then
 
   asu64 set BootOrder.BootOrder 'Hard Disk 0=USB Storage=CD/DVD Rom'
 
-to boot from hard disk on next boot sequence, or
+to boot from hard disk by default or
 
   asu64 set BootOrder.BootOrder 'USB Storage=Hard Disk 0=CD/DVD Rom'
 
-to boot from USB storage on next boot."
+to boot from USB storage by default."
 fi
 
 echo "Do you want to halt the system now? Y/n"
