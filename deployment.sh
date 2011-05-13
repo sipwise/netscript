@@ -161,11 +161,11 @@ Usage examples:
 
   # netcardconfig # configure eth0 with static configuration
   # ngcp-deployment ngcppro ngcpsp1 ngcpip1=192.168.1.101 \\
-      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=b0
+      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=b0 ngcpmcast=226.94.1.1
 
   # netcardconfig # configure eth0 with static configuration
   # ngcp-deployment ngcppro ngcpsp2 ngcpip1=192.168.1.101 \\
-      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=b0
+      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=b0 ngcpmcast=226.94.1.1
 "
 }
 
@@ -186,6 +186,7 @@ for param in $* ; do
     *ngcpeaddr=*) export EADDR=$(echo $param | sed 's/ngcpeaddr=//');;
     *ngcpip1=*) export IP1=$(echo $param | sed 's/ngcpip1=//');;
     *ngcpip2=*) export IP2=$(echo $param | sed 's/ngcpip2=//');;
+    *ngcpmcast=*) export MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
     *ngcpnw.dhcp*) export DHCP=true;;
   esac
   shift
@@ -209,6 +210,7 @@ echo "Deployment Settings:
   1st host IP:       $IP1
   2nd host IP:       $IP2
   Ext host IP:       $EADDR
+  Multicast addr:    $MCASTADDR
   Network iface:     $EIFACE
   Use DHCP in host:  $DHCP
 
@@ -506,12 +508,13 @@ if $NGCP_INSTALLER ; then
     [ -n "$IP2" ] || export IP2=192.168.1.102
     [ -n "$EADDR" ] || export EADDR=192.168.1.103
     [ -n "$EIFACE" ] || export EIFACE=b0
+    [ -n "$MCASTADDR" ] || export MCASTADDR=226.94.1.1
 
     cat << EOT | grml-chroot $TARGET /bin/bash
 PKG=ngcp-installer-latest.deb
 wget http://deb.sipwise.com/sppro/\$PKG
 dpkg -i \$PKG
-ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE
+ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR
 RC=\$?
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
@@ -729,14 +732,19 @@ to boot from hard disk by default or
 to boot from USB storage by default."
 fi
 
-echo "Do you want to halt the system now? Y/n"
+echo "Do you want to [r]eboot or [h]alt the system now? (Press any other key to cancel.)"
 unset a
 read a
 case "$a" in
-  *n*|*N*)
-    echo "Not halting system as requested. Please do not forget to shut down."
-    ;;
-  *)
+  r)
+    echo "Rebooting system as requested."
+    # reboot is for losers
+    for key in s u r ; do
+      echo $key > /proc/sysrq-trigger
+      sleep 2
+    done
+  ;;
+  h)
     echo "Halting system as requested."
     # halt(8) is for losers
     for key in s u o ; do
@@ -744,6 +752,9 @@ case "$a" in
       sleep 2
     done
   ;;
+  *)
+    echo "Not halting system as requested. Please do not forget to reboot."
+    ;;
 esac
 
 ## END OF FILE #################################################################1
