@@ -161,11 +161,11 @@ Usage examples:
 
   # netcardconfig # configure eth0 with static configuration
   # ngcp-deployment ngcppro ngcpsp1 ngcpip1=192.168.1.101 \\
-      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=eth0
+      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=b0
 
   # netcardconfig # configure eth0 with static configuration
   # ngcp-deployment ngcppro ngcpsp2 ngcpip1=192.168.1.101 \\
-      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=eth0
+      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=b0
 "
 }
 
@@ -376,9 +376,6 @@ firmware-bnx2x
 
 # support 32bit binaries, e.g. for firmware upgrades
 ia32-libs
-
-# improve entropy source when running corosync-keygen
-haveged
 EOF
 fi
 
@@ -507,7 +504,7 @@ if $NGCP_INSTALLER ; then
     [ -n "$IP1" ] || export IP1=192.168.1.101
     [ -n "$IP2" ] || export IP2=192.168.1.102
     [ -n "$EADDR" ] || export EADDR=192.168.1.103
-    [ -n "$EIFACE" ] || export EIFACE=eth0
+    [ -n "$EIFACE" ] || export EIFACE=b0
 
     cat << EOT | grml-chroot $TARGET /bin/bash
 PKG=ngcp-installer-latest.deb
@@ -607,7 +604,36 @@ iface eth0 inet dhcp
 EOF
 else
   # assume host system has a valid configuration
-  cp /etc/network/interfaces $TARGET/etc/network/interfaces
+  cat > $TARGET/etc/network/interfaces << EOF
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+auto b0
+iface b0 inet static
+        address $(ifdata -pa eth0)
+        netmask $(ifdata -pn eth0)
+        gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
+        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
+        bond-slaves eth0 eth1
+        bond_mode 802.3ad
+        bond_miimon 100
+        bond_lacp_rate 1
+
+# Example:
+# allow-hotplug eth0
+# iface eth0 inet static
+#         address 192.168.1.101
+#         netmask 255.255.255.0
+#         network 192.168.1.0
+#         broadcast 192.168.1.255
+#         gateway 192.168.1.1
+#         # dns-* options are implemented by the resolvconf package, if installed
+#         dns-nameservers 195.58.160.194 195.58.161.122
+#         dns-search sipwise.com
+EOF
 
   # provide example configuration
   cat  > $TARGET/etc/network/interfaces.examples << EOF
@@ -628,6 +654,17 @@ iface eth0 inet static
         # dns-* options are implemented by the resolvconf package, if installed
         dns-nameservers 195.58.160.194 195.58.161.122
         dns-search sipwise.com
+
+# auto b0
+# iface b0 inet static
+#         address 192.168.1.101
+#         netmask 255.255.255.0
+#         gateway 192.168.1.1
+#         dns-nameservers 195.58.160.194 195.58.161.122
+#         bond-slaves eth0 eth1
+#         bond_mode 802.3ad
+#         bond_miimon 100
+#         bond_lacp_rate 1
 
 # auto eth1
 # iface eth1 inet dhcp
