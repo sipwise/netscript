@@ -739,7 +739,7 @@ case "$a" in
   r)
     echo "Rebooting system as requested."
     # reboot is for losers
-    for key in s u r ; do
+    for key in s u b ; do
       echo $key > /proc/sysrq-trigger
       sleep 2
     done
