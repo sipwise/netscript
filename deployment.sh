@@ -29,6 +29,7 @@ NGCP_INSTALLER=false
 INTERACTIVE=false
 LOCAL_MIRROR=false
 DHCP=false
+LOGO=true
 export DISK=sda # will be configured as /dev/sda
 
 ### helper functions {{{
@@ -67,12 +68,29 @@ getProxmoxBootParam() {
   echo "$result"
   return 0
 }
+
+logo() {
+    cat <<-EOF
++++ Grml-Sipwise Deployment +++
+
+$(cat /etc/grml_version)
+
+$CHASSIS
+$(ip-screen)
+$(lscpu | awk '/^CPU\(s\)/ {print $2}') CPUs | $(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)kB RAM
+--------------------------------------------------------------------------------
+EOF
+}
 ### }}}
 
 # provide method to boot live system without running installer
 if checkBootParam noinstall ; then
   echo "Exiting as requested via bootoption noinstall."
   exit 0
+fi
+
+if checkBootParam nocolorlogo ; then
+  LOGO=false
 fi
 
 ## detect environment {{{
@@ -94,7 +112,8 @@ if checkBootParam nongcp ; then
   NGCP_INSTALLER=false
 fi
 
-if checkBootParam ngcpinst ; then
+if checkBootParam ngcpinst || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 || \
+  checkBootParam ngcppro ; then
   NGCP_INSTALLER=true
 fi
 
@@ -114,6 +133,26 @@ else
   else
     TARGET_HOSTNAME="spce"
   fi
+fi
+
+if checkBootParam ngcpip1 ; then
+  export IP1=$(getBootParam ngcpip1)
+fi
+
+if checkBootParam ngcpip2 ; then
+  export IP2=$(getBootParam ngcpip2)
+fi
+
+if checkBootParam ngcpeaddr ; then
+  export EADDR=$(getBootParam ngcpeaddr)
+fi
+
+if checkBootParam ngcpeiface ; then
+  export EIFACE=$(getBootParam ngcpeiface)
+fi
+
+if checkBootParam ngcpmcast ; then
+  export MCASTADDR=$(getBootParam ngcpmcast)
 fi
 ## }}}
 
@@ -172,8 +211,8 @@ Usage examples:
 for param in $* ; do
   case $param in
     *-h*|*--help*|*help*) usage ; exit 0;;
-    *ngcpsp1*) ROLE=sp1 ; PRO_EDITION=true; CE_EDITION=false ;;
-    *ngcpsp2*) ROLE=sp2 ; TARGET_HOSTNAME=sp2; PRO_EDITION=true; CE_EDITION=false ;;
+    *ngcpsp1*) ROLE=sp1 ; PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
+    *ngcpsp2*) ROLE=sp2 ; TARGET_HOSTNAME=sp2; PRO_EDITION=true; NGCP_INSTALLER=true; CE_EDITION=false ;;
     *ngcppro*) PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
     *ngcpce*) PRO_EDITION=false; CE_EDITION=true ; TARGET_HOSTNAME=spce ; ROLE='' ; NGCP_INSTALLER=true ;;
     *nongcp*) NGCP_INSTALLER=false;;
@@ -196,6 +235,43 @@ if ! $NGCP_INSTALLER ; then
   unset PRO_EDITION
   unset CE_EDITION
   unset ROLE
+fi
+
+# needed inside ngcp-installer
+if $PRO_EDITION ; then
+  export ROLE=$ROLE
+  # hopefully set via bootoption/cmdline,
+  # otherwise fall back to hopefully-safe-defaults
+  [ -n "$IP1" ] || export IP1=192.168.1.101
+  [ -n "$IP2" ] || export IP2=192.168.1.102
+  [ -n "$EADDR" ] || export EADDR=192.168.1.103
+  [ -n "$EIFACE" ] || export EIFACE=b0
+  [ -n "$MCASTADDR" ] || export MCASTADDR=226.94.1.1
+fi
+
+# when using ip=....:$HOSTNAME:eth0:off file /etc/hosts doesn't contain the
+# hostname by default, avoid warning/error messages in the host system
+# and use it for IP addres check in pro edition
+if checkBootParam ip ; then
+  tmpdev=$(getBootParam ip)
+  case $tmpdev in *eth*) dev=$(echo $tmpdev | sed -e 's/.*:\(eth.\):.*/\1/') ;; esac
+fi
+
+[ -n "$dev" ] || dev='eth0'
+IP="$(ifdata -pa $dev)"
+
+if $PRO_EDITION ; then
+  case $IP in
+    "$IP1"|"$IP2"|"$EADDR") ipcheck=true;;
+    *) ipcheck=false;;
+  esac
+
+  if ! $ipcheck ; then
+    echo "Error: neither ngcpip1 nor ngcpip2 nor ngcpeaddr match IP address of running system." >&2
+    echo "Deploying glusterfs through ngcp-installer will not work, exiting therefore. ">&2
+    echo "Tip: run netcardconfig to configure your network." >&2
+    exit 1
+  fi
 fi
 
 echo "Deployment Settings:
@@ -228,6 +304,13 @@ if $INTERACTIVE ; then
   unset a
 fi
 ## }}}
+
+if $LOGO ; then
+  echo -ne "\ec\e[1;31m"
+  logo
+  echo -ne "\e[9;0r"
+  echo -ne "\e[9B\e[1;m"
+fi
 
 if $PRO_EDITION ; then
   if ifconfig usb0 &>/dev/null ; then
@@ -271,14 +354,6 @@ fi
 
 # measure time of installation procedure - everyone loves stats!
 start_seconds=$(cut -d . -f 1 /proc/uptime)
-
-# when using ip=....:$HOSTNAME:eth0:off file /etc/hosts doesn't contain the
-# hostname by default, avoid warning/error messages in the host system
-if [ -x /usr/bin/ifdata ] ; then
-  IP="$(ifdata -pa eth0)"
-else
-  IP='192.168.51.123'
-fi
 
 # TODO - improve :)
 if checkBootParam ngcpprofile ; then
@@ -500,16 +575,6 @@ if $NGCP_INSTALLER ; then
 
   # install and execute ngcp-installer
   if $PRO_EDITION ; then
-    export ROLE=$ROLE
-
-    # hopefully set via bootoption/cmdline,
-    # otherwise fall back to hopefully-safe-defaults
-    [ -n "$IP1" ] || export IP1=192.168.1.101
-    [ -n "$IP2" ] || export IP2=192.168.1.102
-    [ -n "$EADDR" ] || export EADDR=192.168.1.103
-    [ -n "$EIFACE" ] || export EIFACE=b0
-    [ -n "$MCASTADDR" ] || export MCASTADDR=226.94.1.1
-
     cat << EOT | grml-chroot $TARGET /bin/bash
 PKG=ngcp-installer-latest.deb
 wget http://deb.sipwise.com/sppro/\$PKG
