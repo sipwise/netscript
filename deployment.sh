@@ -628,6 +628,14 @@ fi
 EOT
   fi
 
+  # make a backup of the installer logfiles for later investigation
+  if [ -r "${TARGET}"/tmp/ngcp-installer.log ] ; then
+    cp "${TARGET}"/tmp/ngcp-installer.log "${TARGET}"/var/log/
+  fi
+  if [ -r /tmp/grml-debootstrap.log ] ; then
+    cp /tmp/grml-debootstrap.log "${TARGET}"/var/log/
+  fi
+
   # baby, something went wrong!
   if [ $? -ne 0 ] ; then
     echo "Error during installation of ngcp." >&2
