@@ -105,6 +105,15 @@ if dmidecode| grep -q 'Location In Chassis'; then
  PRO_EDITION=true
 fi
 
+if checkBootParam ngcpinst || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 || \
+  checkBootParam ngcppro ; then
+  NGCP_INSTALLER=true
+fi
+
+if checkBootParam ngcppro || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 ; then
+  PRO_EDITION=true
+fi
+
 if "$PRO_EDITION" ; then
   ROLE=sp1
 
@@ -116,11 +125,6 @@ fi
 if checkBootParam nongcp ; then
   echo "Will not execute ngcp-installer as requested via bootoption nongcp."
   NGCP_INSTALLER=false
-fi
-
-if checkBootParam ngcpinst || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 || \
-  checkBootParam ngcppro ; then
-  NGCP_INSTALLER=true
 fi
 
 # configure static network in installed system?
