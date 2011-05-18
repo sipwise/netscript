@@ -93,6 +93,12 @@ if checkBootParam nocolorlogo ; then
   LOGO=false
 fi
 
+if checkBootParam ngcpnobonding ; then
+  BONDING=false
+else
+  BONDING=true
+fi
+
 ## detect environment {{{
 if dmidecode| grep -q 'Location In Chassis'; then
  CHASSIS="Running in blade chassis $(dmidecode| awk '/Location In Chassis/ {print $4}')"
