@@ -331,7 +331,7 @@ fi
 ## }}}
 
 if "$LOGO" ; then
-  echo -ne "\ec\e[1;31m"
+  echo -ne "\ec\e[1;32m"
   logo
   echo -ne "\e[9;0r"
   echo -ne "\e[9B\e[1;m"
