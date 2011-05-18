@@ -250,6 +250,7 @@ for param in $* ; do
     *ngcpip2=*) export IP2=$(echo $param | sed 's/ngcpip2=//');;
     *ngcpmcast=*) export MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
     *ngcpnw.dhcp*) export DHCP=true;;
+    *ngcpnobonding*) BONDING=false;;
   esac
   shift
 done
@@ -706,7 +707,7 @@ iface eth0 inet dhcp
 EOF
 else
   # assume host system has a valid configuration
-  if "$PRO_EDITION" ; then
+  if "$PRO_EDITION" && "$BONDING" ; then
     cat > $TARGET/etc/network/interfaces << EOF
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
