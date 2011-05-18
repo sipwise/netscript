@@ -99,7 +99,7 @@ if dmidecode| grep -q 'Location In Chassis'; then
  PRO_EDITION=true
 fi
 
-if $PRO_EDITION ; then
+if "$PRO_EDITION" ; then
   ROLE=sp1
 
   if checkBootParam ngcpsp2 ; then
@@ -128,10 +128,23 @@ if checkBootParam ngcphostname ; then
     TARGET_HOSTNAME="$(getProxmoxBootParam ngcphostname)"
   fi
 else
-  if $PRO_EDITION ; then
+  if "$PRO_EDITION" ; then
     TARGET_HOSTNAME="$ROLE"
-  else
+  fi
+
+  if "$CE_EDITION" ; then
     TARGET_HOSTNAME="spce"
+  fi
+
+  # if we don't install ngcp ce/pro but
+  # $HOSTNAME is set via ip=.... then
+  # take it, otherwise fall back to safe default
+  if [ -z "$TARGET_HOSTNAME" ] ; then
+    if [ -n "$HOSTNAME" ] ; then
+      TARGET_HOSTNAME="$HOSTNAME"
+    else
+      TARGET_HOSTNAME="debian"
+    fi
   fi
 fi
 
@@ -231,14 +244,14 @@ for param in $* ; do
   shift
 done
 
-if ! $NGCP_INSTALLER ; then
-  unset PRO_EDITION
-  unset CE_EDITION
+if ! "$NGCP_INSTALLER" ; then
+  PRO_EDITION=false
+  CE_EDITION=false
   unset ROLE
 fi
 
 # needed inside ngcp-installer
-if $PRO_EDITION ; then
+if "$PRO_EDITION" ; then
   export ROLE=$ROLE
   # hopefully set via bootoption/cmdline,
   # otherwise fall back to hopefully-safe-defaults
@@ -247,6 +260,8 @@ if $PRO_EDITION ; then
   [ -n "$EADDR" ] || export EADDR=192.168.1.103
   [ -n "$EIFACE" ] || export EIFACE=b0
   [ -n "$MCASTADDR" ] || export MCASTADDR=226.94.1.1
+else
+  [ -n "$EIFACE" ] || export EIFACE='eth0'
 fi
 
 # when using ip=....:$HOSTNAME:eth0:off file /etc/hosts doesn't contain the
@@ -260,7 +275,7 @@ fi
 [ -n "$dev" ] || dev='eth0'
 IP="$(ifdata -pa $dev)"
 
-if $PRO_EDITION ; then
+if "$PRO_EDITION" ; then
   case $IP in
     "$IP1"|"$IP2"|"$EADDR") ipcheck=true;;
     *) ipcheck=false;;
@@ -293,7 +308,7 @@ echo "Deployment Settings:
   $CHASSIS
 "
 
-if $INTERACTIVE ; then
+if "$INTERACTIVE" ; then
   echo "WARNING: Execution will override any existing data!"
   echo "Settings OK? y/N"
   read a
@@ -305,14 +320,14 @@ if $INTERACTIVE ; then
 fi
 ## }}}
 
-if $LOGO ; then
+if "$LOGO" ; then
   echo -ne "\ec\e[1;31m"
   logo
   echo -ne "\e[9;0r"
   echo -ne "\e[9B\e[1;m"
 fi
 
-if $PRO_EDITION ; then
+if "$PRO_EDITION" ; then
   if ifconfig usb0 &>/dev/null ; then
     ifconfig usb0 169.254.1.102 netmask 255.255.0.0
   fi
@@ -443,7 +458,7 @@ linux-headers-2.6-amd64
 #os-prober
 EOF
 
-if $PRO_EDITION ; then
+if "$PRO_EDITION" ; then
   cat >> /etc/debootstrap/packages << EOF
 # required for "Broadcom NetXtreme II BCM5709S Gigabit Ethernet"
 firmware-bnx2
@@ -499,7 +514,7 @@ if [ -z "$MIRROR" ] ; then
   MIRROR="http://debian.inode.at/debian/"
 fi
 
-if $LOCAL_MIRROR ; then
+if "$LOCAL_MIRROR" ; then
   mkdir -p /etc/debootstrap/pre-scripts
   cat > /etc/debootstrap/pre-scripts/adjust_sources_list << EOT
 cat > \$MNTPOINT/etc/apt/sources.list << EOF
@@ -539,11 +554,11 @@ mount /dev/${DISK}1 $TARGET
 chroot $TARGET apt-get --purge -y remove \
 ca-certificates console-tools openssl tcpd xauth
 
-if $PRO_EDITION ; then
+if "$PRO_EDITION" ; then
   echo "Pro edition: keeping firmware* packages."
 else
   chroot $TARGET apt-get --purge -y remove \
-  firmware-linux firmware-linux-free firmware-linux-nonfree
+  firmware-linux firmware-linux-free firmware-linux-nonfree || true
 fi
 
 # get rid of automatically installed packages
@@ -567,7 +582,7 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
 
-if $NGCP_INSTALLER ; then
+if "$NGCP_INSTALLER" ; then
 
   # add sipwise user
   chroot $TARGET adduser sipwise --disabled-login --gecos "Sipwise"
@@ -659,7 +674,7 @@ cat > $TARGET/etc/hostname << EOF
 ${TARGET_HOSTNAME}
 EOF
 
-if $DHCP ; then
+if "$DHCP" ; then
   cat > $TARGET/etc/network/interfaces << EOF
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
@@ -673,15 +688,16 @@ iface eth0 inet dhcp
 EOF
 else
   # assume host system has a valid configuration
-  cat > $TARGET/etc/network/interfaces << EOF
+  if "$PRO_EDITION" ; then
+    cat > $TARGET/etc/network/interfaces << EOF
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
 # The loopback network interface
 auto lo
 iface lo inet loopback
 
-auto b0
-iface b0 inet static
+auto $EIFACE
+iface $EIFACE inet static
         address $(ifdata -pa eth0)
         netmask $(ifdata -pn eth0)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
@@ -703,6 +719,34 @@ iface b0 inet static
 #         dns-nameservers 195.58.160.194 195.58.161.122
 #         dns-search sipwise.com
 EOF
+  else # no bonding
+    cat > $TARGET/etc/network/interfaces << EOF
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+auto $EIFACE
+iface $EIFACE inet static
+        address $(ifdata -pa eth0)
+        netmask $(ifdata -pn eth0)
+        gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
+        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
+
+# Example:
+# allow-hotplug eth0
+# iface eth0 inet static
+#         address 192.168.1.101
+#         netmask 255.255.255.0
+#         network 192.168.1.0
+#         broadcast 192.168.1.255
+#         gateway 192.168.1.1
+#         # dns-* options are implemented by the resolvconf package, if installed
+#         dns-nameservers 195.58.160.194 195.58.161.122
+#         dns-search sipwise.com
+EOF
+  fi
 
   # provide example configuration
   cat  > $TARGET/etc/network/interfaces.examples << EOF
@@ -756,7 +800,7 @@ EOF
 
 # append hostnames of sp1/sp2 so they can talk to each other
 # in the HA setup
-if $PRO_EDITION ; then
+if "$PRO_EDITION" ; then
   cat >> $TARGET/etc/hosts << EOF
 $IP1 sp1
 $IP2 sp2
@@ -785,7 +829,7 @@ if [ -n "$start_seconds" ] ; then
 fi
 echo
 
-if $PRO_EDITION ; then
+if "$PRO_EDITION" ; then
   echo "Execute:
 
   asu64 set BootOrder.BootOrder 'Hard Disk 0=USB Storage=CD/DVD Rom'
