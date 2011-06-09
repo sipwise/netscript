@@ -426,19 +426,8 @@ if [[ $(imvirt) == "Physical" ]] || $PRO_EDITION ; then
 
 else # virtual installation
   # just one disk, assuming VM installation without swap partition
-  # do not depend on static value (like 33554432 for 16GB)
-  disksize=$(cat /sys/block/${DISK}/size)
-  disksize=$(echo $(($disksize-2048))) # proper alignment for grub and performance
-
-  sfdisk /dev/${DISK} <<ENDDISK
-# partition table of /dev/${DISK}
-unit: sectors
-
-/dev/${DISK}1 : start=     2048, size= ${disksize}, Id=83
-/dev/${DISK}2 : start=        0, size=        0, Id= 0
-/dev/${DISK}3 : start=        0, size=        0, Id= 0
-/dev/${DISK}4 : start=        0, size=        0, Id= 0
-ENDDISK
+  parted -s /dev/${DISK} mktable msdos
+  parted -s /dev/${DISK} 'mkpart primary ext4 2048s 100%'
 fi
 
 sync
