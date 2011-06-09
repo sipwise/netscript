@@ -30,6 +30,8 @@ INTERACTIVE=false
 LOCAL_MIRROR=false
 DHCP=false
 LOGO=true
+BONDING=true
+USE_LOCAL_MIRROR=true
 export DISK=sda # will be configured as /dev/sda
 
 ### helper functions {{{
@@ -95,8 +97,10 @@ fi
 
 if checkBootParam ngcpnobonding ; then
   BONDING=false
-else
-  BONDING=true
+fi
+
+if checkBootParam nolocalmirror ; then
+  USE_LOCAL_MIRROR=false
 fi
 
 ## detect environment {{{
@@ -473,7 +477,7 @@ EOF
 fi
 
 # provide Debian mirror
-if [ -d /srv/mirror/debs ] ; then
+if [ -d /srv/mirror/debs ] && $USE_LOCAL_MIRROR ; then
   echo "Debian directory /srv/mirror/debs found."
   cd /srv/mirror/
   if ! [ -d /srv/mirror/debian ] ; then
