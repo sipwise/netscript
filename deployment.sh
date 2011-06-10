@@ -612,22 +612,14 @@ EOT
 PKG=ngcp-installer-2.2-rc1.deb
 wget http://deb.sipwise.com/spce/\$PKG
 dpkg -i \$PKG
-yes | ngcp-installer
-RC=\$?
+echo yes | ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+RC=\${PIPESTATUS[1]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
   tail -10 /tmp/ngcp-installer.log
   exit \$RC
 fi
 EOT
-  fi
-
-  # make a backup of the installer logfiles for later investigation
-  if [ -r "${TARGET}"/tmp/ngcp-installer.log ] ; then
-    cp "${TARGET}"/tmp/ngcp-installer.log "${TARGET}"/var/log/
-  fi
-  if [ -r /tmp/grml-debootstrap.log ] ; then
-    cp /tmp/grml-debootstrap.log "${TARGET}"/var/log/
   fi
 
   # baby, something went wrong!
@@ -679,6 +671,19 @@ EOT
   :>$TARGET/var/run/utmp
   :>$TARGET/var/run/wtmp
 
+  # make a backup of the installer logfiles for later investigation
+  if [ -r "${TARGET}"/tmp/ngcp-installer.log ] ; then
+    cp "${TARGET}"/tmp/ngcp-installer.log "${TARGET}"/var/log/
+  fi
+  if [ -r "${TARGET}"/tmp/ngcp-installer-debug.log ] ; then
+    cp "${TARGET}"/tmp/ngcp-installer-debug.log "${TARGET}"/var/log/
+  fi
+  if [ -r /tmp/ngcp-installer-debug.log ] ; then
+    cp /tmp/ngcp-installer-debug.log "${TARGET}"/var/log/ngcp-installer-debug_host.log
+  fi
+  if [ -r /tmp/grml-debootstrap.log ] ; then
+    cp /tmp/grml-debootstrap.log "${TARGET}"/var/log/
+  fi
 fi
 
 # leave system in according state
