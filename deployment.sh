@@ -598,8 +598,8 @@ if "$NGCP_INSTALLER" ; then
 PKG=ngcp-installer-latest.deb
 wget http://deb.sipwise.com/sppro/\$PKG
 dpkg -i \$PKG
-ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR
-RC=\$?
+ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
   tail -10 /tmp/ngcp-installer.log
@@ -609,7 +609,7 @@ EOT
 
   else # spce
     cat << EOT | grml-chroot $TARGET /bin/bash
-PKG=ngcp-installer-2.2-rc1.deb
+PKG=ngcp-installer-latest.deb
 wget http://deb.sipwise.com/spce/\$PKG
 dpkg -i \$PKG
 echo yes | ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
@@ -626,6 +626,7 @@ EOT
   if [ $? -ne 0 ] ; then
     echo "Error during installation of ngcp." >&2
     echo "Details: $TARGET/tmp/ngcp-installer.log" >&2
+    echo "         $TARGET/tmp/ngcp-installer-debug.log" >&2
     exit 1
   fi
 
@@ -677,9 +678,6 @@ EOT
   fi
   if [ -r "${TARGET}"/tmp/ngcp-installer-debug.log ] ; then
     cp "${TARGET}"/tmp/ngcp-installer-debug.log "${TARGET}"/var/log/
-  fi
-  if [ -r /tmp/ngcp-installer-debug.log ] ; then
-    cp /tmp/ngcp-installer-debug.log "${TARGET}"/var/log/ngcp-installer-debug_host.log
   fi
   if [ -r /tmp/grml-debootstrap.log ] ; then
     cp /tmp/grml-debootstrap.log "${TARGET}"/var/log/
