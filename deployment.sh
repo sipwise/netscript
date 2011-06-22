@@ -32,6 +32,7 @@ DHCP=false
 LOGO=true
 BONDING=true
 USE_LOCAL_MIRROR=true
+LINUX_HA3=false
 export DISK=sda # will be configured as /dev/sda
 
 ### helper functions {{{
@@ -93,6 +94,11 @@ fi
 
 if checkBootParam nocolorlogo ; then
   LOGO=false
+fi
+
+if checkBootParam ngcphav3 ; then
+  LINUX_HA3=true
+  PRO_EDITION=true
 fi
 
 if checkBootParam ngcpnobonding ; then
@@ -254,6 +260,7 @@ for param in $* ; do
     *ngcpip2=*) export IP2=$(echo $param | sed 's/ngcpip2=//');;
     *ngcpmcast=*) export MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
     *ngcpnw.dhcp*) export DHCP=true;;
+    *ngcphav3*) LINUX_HA3=true; PRO_EDITION=true;;
     *ngcpnobonding*) BONDING=false;;
   esac
   shift
@@ -593,7 +600,7 @@ if "$NGCP_INSTALLER" ; then
   echo "sipwise:sipwise" | chroot $TARGET chpasswd
 
   # install and execute ngcp-installer
-  if $PRO_EDITION ; then
+  if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
     cat << EOT | grml-chroot $TARGET /bin/bash
 PKG=ngcp-installer-latest.deb
 wget http://deb.sipwise.com/sppro/\$PKG
@@ -602,6 +609,20 @@ ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tm
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
+  tail -10 /tmp/ngcp-installer.log
+  exit \$RC
+fi
+EOT
+
+  elif $PRO_EDITION && $LINUX_HA3 ; then # HA v3
+    cat << EOT | grml-chroot $TARGET /bin/bash
+PKG=ngcp-installer-ha-v3-latest.deb
+wget http://deb.sipwise.com/sppro/\$PKG
+dpkg -i \$PKG
+ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+RC=\${PIPESTATUS[0]}
+if [ \$RC -ne 0 ] ; then
+  echo "Fatal error while running ngcp-installer (HA v3):" >&2
   tail -10 /tmp/ngcp-installer.log
   exit \$RC
 fi
