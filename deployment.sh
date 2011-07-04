@@ -30,7 +30,7 @@ INTERACTIVE=false
 LOCAL_MIRROR=false
 DHCP=false
 LOGO=true
-BONDING=true
+BONDING=false
 USE_LOCAL_MIRROR=true
 LINUX_HA3=false
 export DISK=sda # will be configured as /dev/sda
@@ -103,6 +103,10 @@ fi
 
 if checkBootParam ngcpnobonding ; then
   BONDING=false
+fi
+
+if checkBootParam ngcpbonding ; then
+  BONDING=true
 fi
 
 if checkBootParam nolocalmirror ; then
@@ -262,6 +266,7 @@ for param in $* ; do
     *ngcpnw.dhcp*) export DHCP=true;;
     *ngcphav3*) LINUX_HA3=true; PRO_EDITION=true;;
     *ngcpnobonding*) BONDING=false;;
+    *ngcpbonding*) BONDING=true;;
   esac
   shift
 done
@@ -605,7 +610,7 @@ if "$NGCP_INSTALLER" ; then
 PKG=ngcp-installer-latest.deb
 wget http://deb.sipwise.com/sppro/\$PKG
 dpkg -i \$PKG
-ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
