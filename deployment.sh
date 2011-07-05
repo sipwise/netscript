@@ -114,7 +114,9 @@ if checkBootParam nolocalmirror ; then
 fi
 
 ## detect environment {{{
-if dmidecode| grep -q 'Location In Chassis'; then
+if dmidecode| grep -q 'Rack Mount Chassis' ; then
+  CHASSIS="Running in Rack Mounted Chassis."
+elif dmidecode| grep -q 'Location In Chassis'; then
  CHASSIS="Running in blade chassis $(dmidecode| awk '/Location In Chassis/ {print $4}')"
  PRO_EDITION=true
 fi
@@ -379,12 +381,25 @@ fi
 
 # run in according environment only
 if [[ $(imvirt) == "Physical" ]] ; then
-  # TODO / FIXME  hardcoded for now, needs better check to support !ServeRAID[-MR10ie] as well
-  if ! grep -q 'ServeRAID' /sys/block/${DISK}/device/model ; then
-    echo "Error: /dev/${DISK} does not look like a ServeRAID disk." >&2
+  DISK_OK=false
+
+  # TODO / FIXME hardcoded for now, needs better check to support !ServeRAID[-MR10ie] as well
+  if grep -q 'ServeRAID' /sys/block/${DISK}/device/model ; then
+    DISK_OK=true
+  fi
+
+  # IBM System x3250 M3
+  if grep -q 'Logical Volume' /sys/block/${DISK}/device/model && \
+    grep -q "LSILOGIC" /sys/block/${DISK}/device/vendor ; then
+    DISK_OK=true
+  fi
+
+  if ! $DISK_OK ; then
+    echo "Error: /dev/${DISK} does not look like a ServeRAID or LSILOGIC disk." >&2
     echo "Exiting to avoid possible data damage." >&2
     exit 1
   fi
+
 else
   # make sure it runs only within qemu/kvm
   if ! grep -q 'QEMU HARDDISK' /sys/block/${DISK}/device/model ; then
