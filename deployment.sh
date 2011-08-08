@@ -394,8 +394,13 @@ if [[ $(imvirt) == "Physical" ]] ; then
     DISK_OK=true
   fi
 
+  if grep -q 'PERC H700' /sys/block/${DISK}/device/model && \
+    grep -q "DELL" /sys/block/${DISK}/device/vendor ; then
+    DISK_OK=true
+  fi
+
   if ! $DISK_OK ; then
-    echo "Error: /dev/${DISK} does not look like a ServeRAID or LSILOGIC disk." >&2
+    echo "Error: /dev/${DISK} does not look like a ServeRAID, LSILOGIC or PowerEdge disk/controller." >&2
     echo "Exiting to avoid possible data damage." >&2
     exit 1
   fi
