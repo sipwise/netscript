@@ -538,19 +538,32 @@ EOF
     kill $(ps aux | grep '[p]ython -m SimpleHTTPServer' | awk '{print $2}')
   fi
   python -m SimpleHTTPServer &>/dev/null &
-  sleep 1
-  if wget -O /dev/null http://localhost:8000/debian/dists/squeeze/main/binary-amd64/Packages &>/dev/null ; then
-    echo "Found functional local mirror, using for first stage installation."
-    MIRROR="http://localhost:8000/debian/"
-    LOCAL_MIRROR=true
-  fi
+
+  # make sure the mirror is ready before accessing it (fsck you, CDs!),
+  # so retry it up to 30 seconds
+  mirror_tries=1
+  while [ "$mirror_tries" -lt 11 -a "$LOCAL_MIRROR" != "true" ] ; do
+    if wget -O /dev/null http://localhost:8000/debian/dists/squeeze/main/binary-amd64/Packages &>/dev/null ; then
+      echo "Found functional local mirror, using for first stage installation."
+      MIRROR="http://localhost:8000/debian/"
+      LOCAL_MIRROR=true
+    else
+      echo "Not yet found (will retry in 3 seconds, $mirror_tries out of 10)."
+      mirror_tries=$((mirror_tries + 1))
+      sleep 3
+    fi
+  done
+
 fi
 
 if [ -z "$MIRROR" ] ; then
   MIRROR="http://debian.inode.at/debian/"
 fi
 
-if "$LOCAL_MIRROR" ; then
+if ! $LOCAL_MIRROR ; then
+  echo "Gave up using local mirror, falling back to $MIRROR instead."
+else
+  echo "Creating /etc/debootstrap/pre-scripts/adjust_sources_list"
   mkdir -p /etc/debootstrap/pre-scripts
   cat > /etc/debootstrap/pre-scripts/adjust_sources_list << EOT
 cat > \$MNTPOINT/etc/apt/sources.list << EOF
@@ -562,7 +575,14 @@ EOF
 chroot \$MNTPOINT apt-get -y update
 chroot \$MNTPOINT apt-get -y upgrade
 EOT
+
   chmod +x /etc/debootstrap/pre-scripts/adjust_sources_list
+
+  # make sure we use --keep_src_list iff we write our own sources.list
+  # file through the adjust_sources_list pre-script and using a local
+  # mirror, otherwise we will end up with sources.list from plain
+  # debootstrap which we definitely do NOT want
+  EXTRA_DEBOOTSTRAP_OPTS='--pre-scripts /etc/debootstrap/pre-scripts --keep_src_list'
 fi
 
 # install Debian squeeze
@@ -570,9 +590,7 @@ echo y | grml-debootstrap \
   --grub /dev/${DISK} \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
-  --debopt '--no-check-gpg' \
-  --pre-scripts '/etc/debootstrap/pre-scripts' \
-  --keep_src_list \
+  --debopt '--no-check-gpg' $EXTRA_DEBOOTSTRAP_OPTS \
   -r 'squeeze' \
   -t "/dev/${DISK}1" \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
