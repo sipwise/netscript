@@ -668,7 +668,7 @@ EOT
 PKG=ngcp-installer-latest.deb
 wget http://deb.sipwise.com/spce/\$PKG
 dpkg -i \$PKG
-echo yes | ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+echo y | ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[1]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
