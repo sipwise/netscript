@@ -60,18 +60,6 @@ getBootParam() {
   return 0
 }
 
-# fscking "=" missing in keybindings of Promox's OpenVNC console
-getProxmoxBootParam() {
-  local param_to_search="$1"
-  local result=''
-
-  stringInString " $param_to_search/" "$CMD_LINE" || return 1
-  result="${CMD_LINE##*$param_to_search/}"
-  result="${result%%[   ]*}"
-  echo "$result"
-  return 0
-}
-
 logo() {
     cat <<-EOF
 +++ Grml-Sipwise Deployment +++
@@ -122,7 +110,7 @@ elif dmidecode| grep -q 'Location In Chassis'; then
 fi
 
 if checkBootParam ngcpinst || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 || \
-  checkBootParam ngcppro ; then
+  checkBootParam ngcppro || checkBootParam ngcpce ; then
   NGCP_INSTALLER=true
 fi
 
@@ -150,9 +138,6 @@ fi
 
 if checkBootParam ngcphostname ; then
   TARGET_HOSTNAME="$(getBootParam ngcphostname)" || true
-  if [ -z "$TARGET_HOSTNAME" ] ; then
-    TARGET_HOSTNAME="$(getProxmoxBootParam ngcphostname)"
-  fi
 else
   if "$PRO_EDITION" ; then
     TARGET_HOSTNAME="$ROLE"
@@ -221,10 +206,9 @@ Control installation parameters:
 Control target system:
 
   ngcpnw.dhcp      - use DHCP as network configuration in installed system
-                     NOTE: defaults to IP address of installed node in Pro Edition
   ngcphostname=... - hostname of installed system (defaults to ngcp/sp[1,2])
-                     NOTE: do NOT use when installing Pro Edition, WIP!
-  ngcpeiface=ethX  - external interface device (e.g. eth0)
+                     NOTE: do NOT use when installing Pro Edition!
+  ngcpeiface=...   - external interface device (defaults to eth0)
   ngcpip1=...      - IP address of first node
   ngcpip2=...      - IP address of second node
   ngcpeaddr=...    - Cluster IP address
@@ -234,24 +218,21 @@ Command line overrides any present bootoption.
 
 Usage examples:
 
-
   # ngcp-deployment ngcpce ngcpnw.dhcp
 
   # netcardconfig # configure eth0 with static configuration
-  # ngcp-deployment ngcppro ngcpsp1 ngcpip1=192.168.1.101 \\
-      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=b0 ngcpmcast=226.94.1.1
+  # ngcp-deployment ngcppro ngcpsp1
 
   # netcardconfig # configure eth0 with static configuration
-  # ngcp-deployment ngcppro ngcpsp2 ngcpip1=192.168.1.101 \\
-      ngcpip2=192.168.1.102 ngcpeaddr=192.168.1.103 ngcpeiface=b0 ngcpmcast=226.94.1.1
+  # ngcp-deployment ngcppro ngcpsp2
 "
 }
 
 for param in $* ; do
   case $param in
     *-h*|*--help*|*help*) usage ; exit 0;;
-    *ngcpsp1*) ROLE=sp1 ; PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
-    *ngcpsp2*) ROLE=sp2 ; TARGET_HOSTNAME=sp2; PRO_EDITION=true; NGCP_INSTALLER=true; CE_EDITION=false ;;
+    *ngcpsp1*) ROLE=sp1 ; TARGET_HOSTNAME=sp1; PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
+    *ngcpsp2*) ROLE=sp2 ; TARGET_HOSTNAME=sp2; PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
     *ngcppro*) PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
     *ngcpce*) PRO_EDITION=false; CE_EDITION=true ; TARGET_HOSTNAME=spce ; ROLE='' ; NGCP_INSTALLER=true ;;
     *nongcp*) NGCP_INSTALLER=false;;
@@ -284,10 +265,10 @@ if "$PRO_EDITION" ; then
   export ROLE=$ROLE
   # hopefully set via bootoption/cmdline,
   # otherwise fall back to hopefully-safe-defaults
-  [ -n "$IP1" ] || export IP1=192.168.1.101
-  [ -n "$IP2" ] || export IP2=192.168.1.102
-  [ -n "$EADDR" ] || export EADDR=192.168.1.103
-  [ -n "$EIFACE" ] || export EIFACE=b0
+  [ -n "$IP1" ] || export IP1=192.168.255.251
+  [ -n "$IP2" ] || export IP2=192.168.255.252
+  [ -n "$EADDR" ] || export EADDR=192.168.255.253
+  [ -n "$EIFACE" ] || export EIFACE=eth0
   [ -n "$MCASTADDR" ] || export MCASTADDR=226.94.1.1
 else
   [ -n "$EIFACE" ] || export EIFACE='eth0'
@@ -304,19 +285,24 @@ fi
 [ -n "$dev" ] || dev='eth0'
 IP="$(ifdata -pa $dev)"
 
-if "$PRO_EDITION" ; then
-  case $IP in
-    "$IP1"|"$IP2"|"$EADDR") ipcheck=true;;
-    *) ipcheck=false;;
-  esac
+case "$ROLE" in
+  sp1) INTERNAL_IP='192.168.255.251' ;;
+  sp2) INTERNAL_IP='192.168.255.252' ;;
+esac
 
-  if ! $ipcheck ; then
-    echo "Error: neither ngcpip1 nor ngcpip2 nor ngcpeaddr match IP address of running system." >&2
-    echo "Deploying glusterfs through ngcp-installer will not work, exiting therefore. ">&2
-    echo "Tip: run netcardconfig to configure your network." >&2
-    exit 1
-  fi
-fi
+#if "$PRO_EDITION" ; then
+#  case $IP in
+#    "$IP1"|"$IP2"|"$EADDR") ipcheck=true;;
+#    *) ipcheck=false;;
+#  esac
+#
+#  if ! $ipcheck ; then
+#    echo "Error: neither ngcpip1 nor ngcpip2 nor ngcpeaddr match IP address of running system." >&2
+#    echo "Deploying glusterfs through ngcp-installer will not work, exiting therefore. ">&2
+#    echo "Tip: run netcardconfig to configure your network." >&2
+#    exit 1
+#  fi
+#fi
 
 echo "Deployment Settings:
 
@@ -357,6 +343,15 @@ if "$LOGO" ; then
 fi
 
 if "$PRO_EDITION" ; then
+  # internal network on eth1
+  if ifconfig eth1 &>/dev/null ; then
+    ifconfig eth1 $INTERNAL_IP netmask 255.255.255.248
+  else
+    echo "Error: no eth1 NIC found, can not deploy internal network. Exiting." >&2
+    exit 1
+  fi
+
+  # ipmi on IBM hardware
   if ifconfig usb0 &>/dev/null ; then
     ifconfig usb0 169.254.1.102 netmask 255.255.0.0
   fi
@@ -420,9 +415,6 @@ start_seconds=$(cut -d . -f 1 /proc/uptime)
 # TODO - improve :)
 if checkBootParam ngcpprofile ; then
   PROFILE="$(getBootParam ngcpprofile)" || true
-  if [ -z "$PROFILE" ] ; then
-    PROFILE="$(getProxmoxBootParam ngcpprofile)"
-  fi
 
   wget http://deb.sipwise.com/kantan/$PROFILE
   . $PROFILE
@@ -786,6 +778,12 @@ iface $EIFACE inet static
         bond_miimon 100
         bond_lacp_rate 1
 
+auto eth1
+iface eth1 inet static
+        address $INTERNAL_IP
+        netmask 255.255.255.248
+	dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
+
 # Example:
 # allow-hotplug eth0
 # iface eth0 inet static
@@ -798,7 +796,40 @@ iface $EIFACE inet static
 #         dns-nameservers 195.58.160.194 195.58.161.122
 #         dns-search sipwise.com
 EOF
-  else # no bonding
+  elif "$PRO_EDITION" ; then # no bonding but pro-edition
+    cat > $TARGET/etc/network/interfaces << EOF
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+auto $EIFACE
+iface $EIFACE inet static
+        address $(ifdata -pa eth0)
+        netmask $(ifdata -pn eth0)
+        gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
+        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
+
+auto eth1
+iface eth1 inet static
+        address $INTERNAL_IP
+        netmask 255.255.255.248
+	dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
+
+# Example:
+# allow-hotplug eth0
+# iface eth0 inet static
+#         address 192.168.1.101
+#         netmask 255.255.255.0
+#         network 192.168.1.0
+#         broadcast 192.168.1.255
+#         gateway 192.168.1.1
+#         # dns-* options are implemented by the resolvconf package, if installed
+#         dns-nameservers 195.58.160.194 195.58.161.122
+#         dns-search sipwise.com
+EOF
+  else # ce edition
     cat > $TARGET/etc/network/interfaces << EOF
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
@@ -826,42 +857,7 @@ iface $EIFACE inet static
 #         dns-search sipwise.com
 EOF
   fi
-
-  # provide example configuration
-  cat  > $TARGET/etc/network/interfaces.examples << EOF
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-# The loopback network interface
-auto lo
-iface lo inet loopback
-
-# The primary network interface
-allow-hotplug eth0
-iface eth0 inet static
-        address 192.168.1.101
-        netmask 255.255.255.0
-        network 192.168.1.0
-        broadcast 192.168.1.255
-        gateway 192.168.1.1
-        # dns-* options are implemented by the resolvconf package, if installed
-        dns-nameservers 195.58.160.194 195.58.161.122
-        dns-search sipwise.com
-
-# auto b0
-# iface b0 inet static
-#         address 192.168.1.101
-#         netmask 255.255.255.0
-#         gateway 192.168.1.1
-#         dns-nameservers 195.58.160.194 195.58.161.122
-#         bond-slaves eth0 eth1
-#         bond_mode 802.3ad
-#         bond_miimon 100
-#         bond_lacp_rate 1
-
-# auto eth1
-# iface eth1 inet dhcp
-EOF
-fi
+fi # if $DHCP
 
 # finalise hostname configuration
 cat > $TARGET/etc/hosts << EOF
@@ -881,8 +877,8 @@ EOF
 # in the HA setup
 if "$PRO_EDITION" ; then
   cat >> $TARGET/etc/hosts << EOF
-$IP1 sp1
-$IP2 sp2
+192.168.255.251 sp1
+192.168.255.252 sp2
 EOF
 fi
 
