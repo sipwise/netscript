@@ -882,6 +882,13 @@ if "$PRO_EDITION" ; then
 EOF
 fi
 
+# make sure we don't leave any running processes
+for i in asterisk collectd collectdmon exim4 \
+         glusterfs glusterfsd haveged redis-server \
+	 snmpd ; do
+  killall -9 $i >/dev/null 2>&1 || true
+done
+
 # don't leave any mountpoints
 sync
 umount ${TARGET}/proc       2>/dev/null || true
