@@ -21,6 +21,8 @@ set -e
 export LC_ALL=C
 export LANG=C
 
+start_seconds=$(cut -d . -f 1 /proc/uptime)
+
 # defaults
 TARGET=/mnt
 PRO_EDITION=false
@@ -922,6 +924,9 @@ to boot from hard disk by default or
 
 to boot from USB storage by default."
 fi
+
+[ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
+echo "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 
 echo "Do you want to [r]eboot or [h]alt the system now? (Press any other key to cancel.)"
 unset a
