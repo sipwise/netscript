@@ -598,6 +598,16 @@ fi
 sync
 mount /dev/${DISK}1 $TARGET
 
+if [[ $(imvirt) == "Physical" ]] || $PRO_EDITION ; then
+  # provide useable swap partition
+  SWAP_PARTITION="/dev/${DISK}2"
+
+  echo "Enabling swap partition $SWAP_PARTITION via /etc/fstab"
+  cat >> "${TARGET}/etc/fstab" << EOF
+$SWAP_PARTITION                      none           swap       sw,pri=0  0  0
+EOF
+fi
+
 # removals: packages which debootstrap installs but d-i doesn't
 chroot $TARGET apt-get --purge -y remove \
 ca-certificates console-tools openssl tcpd xauth
