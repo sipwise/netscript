@@ -179,32 +179,43 @@ fi
 if checkBootParam ngcpmcast ; then
   export MCASTADDR=$(getBootParam ngcpmcast)
 fi
-## }}}
 
 # load site specific profile file
-# TODO - improve :), check side effects
-PROFILESERVER=deb.sipwise.com/kantan/
-if checkBootParam ngcpprofile ; then
-  PROFILE="$(getBootParam ngcpprofile)" || true
+if checkBootParam netscript ; then
+  NETSCRIPT_SERVER="$(dirname $(getBootParam netscript))"
+fi
 
-  rm $PROFILE   # so wget does not rename local file, TODO: might destroy local file
-  wget http://$PROFILESERVER/$PROFILE
-  WGETRESULT=$?
-  if [ "X$WGETRESULT" != "X0" ] ; then
-    echo "Error: Could not get profile file $PROFILE from $PROFILESERVER"
-    echo "   (wget error code $WGETRESULT)"
+if checkBootParam ngcpprofile && [ -n "$NETSCRIPT_SERVER" ] ; then
+  PROFILE="$(getBootParam ngcpprofile)"
+
+  if [ -z "$PROFILE" ] ; then
+    echo "Error: No argument for ngcpprofile found, can not continue." >&2
     exit 1
+  fi
+
+  getconfig() {
+    wget --timeout=10 --dns-timeout=10  --connect-timeout=10 --tries=1 \
+         --read-timeout=10 ${NETSCRIPT_SERVER}/$PROFILE -O ${PROFILE} && return 0 || return 1
+  }
+
+  echo "Trying to get ${NETSCRIPT_SERVER}/$PROFILE"
+  counter=10
+  while ! getconfig && [[ "$counter" != 0 ]] ; do
+    echo -n "Sleeping for 1 second and trying to get config again... "
+    counter=$(( counter-1 ))
+    echo "$counter tries left" ; sleep 1
+  done
+
+  if [ -s "$PROFILE" ] ; then
+    echo "Loading profile $PROFILE"
+    . $PROFILE
   else
-    if [ -e $PROFILE ] ; then
-      . $PROFILE
-      echo "Profile $PROFILE loaded"
-      rm $PROFILE         # clean up
-    else
-      echo "Error: Profile file $PROFILE not available (locally, after wget)"
-      exit 1
-    fi
+    echo "Error: Could not get profile file $PROFILE from $NETSCRIPT_SERVER" >&2
+    echo "   (wget error code $WGETRESULT)" >&2
+    exit 1
   fi
 fi
+## }}}
 
 ## interactive mode {{{
 # support command line options, overriding autodetected defaults
@@ -436,14 +447,6 @@ else
     echo "Exiting to avoid possible data damage." >&2
     exit 1
   fi
-fi
-
-# TODO - improve :)
-if checkBootParam ngcpprofile ; then
-  PROFILE="$(getBootParam ngcpprofile)" || true
-
-  wget http://deb.sipwise.com/kantan/$PROFILE
-  . $PROFILE
 fi
 
 # relevant only while deployment, will be overriden later
