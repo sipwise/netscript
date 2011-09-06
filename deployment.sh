@@ -181,6 +181,31 @@ if checkBootParam ngcpmcast ; then
 fi
 ## }}}
 
+# load site specific profile file
+# TODO - improve :), check side effects
+PROFILESERVER=deb.sipwise.com/kantan/
+if checkBootParam ngcpprofile ; then
+  PROFILE="$(getBootParam ngcpprofile)" || true
+
+  rm $PROFILE   # so wget does not rename local file, TODO: might destroy local file
+  wget http://$PROFILESERVER/$PROFILE
+  WGETRESULT=$?
+  if [ "X$WGETRESULT" != "X0" ] ; then
+    echo "Error: Could not get profile file $PROFILE from $PROFILESERVER"
+    echo "   (wget error code $WGETRESULT)"
+    exit 1
+  else
+    if [ -e $PROFILE ] ; then
+      . $PROFILE
+      echo "Profile $PROFILE loaded"
+      rm $PROFILE         # clean up
+    else
+      echo "Error: Profile file $PROFILE not available (locally, after wget)"
+      exit 1
+    fi
+  fi
+fi
+
 ## interactive mode {{{
 # support command line options, overriding autodetected defaults
 INTERACTIVE=true
