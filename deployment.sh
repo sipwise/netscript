@@ -21,8 +21,6 @@ set -e
 export LC_ALL=C
 export LANG=C
 
-start_seconds=$(cut -d . -f 1 /proc/uptime)
-
 # defaults
 TARGET=/mnt
 PRO_EDITION=false
@@ -71,6 +69,7 @@ $(cat /etc/grml_version)
 $CHASSIS
 $(ip-screen)
 $(lscpu | awk '/^CPU\(s\)/ {print $2}') CPUs | $(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)kB RAM
+Started deployment at $(date)
 --------------------------------------------------------------------------------
 EOF
 }
@@ -337,6 +336,9 @@ if "$INTERACTIVE" ; then
 fi
 ## }}}
 
+# measure time of installation procedure - everyone loves stats!
+start_seconds=$(cut -d . -f 1 /proc/uptime)
+
 if "$LOGO" ; then
   echo -ne "\ec\e[1;32m"
   logo
@@ -410,9 +412,6 @@ else
     exit 1
   fi
 fi
-
-# measure time of installation procedure - everyone loves stats!
-start_seconds=$(cut -d . -f 1 /proc/uptime)
 
 # TODO - improve :)
 if checkBootParam ngcpprofile ; then
@@ -915,12 +914,7 @@ umount $TARGET || umount -l $TARGET # fall back if a process is still being acti
 
 # party time! who brings the whiskey?
 echo "Installation finished. \o/"
-
 echo
-if [ -n "$start_seconds" ] ; then
-  SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
-  echo "Finished on $(date) - installation was running for ${SECONDS} seconds."
-fi
 echo
 
 if "$PRO_EDITION" ; then
