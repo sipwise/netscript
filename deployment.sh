@@ -127,6 +127,14 @@ if "$PRO_EDITION" ; then
   fi
 fi
 
+if checkBootParam ngcpvers ; then
+  SP_VERSION=$(getBootParam ngcpvers)
+fi
+
+if checkBootParam ngcpinstvers ; then
+  INSTALLER_VERSION=$(getBootParam ngcpinstvers)
+fi
+
 if checkBootParam nongcp ; then
   echo "Will not execute ngcp-installer as requested via bootoption nongcp."
   NGCP_INSTALLER=false
@@ -214,9 +222,11 @@ Control installation parameters:
   ngcpsp1          - install first node (Pro Edition only)
   ngcpsp2          - install second node (Pro Edition only)
   ngcpce           - install CE Edition
+  ngcpvers=...     - install specific SP/CE version
   nongcp           - do not install NGCP but install plain Debian only
   noinstall        - do not install neither Debian nor NGCP
   ngcpinst         - force usage of NGCP installer
+  ngcpinstvers=... - use specific NGCP installer version
   ngcpprofile=...  - download additional configuration profile (WIP)
 
 Control target system:
@@ -251,10 +261,12 @@ for param in $* ; do
     *ngcpsp2*) ROLE=sp2 ; TARGET_HOSTNAME=sp2; PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
     *ngcppro*) PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
     *ngcpce*) PRO_EDITION=false; CE_EDITION=true ; TARGET_HOSTNAME=spce ; ROLE='' ; NGCP_INSTALLER=true ;;
+    *ngcpvers=*) SP_VERSION=$(echo $param | sed 's/ngcpvers=//');;
     *nongcp*) NGCP_INSTALLER=false;;
     *nodebian*) DEBIAN_INSTALLER=false;; # TODO
     *noinstall*) NGCP_INSTALLER=false; DEBIAN_INSTALLER=false;;
     *ngcpinst*) NGCP_INSTALLER=true;;
+    *ngcpinstvers=*) INSTALLER_VERSION=$(echo $param | sed 's/ngcpinstvers=//');;
     *ngcphostname=*) TARGET_HOSTNAME=$(echo $param | sed 's/ngcphostname=//');;
     *ngcpprofile=*) PROFILE=$(echo $param | sed 's/ngcpprofile=//');;
     *ngcpeiface=*) export EIFACE=$(echo $param | sed 's/ngcpeiface=//');;
@@ -298,6 +310,16 @@ if [ -n "$PROFILE" ] && [ -n "$NETSCRIPT_SERVER" ] ; then
     echo "Error: Could not get profile file $PROFILE from $NETSCRIPT_SERVER" >&2
     exit 1
   fi
+fi
+
+# check, if both SP/CE version and ngcp-installer version are present
+if [ $SP_VERSION && ! $INSTALLER_VERSION ] ; then
+  echo "Error: SP/CE version, but no ngcp-installer version specified" >&2
+  exit 1
+fi
+if [ ! $SP_VERSION && $INSTALLER_VERSION ] ; then
+  echo "Error: ngcp-installer version, but no SP/CE version specified" >&2
+  exit 1
 fi
 
 # needed inside ngcp-installer
@@ -349,6 +371,8 @@ echo "Deployment Settings:
   Install ngcp:      $NGCP_INSTALLER
   Installer - pro:   $PRO_EDITION
   Installer - ce:    $CE_EDITION
+  Version:           $SP_VERSION
+  Installer vers.:   $INSTALLER_VERSION
   Hostname:          $TARGET_HOSTNAME
   Host Role:         $ROLE
   Profile:           $PROFILE
@@ -676,11 +700,30 @@ if "$NGCP_INSTALLER" ; then
   chroot $TARGET adduser sipwise --disabled-login --gecos "Sipwise"
   echo "sipwise:sipwise" | chroot $TARGET chpasswd
 
+  # default: use latest ngcp-installer
+  INSTALLER_PATH=
+  INSTALLER=ngcp-installer-latest.deb
+  if $LINUX_HA3 ; then
+    INSTALLER=ngcp-installer-ha-v3-latest.deb
+  fi
+
+  # use specific SP/CE version and installer version if specified
+  if [ -n "$SP_VERSION" ] && [ -n "$INSTALLER_VERSION" ] ; then
+    INSTALLER_PATH=$SP_VERSION/pool/main/n/ngcp-installer/
+    if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
+      INSTALLER=ngcp-installer-pro_${INSTALLER_VERSION}_all.deb
+    elif $PRO_EDITION && $LINUX_HA3 ; then # HA v3
+      INSTALLER=ngcp-installer-ha-v3_${INSTALLER_VERSION}_all.deb
+    else # spce
+      INSTALLER=ngcp-installer-ce_${INSTALLER_VERSION}_all.deb
+    fi
+  fi
+
   # install and execute ngcp-installer
   if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
     cat << EOT | grml-chroot $TARGET /bin/bash
-PKG=ngcp-installer-latest.deb
-wget http://deb.sipwise.com/sppro/\$PKG
+PKG=$INSTALLER
+wget http://deb.sipwise.com/sppro/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
 ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
@@ -693,8 +736,8 @@ EOT
 
   elif $PRO_EDITION && $LINUX_HA3 ; then # HA v3
     cat << EOT | grml-chroot $TARGET /bin/bash
-PKG=ngcp-installer-ha-v3-latest.deb
-wget http://deb.sipwise.com/sppro/\$PKG
+PKG=$INSTALLER
+wget http://deb.sipwise.com/sppro/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
 ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
@@ -707,8 +750,8 @@ EOT
 
   else # spce
     cat << EOT | grml-chroot $TARGET /bin/bash
-PKG=ngcp-installer-latest.deb
-wget http://deb.sipwise.com/spce/\$PKG
+PKG=$INSTALLER
+wget http://deb.sipwise.com/spce/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
 echo y | ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[1]}
