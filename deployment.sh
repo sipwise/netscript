@@ -180,7 +180,7 @@ if checkBootParam ngcpmcast ; then
   export MCASTADDR=$(getBootParam ngcpmcast)
 fi
 
-# load site specific profile file
+# site specific profile file
 if checkBootParam netscript ; then
   NETSCRIPT_SERVER="$(dirname $(getBootParam netscript))"
 fi
@@ -192,29 +192,8 @@ if checkBootParam ngcpprofile && [ -n "$NETSCRIPT_SERVER" ] ; then
     echo "Error: No argument for ngcpprofile found, can not continue." >&2
     exit 1
   fi
-
-  getconfig() {
-    wget --timeout=10 --dns-timeout=10  --connect-timeout=10 --tries=1 \
-         --read-timeout=10 ${NETSCRIPT_SERVER}/$PROFILE -O ${PROFILE} && return 0 || return 1
-  }
-
-  echo "Trying to get ${NETSCRIPT_SERVER}/$PROFILE"
-  counter=10
-  while ! getconfig && [[ "$counter" != 0 ]] ; do
-    echo -n "Sleeping for 1 second and trying to get config again... "
-    counter=$(( counter-1 ))
-    echo "$counter tries left" ; sleep 1
-  done
-
-  if [ -s "$PROFILE" ] ; then
-    echo "Loading profile $PROFILE"
-    . $PROFILE
-  else
-    echo "Error: Could not get profile file $PROFILE from $NETSCRIPT_SERVER" >&2
-    echo "   (wget error code $WGETRESULT)" >&2
-    exit 1
-  fi
 fi
+
 ## }}}
 
 ## interactive mode {{{
@@ -295,6 +274,30 @@ if ! "$NGCP_INSTALLER" ; then
   PRO_EDITION=false
   CE_EDITION=false
   unset ROLE
+fi
+
+# load site specific profile if specified
+if [ -n "$PROFILE" ] && [ -n "$NETSCRIPT_SERVER" ] ; then
+  getconfig() {
+    wget --timeout=10 --dns-timeout=10  --connect-timeout=10 --tries=1 \
+         --read-timeout=10 ${NETSCRIPT_SERVER}/$PROFILE -O ${PROFILE} && return 0 || return 1
+  }
+
+  echo "Trying to get ${NETSCRIPT_SERVER}/$PROFILE"
+  counter=10
+  while ! getconfig && [[ "$counter" != 0 ]] ; do
+    echo -n "Sleeping for 1 second and trying to get config again... "
+    counter=$(( counter-1 ))
+    echo "$counter tries left" ; sleep 1
+  done
+
+  if [ -s "$PROFILE" ] ; then
+    echo "Loading profile $PROFILE"
+    . $PROFILE
+  else
+    echo "Error: Could not get profile file $PROFILE from $NETSCRIPT_SERVER" >&2
+    exit 1
+  fi
 fi
 
 # needed inside ngcp-installer
