@@ -713,7 +713,7 @@ if "$NGCP_INSTALLER" ; then
     if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
       INSTALLER=ngcp-installer-pro_${INSTALLER_VERSION}_all.deb
     elif $PRO_EDITION && $LINUX_HA3 ; then # HA v3
-      INSTALLER=ngcp-installer-ha-v3_${INSTALLER_VERSION}_all.deb
+      INSTALLER=ngcp-installer-pro-ha-v3_${INSTALLER_VERSION}_all.deb
     else # spce
       INSTALLER=ngcp-installer-ce_${INSTALLER_VERSION}_all.deb
     fi
