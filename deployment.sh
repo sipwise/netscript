@@ -656,6 +656,9 @@ if [[ $(imvirt) == "Physical" ]] || $PRO_EDITION ; then
   # provide useable swap partition
   SWAP_PARTITION="/dev/${DISK}2"
 
+  echo "Initialising swap partition $SWAP_PARTITION"
+  mkswap "$SWAP_PARTITION"
+
   echo "Enabling swap partition $SWAP_PARTITION via /etc/fstab"
   cat >> "${TARGET}/etc/fstab" << EOF
 $SWAP_PARTITION                      none           swap       sw,pri=0  0  0
