@@ -420,6 +420,8 @@ if "$INTERACTIVE" ; then
     exit 0
   fi
   unset a
+else
+  sleep 10
 fi
 ## }}}
 
