@@ -337,14 +337,13 @@ fi
 if "$PRO_EDITION" ; then
   [ -n "$IP1" ] || IP1=192.168.255.251
   [ -n "$IP2" ] || IP2=192.168.255.252
+  [ -n "$INTERNAL_NETMASK" ] || INTERNAL_NETMASK=255.255.255.248
   [ -n "$EADDR" ] || EADDR=192.168.255.253
   [ -n "$EIFACE" ] || EIFACE=eth0
   [ -n "$MCASTADDR" ] || MCASTADDR=226.94.1.1
 else
   [ -n "$EIFACE" ] || EIFACE='eth0'
 fi
-
-# TODO: use $INTERNAL_NETMASK instead of constant 192.168.255.248 below
 
 # needed inside ngcp-installer
 if "$PRO_EDITION" ; then
@@ -403,6 +402,7 @@ echo "Deployment Settings:
 
   1st host IP:       $IP1
   2nd host IP:       $IP2
+  IP1/IP2 netmask:   $INTERNAL_NETMASK
   Ext host IP:       $EADDR
   Multicast addr:    $MCASTADDR
   Network iface:     $EIFACE
@@ -438,7 +438,7 @@ fi
 if "$PRO_EDITION" ; then
   # internal network on eth1
   if ifconfig eth1 &>/dev/null ; then
-    ifconfig eth1 $INTERNAL_IP netmask 255.255.255.248
+    ifconfig eth1 $INTERNAL_IP netmask $INTERNAL_NETMASK
   else
     echo "Error: no eth1 NIC found, can not deploy internal network. Exiting." >&2
     exit 1
@@ -895,7 +895,7 @@ iface $EIFACE inet static
 auto eth1
 iface eth1 inet static
         address $INTERNAL_IP
-        netmask 255.255.255.248
+        netmask $INTERNAL_NETMASK
 	dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
 # Example:
@@ -928,7 +928,7 @@ iface $EIFACE inet static
 auto eth1
 iface eth1 inet static
         address $INTERNAL_IP
-        netmask 255.255.255.248
+        netmask $INTERNAL_NETMASK
 	dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
 # Example:

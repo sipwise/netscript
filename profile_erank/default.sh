@@ -10,7 +10,7 @@
 # internal IP addresses of sp1/sp2 (on eth1)
 IP1=192.168.51.133
 IP2=192.168.51.134
-# INTERNAL_NETMASK=192.168.255.248      # TODO: has to be enabled in deployment.sh
+INTERNAL_NETMASK=192.168.255.248
 
 if "$PRO_EDITION" ; then
   case "$ROLE" in
