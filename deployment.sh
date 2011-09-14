@@ -317,7 +317,7 @@ if [ -n "$SP_VERSION" ] && [ -z "$INSTALLER_VERSION" ] ; then
   echo "Error: SP/CE version, but no ngcp-installer version specified" >&2
   exit 1
 fi
-if [ -z $SP_VERSION ] && [ -n $INSTALLER_VERSION ] ; then
+if [ -z "$SP_VERSION" ] && [ -n "$INSTALLER_VERSION" ] ; then
   echo "Error: ngcp-installer version, but no SP/CE version specified" >&2
   exit 1
 fi
