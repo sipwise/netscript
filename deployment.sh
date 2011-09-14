@@ -362,8 +362,8 @@ fi
 IP="$(ifdata -pa $dev)"
 
 case "$ROLE" in
-  sp1) INTERNAL_IP='192.168.255.251' ;;
-  sp2) INTERNAL_IP='192.168.255.252' ;;
+  sp1) INTERNAL_IP=$IP1 ;;
+  sp2) INTERNAL_IP=$IP2 ;;
 esac
 
 #if "$PRO_EDITION" ; then
@@ -979,8 +979,8 @@ EOF
 # in the HA setup
 if "$PRO_EDITION" ; then
   cat >> $TARGET/etc/hosts << EOF
-192.168.255.251 sp1
-192.168.255.252 sp2
+$IP1 sp1
+$IP2 sp2
 EOF
 fi
 
