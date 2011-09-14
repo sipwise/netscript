@@ -291,11 +291,11 @@ fi
 # load site specific profile if specified
 if [ -n "$PROFILE" ] && [ -n "$NETSCRIPT_SERVER" ] ; then
   getconfig() {
-    wget --timeout=10 --dns-timeout=10  --connect-timeout=10 --tries=1 \
-         --read-timeout=10 ${NETSCRIPT_SERVER}/$PROFILE -O ${PROFILE} && return 0 || return 1
+    wget -r --no-parent --timeout=10 --dns-timeout=10  --connect-timeout=10 --tries=1 \
+         --read-timeout=10 ${NETSCRIPT_SERVER}/$PROFILE/ && return 0 || return 1
   }
 
-  echo "Trying to get ${NETSCRIPT_SERVER}/$PROFILE"
+  echo "Trying to get ${NETSCRIPT_SERVER}/$PROFILE/*"
   counter=10
   while ! getconfig && [[ "$counter" != 0 ]] ; do
     echo -n "Sleeping for 1 second and trying to get config again... "
@@ -303,11 +303,21 @@ if [ -n "$PROFILE" ] && [ -n "$NETSCRIPT_SERVER" ] ; then
     echo "$counter tries left" ; sleep 1
   done
 
-  if [ -s "$PROFILE" ] ; then
-    echo "Loading profile $PROFILE"
-    . $PROFILE
+  DOWNLOADDIR=$(echo ${NETSCRIPT_SERVER}/$PROFILE | sed 's|^http://||')
+  echo $DOWNLOADDIR
+  if [ -d "$DOWNLOADDIR" ] ; then
+    if [ -s "$DOWNLOADDIR/default.sh" ] ; then
+      rm -f $DOWNLOADDIR/index.html*
+      mv $DOWNLOADDIR/* ./
+      rmdir -p $DOWNLOADDIR
+      echo "Loading profile $PROFILE"
+      . default.sh
+    else
+      echo "Error: No default.sh in profile $PROFILE from $NETSCRIPT_SERVER" >&2
+      exit 1
+    fi
   else
-    echo "Error: Could not get profile file $PROFILE from $NETSCRIPT_SERVER" >&2
+    echo "Error: Could not get profile $PROFILE from $NETSCRIPT_SERVER" >&2
     exit 1
   fi
 fi
