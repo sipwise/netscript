@@ -142,7 +142,7 @@ fi
 
 # configure static network in installed system?
 if checkBootParam ngcpnw.dhcp ; then
-  export DHCP=true
+  DHCP=true
 fi
 
 if checkBootParam ngcphostname ; then
@@ -169,23 +169,23 @@ else
 fi
 
 if checkBootParam ngcpip1 ; then
-  export IP1=$(getBootParam ngcpip1)
+  IP1=$(getBootParam ngcpip1)
 fi
 
 if checkBootParam ngcpip2 ; then
-  export IP2=$(getBootParam ngcpip2)
+  IP2=$(getBootParam ngcpip2)
 fi
 
 if checkBootParam ngcpeaddr ; then
-  export EADDR=$(getBootParam ngcpeaddr)
+  EADDR=$(getBootParam ngcpeaddr)
 fi
 
 if checkBootParam ngcpeiface ; then
-  export EIFACE=$(getBootParam ngcpeiface)
+  EIFACE=$(getBootParam ngcpeiface)
 fi
 
 if checkBootParam ngcpmcast ; then
-  export MCASTADDR=$(getBootParam ngcpmcast)
+  MCASTADDR=$(getBootParam ngcpmcast)
 fi
 
 # site specific profile file
@@ -269,12 +269,12 @@ for param in $* ; do
     *ngcpinstvers=*) INSTALLER_VERSION=$(echo $param | sed 's/ngcpinstvers=//');;
     *ngcphostname=*) TARGET_HOSTNAME=$(echo $param | sed 's/ngcphostname=//');;
     *ngcpprofile=*) PROFILE=$(echo $param | sed 's/ngcpprofile=//');;
-    *ngcpeiface=*) export EIFACE=$(echo $param | sed 's/ngcpeiface=//');;
-    *ngcpeaddr=*) export EADDR=$(echo $param | sed 's/ngcpeaddr=//');;
-    *ngcpip1=*) export IP1=$(echo $param | sed 's/ngcpip1=//');;
-    *ngcpip2=*) export IP2=$(echo $param | sed 's/ngcpip2=//');;
-    *ngcpmcast=*) export MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
-    *ngcpnw.dhcp*) export DHCP=true;;
+    *ngcpeiface=*) EIFACE=$(echo $param | sed 's/ngcpeiface=//');;
+    *ngcpeaddr=*) EADDR=$(echo $param | sed 's/ngcpeaddr=//');;
+    *ngcpip1=*) IP1=$(echo $param | sed 's/ngcpip1=//');;
+    *ngcpip2=*) IP2=$(echo $param | sed 's/ngcpip2=//');;
+    *ngcpmcast=*) MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
+    *ngcpnw.dhcp*) DHCP=true;;
     *ngcphav3*) LINUX_HA3=true; PRO_EDITION=true;;
     *ngcpnobonding*) BONDING=false;;
     *ngcpbonding*) BONDING=true;;
@@ -312,7 +312,7 @@ if [ -n "$PROFILE" ] && [ -n "$NETSCRIPT_SERVER" ] ; then
   fi
 fi
 
-# check, if both SP/CE version and ngcp-installer version are present
+# check, if both SPPRO/CE version and ngcp-installer version are present
 if [ -n "$SP_VERSION" ] && [ -z "$INSTALLER_VERSION" ] ; then
   echo "Error: SP/CE version, but no ngcp-installer version specified" >&2
   exit 1
@@ -322,18 +322,32 @@ if [ -z "$SP_VERSION" ] && [ -n "$INSTALLER_VERSION" ] ; then
   exit 1
 fi
 
+# hopefully set via bootoption/cmdline,
+# otherwise fall back to hopefully-safe-defaults
+if "$PRO_EDITION" ; then
+  [ -n "$IP1" ] || IP1=192.168.255.251
+  [ -n "$IP2" ] || IP2=192.168.255.252
+  [ -n "$EADDR" ] || EADDR=192.168.255.253
+  [ -n "$EIFACE" ] || EIFACE=eth0
+  [ -n "$MCASTADDR" ] || MCASTADDR=226.94.1.1
+else
+  [ -n "$EIFACE" ] || EIFACE='eth0'
+fi
+
+# TODO: use $INTERNAL_NETMASK instead of constant 192.168.255.248 below
+
 # needed inside ngcp-installer
 if "$PRO_EDITION" ; then
-  export ROLE=$ROLE
-  # hopefully set via bootoption/cmdline,
-  # otherwise fall back to hopefully-safe-defaults
-  [ -n "$IP1" ] || export IP1=192.168.255.251
-  [ -n "$IP2" ] || export IP2=192.168.255.252
-  [ -n "$EADDR" ] || export EADDR=192.168.255.253
-  [ -n "$EIFACE" ] || export EIFACE=eth0
-  [ -n "$MCASTADDR" ] || export MCASTADDR=226.94.1.1
+  export ROLE
+  export IP1
+  export IP2
+  export EADDR
+  export EIFACE
+  export MCASTADDR
+  export DHCP
 else
-  [ -n "$EIFACE" ] || export EIFACE='eth0'
+  export EIFACE
+  export DHCP
 fi
 
 # when using ip=....:$HOSTNAME:eth0:off file /etc/hosts doesn't contain the
