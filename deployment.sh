@@ -361,12 +361,21 @@ fi
 
 # when using ip=....:$HOSTNAME:eth0:off file /etc/hosts doesn't contain the
 # hostname by default, avoid warning/error messages in the host system
-# and use it for IP addres check in pro edition
+# and use it for IP address check in pro edition
+# make sure the internal device (configured later) is not statically assigned,
+# since when booting with ip=....eth1:off then the internal device needs to be eth0
 if checkBootParam ip ; then
   tmpdev=$(getBootParam ip)
-  case $tmpdev in *eth*) dev=$(echo $tmpdev | sed -e 's/.*:\(eth.\):.*/\1/') ;; esac
+  case $tmpdev in *eth*)
+    dev=$(echo $tmpdev | sed -e 's/.*:\(eth.\):.*/\1/')
+    if [[ "$dev" = "eth1" ]] ; then
+      INTERNAL_DEV="eth0"
+    fi
+    ;;
+  esac
 fi
 
+[ -n "$INTERNAL_DEV" ] || INTERNAL_DEV="eth1"
 [ -n "$dev" ] || dev='eth0'
 IP="$(ifdata -pa $dev)"
 
@@ -437,8 +446,8 @@ fi
 
 if "$PRO_EDITION" ; then
   # internal network on eth1
-  if ifconfig eth1 &>/dev/null ; then
-    ifconfig eth1 $INTERNAL_IP netmask $INTERNAL_NETMASK
+  if ifconfig "$INTERNAL_DEV" &>/dev/null ; then
+    ifconfig "$INTERNAL_DEV" $INTERNAL_IP netmask $INTERNAL_NETMASK
   else
     echo "Error: no eth1 NIC found, can not deploy internal network. Exiting." >&2
     exit 1
