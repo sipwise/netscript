@@ -188,6 +188,14 @@ if checkBootParam ngcpmcast ; then
   MCASTADDR=$(getBootParam ngcpmcast)
 fi
 
+if checkBootParam ngcpcrole ; then
+  CROLE=$(getBootParam ngcpcrole)
+fi
+
+if checkBootParam ngcpcmaster ; then
+  CMASTER=$(getBootParam ngcpcmaster)
+fi
+
 # site specific profile file
 if checkBootParam netscript ; then
   NETSCRIPT_SERVER="$(dirname $(getBootParam netscript))"
@@ -222,6 +230,8 @@ Control installation parameters:
   ngcpsp1          - install first node (Pro Edition only)
   ngcpsp2          - install second node (Pro Edition only)
   ngcpce           - install CE Edition
+  ngcpcrole=...    - server role (Carrier)
+  ngcpcmaster=...  - IP of master server (Carrier)
   ngcpvers=...     - install specific SP/CE version
   nongcp           - do not install NGCP but install plain Debian only
   noinstall        - do not install neither Debian nor NGCP
@@ -274,6 +284,8 @@ for param in $* ; do
     *ngcpip1=*) IP1=$(echo $param | sed 's/ngcpip1=//');;
     *ngcpip2=*) IP2=$(echo $param | sed 's/ngcpip2=//');;
     *ngcpmcast=*) MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
+    *ngcpcrole=*) CROLE=$(echo $param | sed 's/ngcpcrole=//');;
+    *ngcpcmaster=*) CMASTER=$(echo $param | sed 's/ngcpcmaster=//');;
     *ngcpnw.dhcp*) DHCP=true;;
     *ngcphav3*) LINUX_HA3=true; PRO_EDITION=true;;
     *ngcpnobonding*) BONDING=false;;
@@ -408,6 +420,8 @@ echo "Deployment Settings:
   Installer vers.:   $INSTALLER_VERSION
   Hostname:          $TARGET_HOSTNAME
   Host Role:         $ROLE
+  Host Role Carrier: $CROLE
+  Master Server:     $CMASTER
   Profile:           $PROFILE
 
   1st host IP:       $IP1
@@ -732,6 +746,12 @@ ff00::0         ip6-mcastprefix
 ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
+
+if "$PRO_EDITION" ; then
+  echo $CROLE >> $TARGET/etc/ngcp_ha_role
+  echo $CMASTER >> $TARGET/etc/ngcp_ha_master
+fi
+
 
 if "$NGCP_INSTALLER" ; then
 
