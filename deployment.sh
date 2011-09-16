@@ -304,16 +304,17 @@ if [ -n "$PROFILE" ] && [ -n "$NETSCRIPT_SERVER" ] ; then
   done
 
   DOWNLOADDIR=$(echo ${NETSCRIPT_SERVER}/$PROFILE | sed 's|^http://||')
-  echo $DOWNLOADDIR
   if [ -d "$DOWNLOADDIR" ] ; then
     if [ -s "$DOWNLOADDIR/default.sh" ] ; then
-      rm -f $DOWNLOADDIR/index.html*
+      rm -rf $DOWNLOADDIR/index.html*
       mv $DOWNLOADDIR/* ./
       rmdir -p $DOWNLOADDIR
       echo "Loading profile $PROFILE"
       . default.sh
     else
       echo "Error: No default.sh in profile $PROFILE from $NETSCRIPT_SERVER" >&2
+      rm -rf $DOWNLOADDIR/*
+      rmdir -p $DOWNLOADDIR
       exit 1
     fi
   else
