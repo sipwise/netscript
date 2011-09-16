@@ -380,8 +380,8 @@ fi
 if checkBootParam ip ; then
   tmpdev=$(getBootParam ip)
   case $tmpdev in *eth*)
-    dev=$(echo $tmpdev | sed -e 's/.*:\(eth.\):.*/\1/')
-    if [[ "$dev" = "eth1" ]] ; then
+    EXTERNAL_DEV=$(echo $tmpdev | sed -e 's/.*:\(eth.\):.*/\1/')
+    if [[ "$EXTERNAL_DEV" = "eth1" ]] ; then
       INTERNAL_DEV="eth0"
     fi
     ;;
@@ -389,27 +389,13 @@ if checkBootParam ip ; then
 fi
 
 [ -n "$INTERNAL_DEV" ] || INTERNAL_DEV="eth1"
-[ -n "$dev" ] || dev='eth0'
-IP="$(ifdata -pa $dev)"
+[ -n "$EXTERNAL_DEV" ] || EXTERNAL_DEV='eth0'
+IP="$(ifdata -pa $EXTERNAL_DEV)"
 
 case "$ROLE" in
   sp1) INTERNAL_IP=$IP1 ;;
   sp2) INTERNAL_IP=$IP2 ;;
 esac
-
-#if "$PRO_EDITION" ; then
-#  case $IP in
-#    "$IP1"|"$IP2"|"$EADDR") ipcheck=true;;
-#    *) ipcheck=false;;
-#  esac
-#
-#  if ! $ipcheck ; then
-#    echo "Error: neither ngcpip1 nor ngcpip2 nor ngcpeaddr match IP address of running system." >&2
-#    echo "Deploying glusterfs through ngcp-installer will not work, exiting therefore. ">&2
-#    echo "Tip: run netcardconfig to configure your network." >&2
-#    exit 1
-#  fi
-#fi
 
 echo "Deployment Settings:
 
@@ -913,8 +899,8 @@ iface lo inet loopback
 
 auto $EIFACE
 iface $EIFACE inet static
-        address $(ifdata -pa eth0)
-        netmask $(ifdata -pn eth0)
+        address $(ifdata -pa $EXTERNAL_DEV)
+        netmask $(ifdata -pn $EXTERNAL_DEV)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
         dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
         bond-slaves eth0 eth1
@@ -950,8 +936,8 @@ iface lo inet loopback
 
 auto $EIFACE
 iface $EIFACE inet static
-        address $(ifdata -pa eth0)
-        netmask $(ifdata -pn eth0)
+        address $(ifdata -pa $EXTERNAL_DEV)
+        netmask $(ifdata -pn $EXTERNAL_DEV)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
         dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
@@ -983,8 +969,8 @@ iface lo inet loopback
 
 auto $EIFACE
 iface $EIFACE inet static
-        address $(ifdata -pa eth0)
-        netmask $(ifdata -pn eth0)
+        address $(ifdata -pa $EXTERNAL_DEV)
+        netmask $(ifdata -pn $EXTERNAL_DEV)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
         dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
