@@ -734,8 +734,19 @@ ff02::2         ip6-allrouters
 EOF
 
 if "$PRO_EDITION" ; then
-  echo $CROLE >> $TARGET/etc/ngcp_ha_role
-  echo $CMASTER >> $TARGET/etc/ngcp_ha_master
+  if [ -n "$CROLE" ] ; then
+    echo "Writing $CROLE to /etc/ngcp_ha_role"
+    echo $CROLE > $TARGET/etc/ngcp_ha_role
+  else
+    echo "No role definition set, not creating /etc/ngcp_ha_role"
+  fi
+
+  if [ -n "$CMASTER" ] ; then
+    echo "Writing $CMASTER to /etc/ngcp_ha_master"
+    echo $CMASTER > $TARGET/etc/ngcp_ha_master
+  else
+    echo "No mgmgt master set, not creating /etc/ngcp_ha_master"
+  fi
 fi
 
 if "$PRO_EDITION" && [[ $(imvirt) != "Physical" ]] ; then
