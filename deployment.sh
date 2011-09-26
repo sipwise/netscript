@@ -22,6 +22,11 @@ export LC_ALL=C
 export LANG=C
 
 # defaults
+DEFAULT_INSTALL_DEV=eth0
+DEFAULT_IP1=192.168.255.251
+DEFAULT_IP2=192.168.255.252
+DEFAULT_INTERNAL_NETMASK=255.255.255.248
+DEFAULT_MCASTADDR=226.94.1.1
 TARGET=/mnt
 PRO_EDITION=false
 CE_EDITION=false
@@ -58,6 +63,22 @@ getBootParam() {
   result="${result%%[   ]*}"
   echo "$result"
   return 0
+}
+
+# load ":"-separated nfs ip into array BP[client-ip], BP[server-ip], ...
+# ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
+# $1: Array name (needs "declare -A BP" before call), $2: ip=... string
+loadNfsIpArray() {
+  [ -n "$1" ] && [ -n "$2" ] || return 0
+  local IFS=":"
+  local ind=(client-ip server-ip gw-ip netmask hostname device autoconf)
+  local i
+  for i in $2 ;
+  do
+    #  eval echo ${ind[$n]} - $i
+    eval $1[${ind[n++]}]=$i
+  done
+  [ "$n" == "7" ] && return 0 || return 1  
 }
 
 logo() {
@@ -147,25 +168,6 @@ fi
 
 if checkBootParam ngcphostname ; then
   TARGET_HOSTNAME="$(getBootParam ngcphostname)" || true
-else
-  if "$PRO_EDITION" ; then
-    TARGET_HOSTNAME="$ROLE"
-  fi
-
-  if "$CE_EDITION" ; then
-    TARGET_HOSTNAME="spce"
-  fi
-
-  # if we don't install ngcp ce/pro but
-  # $HOSTNAME is set via ip=.... then
-  # take it, otherwise fall back to safe default
-  if [ -z "$TARGET_HOSTNAME" ] ; then
-    if [ -n "$HOSTNAME" ] ; then
-      TARGET_HOSTNAME="$HOSTNAME"
-    else
-      TARGET_HOSTNAME="debian"
-    fi
-  fi
 fi
 
 if checkBootParam ngcpip1 ; then
@@ -345,20 +347,78 @@ if [ -z "$SP_VERSION" ] && [ -n "$INSTALLER_VERSION" ] ; then
   exit 1
 fi
 
-# hopefully set via bootoption/cmdline,
-# otherwise fall back to hopefully-safe-defaults
-if "$PRO_EDITION" ; then
-  [ -n "$IP1" ] || IP1=192.168.255.251
-  [ -n "$IP2" ] || IP2=192.168.255.252
-  [ -n "$INTERNAL_NETMASK" ] || INTERNAL_NETMASK=255.255.255.248
-  [ -n "$EADDR" ] || EADDR=192.168.255.253
-  [ -n "$EIFACE" ] || EIFACE=eth0
-  [ -n "$MCASTADDR" ] || MCASTADDR=226.94.1.1
-else
-  [ -n "$EIFACE" ] || EIFACE='eth0'
+
+# when using ip=....:$HOSTNAME:eth0:off file /etc/hosts doesn't contain the
+# hostname by default, avoid warning/error messages in the host system
+# and use it for IP address check in pro edition
+if [ -z "$TARGET_HOSTNAME" ] ; then
+  if "$PRO_EDITION" ; then
+    TARGET_HOSTNAME="$ROLE"
+  fi
+
+  if "$CE_EDITION" ; then
+    TARGET_HOSTNAME="spce"
+  fi
+
+  # if we don't install ngcp ce/pro but
+  # $HOSTNAME is set via ip=.... then
+  # take it, otherwise fall back to safe default
+  if [ -z "$TARGET_HOSTNAME" ] ; then
+    if [ -n "$HOSTNAME" ] ; then
+      TARGET_HOSTNAME="$HOSTNAME"
+    else
+      TARGET_HOSTNAME="debian"
+    fi
+  fi
 fi
 
-# needed inside ngcp-installer
+# get install device from "ip=<client-ip:<srv-ip>:..." boot arg
+if checkBootParam ip ; then
+  declare -A IP_ARR
+  if loadNfsIpArray IP_ARR $(getBootParam ip) ; then
+    INSTALL_DEV=${IP_ARR[device]}
+  fi
+fi
+
+# set reasonable install device from other source
+if [ -z "$INSTALL_DEV" ] ; then
+  if [ -n "$EIFACE" ] ; then
+    INSTALL_DEV=$EIFACE
+  else
+    INSTALL_DEV=$DEFAULT_INSTALL_DEV    
+  fi
+fi
+INSTALL_IP="$(ifdata -pa $INSTALL_DEV)"
+
+# final external device and IP are same as installation, if not set in profile
+[ -n "$EXTERNAL_DEV" ] || EXTERNAL_DEV=$INSTALL_DEV
+[ -n "$EXTERNAL_IP" ] || EXTERNAL_IP=$INSTALL_IP
+
+# hopefully set via bootoption/cmdline,
+# otherwise fall back to hopefully-safe-defaults
+# make sure the internal device (configured later) is not statically assigned,
+# since when booting with ip=....eth1:off then the internal device needs to be eth0
+if "$PRO_EDITION" ; then
+  if [ -z "$INTERNAL_DEV" ] ; then
+    INTERNAL_DEV='eth1'
+    if [[ "$EXTERNAL_DEV" = "eth1" ]] ; then
+      INTERNAL_DEV='eth0'
+    fi
+  fi
+  [ -n "$IP1" ] || IP1=$DEFAULT_IP1
+  [ -n "$IP2" ] || IP2=$DEFAULT_IP2
+  case "$ROLE" in
+    sp1) INTERNAL_IP=$IP1 ;;
+    sp2) INTERNAL_IP=$IP2 ;;
+  esac
+  [ -n "$INTERNAL_NETMASK" ] || INTERNAL_NETMASK=$DEFAULT_INTERNAL_NETMASK
+  [ -n "$MCASTADDR" ] || MCASTADDR=$DEFAULT_MCASTADDR
+fi
+
+[ -n "$EIFACE" ] || EIFACE=$INSTALL_DEV
+[ -n "$EADDR" ] || EADDR=$INSTALL_IP
+
+# needed as environment vars for ngcp-installer
 if "$PRO_EDITION" ; then
   export ROLE
   export IP1
@@ -372,51 +432,39 @@ else
   export DHCP
 fi
 
-# when using ip=....:$HOSTNAME:eth0:off file /etc/hosts doesn't contain the
-# hostname by default, avoid warning/error messages in the host system
-# and use it for IP address check in pro edition
-# make sure the internal device (configured later) is not statically assigned,
-# since when booting with ip=....eth1:off then the internal device needs to be eth0
-if checkBootParam ip ; then
-  tmpdev=$(getBootParam ip)
-  case $tmpdev in *eth*)
-    EXTERNAL_DEV=$(echo $tmpdev | sed -e 's/.*:\(eth.\):.*/\1/')
-    if [[ "$EXTERNAL_DEV" = "eth1" ]] ; then
-      INTERNAL_DEV="eth0"
-    fi
-    ;;
-  esac
-fi
-
-[ -n "$INTERNAL_DEV" ] || INTERNAL_DEV="eth1"
-[ -n "$EXTERNAL_DEV" ] || EXTERNAL_DEV='eth0'
-IP="$(ifdata -pa $EXTERNAL_DEV)"
-
-case "$ROLE" in
-  sp1) INTERNAL_IP=$IP1 ;;
-  sp2) INTERNAL_IP=$IP2 ;;
-esac
+### echo settings
+[ -n "$SP_VERSION" ] && SP_VERSION_STR=$SP_VERSION \
+    || SP_VERSION_STR="<latest>"
+[ -n "$INSTALLER_VERSION" ] && INSTALLER_VERSION_STR=$INSTALLER_VERSION \
+    || INSTALLER_VERSION_STR="<latest>"
 
 echo "Deployment Settings:
 
   Install ngcp:      $NGCP_INSTALLER
   Installer - pro:   $PRO_EDITION
   Installer - ce:    $CE_EDITION
-  Version:           $SP_VERSION
-  Installer vers.:   $INSTALLER_VERSION
-  Hostname:          $TARGET_HOSTNAME
+  Version:           $SP_VERSION_STR
+  Installer vers.:   $INSTALLER_VERSION_STR
+  Install Hostname:  $HOSTNAME
+  Install NW iface:  $INSTALL_DEV
+  Install IP:        $INSTALL_IP
+
+  Target Hostname:   $TARGET_HOSTNAME
   Host Role:         $ROLE
   Host Role Carrier: $CROLE
-  Master Server:     $CMASTER
   Profile:           $PROFILE
+  Master Server:     $CMASTER
 
-  1st host IP:       $IP1
-  2nd host IP:       $IP2
-  IP1/IP2 netmask:   $INTERNAL_NETMASK
-  Ext host IP:       $EADDR
+  External NW iface: $EXTERNAL_DEV
+  Ext host IP:       $EXTERNAL_IP
+  Ext cluster iface: $EIFACE
+  Ext cluster IP:    $EADDR
   Multicast addr:    $MCASTADDR
-  Network iface:     $EIFACE
   Use DHCP in host:  $DHCP
+  Internal NW iface: $INTERNAL_DEV
+  Int sp1 host IP:   $IP1
+  Int sp2 host IP:   $IP2
+  Int netmask:       $INTERNAL_NETMASK
 
   $CHASSIS
 "
@@ -435,6 +483,8 @@ else
 fi
 ## }}}
 
+##### all parameters set #######################################################
+
 # measure time of installation procedure - everyone loves stats!
 start_seconds=$(cut -d . -f 1 /proc/uptime)
 
@@ -446,13 +496,13 @@ if "$LOGO" ; then
 fi
 
 if "$PRO_EDITION" ; then
-  # internal network on eth1
-  if ifconfig "$INTERNAL_DEV" &>/dev/null ; then
-    ifconfig "$INTERNAL_DEV" $INTERNAL_IP netmask $INTERNAL_NETMASK
-  else
-    echo "Error: no eth1 NIC found, can not deploy internal network. Exiting." >&2
-    exit 1
-  fi
+   # internal network (default on eth1)
+   if ifconfig "$INTERNAL_DEV" &>/dev/null ; then
+     ifconfig "$INTERNAL_DEV" $INTERNAL_IP netmask $INTERNAL_NETMASK
+   else
+     echo "Error: no $INTERNAL_DEV NIC found, can not deploy internal network. Exiting." >&2
+     exit 1
+   fi
 
   # ipmi on IBM hardware
   if ifconfig usb0 &>/dev/null ; then
@@ -524,7 +574,7 @@ ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 
 127.0.0.1 $HOSTNAME
-$IP $HOSTNAME
+$INSTALL_IP $HOSTNAME
 EOF
 fi
 
@@ -906,8 +956,8 @@ auto lo
 iface lo inet loopback
 
 # The primary network interface
-allow-hotplug eth0
-iface eth0 inet dhcp
+allow-hotplug $EXTERNAL_DEV
+iface $EXTERNAL_DEV inet dhcp
 EOF
 else
   # assume host system has a valid configuration
@@ -919,19 +969,19 @@ else
 auto lo
 iface lo inet loopback
 
-auto $EIFACE
-iface $EIFACE inet static
+auto $EXTERNAL_DEV
+iface $EXTERNAL_DEV inet static
         address $(ifdata -pa $EXTERNAL_DEV)
         netmask $(ifdata -pn $EXTERNAL_DEV)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
         dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
-        bond-slaves eth0 eth1
+        bond-slaves $EXTERNAL_DEV $INTERNAL_DEV
         bond_mode 802.3ad
         bond_miimon 100
         bond_lacp_rate 1
 
-auto eth1
-iface eth1 inet static
+auto $INTERNAL_DEV
+iface $INTERNAL_DEV inet static
         address $INTERNAL_IP
         netmask $INTERNAL_NETMASK
 	dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
@@ -956,15 +1006,15 @@ EOF
 auto lo
 iface lo inet loopback
 
-auto $EIFACE
-iface $EIFACE inet static
+auto $EXTERNAL_DEV
+iface $EXTERNAL_DEV inet static
         address $(ifdata -pa $EXTERNAL_DEV)
         netmask $(ifdata -pn $EXTERNAL_DEV)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
         dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
-auto eth1
-iface eth1 inet static
+auto $INTERNAL_DEV
+iface $INTERNAL_DEV inet static
         address $INTERNAL_IP
         netmask $INTERNAL_NETMASK
 	dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
@@ -989,8 +1039,8 @@ EOF
 auto lo
 iface lo inet loopback
 
-auto $EIFACE
-iface $EIFACE inet static
+auto $EXTERNAL_DEV
+iface $EXTERNAL_DEV inet static
         address $(ifdata -pa $EXTERNAL_DEV)
         netmask $(ifdata -pn $EXTERNAL_DEV)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
@@ -1014,7 +1064,7 @@ fi # if $DHCP
 # finalise hostname configuration
 cat > $TARGET/etc/hosts << EOF
 127.0.0.1 localhost
-127.0.0.1 ${TARGET_HOSTNAME}.sipwise.com ${TARGET_HOSTNAME}
+127.0.0.1 ${TARGET_HOSTNAME}${TARGET_DOMAIN} ${TARGET_HOSTNAME}
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     ip6-localhost ip6-loopback
