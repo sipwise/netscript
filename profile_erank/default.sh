@@ -17,10 +17,8 @@ if "$PRO_EDITION" ; then
   EXTERNAL_DEV=eth0                    # external device (==EIFACE, or trouble!)
   TARGET_DOMAIN=.mgm.sipwise.com
   case "$ROLE" in
-    sp1) EXTERNAL_IP=77.244.249.112 ;  # external IP address of sp1
-         TARGET_HOSTNAME=mysp1 ;; 
-    sp2) EXTERNAL_IP=77.244.249.113 ;  # external IP address of sp2
-         TARGET_HOSTNAME=mysp2 ;; 
+    sp1) EXTERNAL_IP=77.244.249.112 ;; # external IP address of sp1
+    sp2) EXTERNAL_IP=77.244.249.113 ;; # external IP address of sp2
   esac
   IP1=192.168.255.249                  # internal IP addresses of sp1
   IP2=192.168.255.250                  # internal IP addresses of sp2
