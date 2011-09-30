@@ -615,6 +615,12 @@ pciutils
 usbutils
 ucf
 
+# required e.g. for "Broadcom NetXtreme II BCM5709S Gigabit Ethernet"
+# lacking the firmware will result in non-working network on
+# too many physical server systems, so just install it by default
+firmware-bnx2
+firmware-bnx2x
+
 # required for dkms
 linux-headers-2.6-amd64
 
@@ -630,10 +636,6 @@ EOF
 
 if "$PRO_EDITION" ; then
   cat >> /etc/debootstrap/packages << EOF
-# required for "Broadcom NetXtreme II BCM5709S Gigabit Ethernet"
-firmware-bnx2
-firmware-bnx2x
-
 # support 32bit binaries, e.g. for firmware upgrades
 ia32-libs
 
