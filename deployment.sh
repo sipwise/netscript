@@ -961,6 +961,19 @@ iface lo inet loopback
 allow-hotplug $EXTERNAL_DEV
 iface $EXTERNAL_DEV inet dhcp
 EOF
+  # make sure internal network is available even with external
+  # device using DHCP
+  if "$PRO_EDITION" ; then
+  cat >> $TARGET/etc/network/interfaces << EOF
+
+auto $INTERNAL_DEV
+iface $INTERNAL_DEV inet static
+        address $INTERNAL_IP
+        netmask $INTERNAL_NETMASK
+        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
+
+EOF
+  fi
 else
   # assume host system has a valid configuration
   if "$PRO_EDITION" && "$BONDING" ; then
@@ -986,7 +999,7 @@ auto $INTERNAL_DEV
 iface $INTERNAL_DEV inet static
         address $INTERNAL_IP
         netmask $INTERNAL_NETMASK
-	dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
+        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
 # Example:
 # allow-hotplug eth0
@@ -1019,7 +1032,7 @@ auto $INTERNAL_DEV
 iface $INTERNAL_DEV inet static
         address $INTERNAL_IP
         netmask $INTERNAL_NETMASK
-	dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
+        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
 # Example:
 # allow-hotplug eth0
@@ -1089,7 +1102,7 @@ fi
 # make sure we don't leave any running processes
 for i in asterisk collectd collectdmon exim4 \
          glusterfs glusterfsd haveged redis-server \
-	 snmpd ; do
+         snmpd ; do
   killall -9 $i >/dev/null 2>&1 || true
 done
 
