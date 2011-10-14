@@ -1079,7 +1079,6 @@ fi # if $DHCP
 # finalise hostname configuration
 cat > $TARGET/etc/hosts << EOF
 127.0.0.1 localhost
-127.0.0.1 ${TARGET_HOSTNAME}${TARGET_DOMAIN} ${TARGET_HOSTNAME}
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     ip6-localhost ip6-loopback
