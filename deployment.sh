@@ -970,7 +970,6 @@ auto $INTERNAL_DEV
 iface $INTERNAL_DEV inet static
         address $INTERNAL_IP
         netmask $INTERNAL_NETMASK
-        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
 EOF
   fi
@@ -999,7 +998,6 @@ auto $INTERNAL_DEV
 iface $INTERNAL_DEV inet static
         address $INTERNAL_IP
         netmask $INTERNAL_NETMASK
-        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
 # Example:
 # allow-hotplug eth0
@@ -1032,7 +1030,6 @@ auto $INTERNAL_DEV
 iface $INTERNAL_DEV inet static
         address $INTERNAL_IP
         netmask $INTERNAL_NETMASK
-        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
 # Example:
 # allow-hotplug eth0
