@@ -38,6 +38,7 @@ LOGO=true
 BONDING=false
 USE_LOCAL_MIRROR=true
 LINUX_HA3=false
+TRUNK_VERSION=false
 export DISK=sda # will be configured as /dev/sda
 
 ### helper functions {{{
@@ -117,6 +118,10 @@ fi
 
 if checkBootParam ngcpbonding ; then
   BONDING=true
+fi
+
+if checkBootParam ngcptrunk ; then
+  TRUNK_VERSION=true
 fi
 
 if checkBootParam nolocalmirror ; then
@@ -844,7 +849,7 @@ if "$NGCP_INSTALLER" ; then
 PKG=$INSTALLER
 wget http://deb.sipwise.com/sppro/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
-ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+TRUNK_VERSION=\$TRUNK_VERSION ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
@@ -858,7 +863,7 @@ EOT
 PKG=$INSTALLER
 wget http://deb.sipwise.com/sppro/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
-ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+TRUNK_VERSION=\$TRUNK_VERSION ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer (HA v3):" >&2
@@ -872,7 +877,7 @@ EOT
 PKG=$INSTALLER
 wget http://deb.sipwise.com/spce/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
-echo y | ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+echo y | TRUNK_VERSION=\$TRUNK_VERSION ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[1]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
