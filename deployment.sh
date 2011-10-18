@@ -123,6 +123,7 @@ fi
 if checkBootParam ngcptrunk ; then
   TRUNK_VERSION=true
 fi
+export TRUNK_VERSION # make sure it's available within grml-chroot subshell
 
 if checkBootParam nolocalmirror ; then
   USE_LOCAL_MIRROR=false
@@ -849,7 +850,7 @@ if "$NGCP_INSTALLER" ; then
 PKG=$INSTALLER
 wget http://deb.sipwise.com/sppro/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
-TRUNK_VERSION=\$TRUNK_VERSION ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+TRUNK_VERSION=$TRUNK_VERSION ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
@@ -863,7 +864,7 @@ EOT
 PKG=$INSTALLER
 wget http://deb.sipwise.com/sppro/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
-TRUNK_VERSION=\$TRUNK_VERSION ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+TRUNK_VERSION=$TRUNK_VERSION ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer (HA v3):" >&2
@@ -877,7 +878,7 @@ EOT
 PKG=$INSTALLER
 wget http://deb.sipwise.com/spce/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
-echo y | TRUNK_VERSION=\$TRUNK_VERSION ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+echo y | TRUNK_VERSION=$TRUNK_VERSION ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[1]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
