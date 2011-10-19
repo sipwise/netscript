@@ -39,6 +39,7 @@ BONDING=false
 USE_LOCAL_MIRROR=true
 LINUX_HA3=false
 TRUNK_VERSION=false
+DEBIAN_RELEASE=squeeze
 export DISK=sda # will be configured as /dev/sda
 
 ### helper functions {{{
@@ -230,7 +231,7 @@ if [ -n "$NETSCRIPT" ] ; then
 fi
 
 usage() {
-  echo "$0 - automatically deploy Debian squeeze and (optionally) ngcp ce/pro.
+  echo "$0 - automatically deploy Debian ${DEBIAN_RELEASE} and (optionally) ngcp ce/pro.
 
 Control installation parameters:
 
@@ -343,17 +344,6 @@ if [ -n "$PROFILE" ] && [ -n "$NETSCRIPT_SERVER" ] ; then
   fi
 fi
 
-# check, if both SPPRO/CE version and ngcp-installer version are present
-if [ -n "$SP_VERSION" ] && [ -z "$INSTALLER_VERSION" ] ; then
-  echo "Error: SP/CE version, but no ngcp-installer version specified" >&2
-  exit 1
-fi
-if [ -z "$SP_VERSION" ] && [ -n "$INSTALLER_VERSION" ] ; then
-  echo "Error: ngcp-installer version, but no SP/CE version specified" >&2
-  exit 1
-fi
-
-
 # when using ip=....:$HOSTNAME:eth0:off file /etc/hosts doesn't contain the
 # hostname by default, avoid warning/error messages in the host system
 # and use it for IP address check in pro edition
@@ -436,6 +426,19 @@ if "$PRO_EDITION" ; then
 else
   export EIFACE
   export DHCP
+fi
+
+if "$PRO_EDITION" ; then
+  case "$SP_VERSION" in
+    2.2) INSTALLER_VERSION="0.4.6" ;;
+    2.3) INSTALLER_VERSION="0.5.3" ;;
+  esac
+elif "$CE_EDITION" ; then
+  case "$SP_VERSION" in
+    # we do not have a local mirror for lenny, so disable it
+    2.1) INSTALLER_VERSION="0.3.2" ; DEBIAN_RELEASE="lenny" ; USE_LOCAL_MIRROR='false' ;;
+    2.2) INSTALLER_VERSION="0.4.3";;
+  esac
 fi
 
 ### echo settings
@@ -711,8 +714,8 @@ else
 cat > \$MNTPOINT/etc/apt/sources.list << EOF
 # deployed via ngcp-deployment [net]script
 # to override partial-only local mirror
-deb http://debian.inode.at/debian squeeze main contrib non-free
-deb http://security.debian.org squeeze/updates main contrib non-free
+deb http://debian.inode.at/debian ${DEBIAN_RELEASE} main contrib non-free
+deb http://security.debian.org ${DEBIAN_RELEASE}/updates main contrib non-free
 EOF
 chroot \$MNTPOINT apt-get -y update
 chroot \$MNTPOINT apt-get -y upgrade
@@ -727,18 +730,18 @@ EOT
   EXTRA_DEBOOTSTRAP_OPTS='--pre-scripts /etc/debootstrap/pre-scripts --keep_src_list'
 fi
 
-# install Debian squeeze
+# install Debian
 echo y | grml-debootstrap \
   --grub /dev/${DISK} \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
   --debopt '--no-check-gpg' $EXTRA_DEBOOTSTRAP_OPTS \
-  -r 'squeeze' \
+  -r "$DEBIAN_RELEASE" \
   -t "/dev/${DISK}1" \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
 
 if [ ${PIPESTATUS[1]} -ne 0 ]; then
-  echo "Error during installation of Debian squeeze." >&2
+  echo "Error during installation of Debian ${DEBIAN_RELEASE}." >&2
   echo "Details: mount /dev/${DISK}1 $TARGET ; ls $TARGET/debootstrap/*.log" >&2
   exit 1
 fi
