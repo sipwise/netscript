@@ -90,12 +90,13 @@ logo() {
 +++ Grml-Sipwise Deployment +++
 
 $(cat /etc/grml_version)
+Host IP(s): $(ip-screen)
+$(lscpu | awk '/^CPU\(s\)/ {print $2}') CPU(s) | $(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)kB RAM | $CHASSIS
 
-$CHASSIS
-$(ip-screen)
-$(lscpu | awk '/^CPU\(s\)/ {print $2}') CPUs | $(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)kB RAM
-Started deployment at $(date)
---------------------------------------------------------------------------------
+Install ngcp: $NGCP_INSTALLER | Install pro: $PRO_EDITION | Install ce: $CE_EDITION
+Installing $SP_VERSION_STR platform using installer version $INSTALLER_VERSION_STR
+Install IP: $INSTALL_IP | Started deployment at $(date)
+
 EOF
 }
 ### }}}
@@ -138,11 +139,17 @@ if dmidecode| grep -q 'Rack Mount Chassis' ; then
 elif dmidecode| grep -q 'Location In Chassis'; then
  CHASSIS="Running in blade chassis $(dmidecode| awk '/Location In Chassis/ {print $4}')"
  PRO_EDITION=true
+else
+ CHASSIS="No physical chassis found"
 fi
 
 if checkBootParam ngcpinst || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 || \
   checkBootParam ngcppro || checkBootParam ngcpce ; then
   NGCP_INSTALLER=true
+fi
+
+if checkBootParam ngcpce ; then
+  CE_EDITION=true
 fi
 
 if checkBootParam ngcppro || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 ; then
@@ -486,7 +493,7 @@ echo "Deployment Settings:
   Int netmask:       $INTERNAL_NETMASK
 
   $CHASSIS
-"
+" | tee -a /tmp/installer-settings.txt
 
 if "$INTERACTIVE" ; then
   echo "WARNING: Execution will override any existing data!"
@@ -497,8 +504,6 @@ if "$INTERACTIVE" ; then
     exit 0
   fi
   unset a
-else
-  sleep 10
 fi
 ## }}}
 
@@ -514,9 +519,13 @@ if "$KANTAN" ; then
 fi
 
 if "$LOGO" ; then
+  reset
+  # color
   echo -ne "\ec\e[1;32m"
   logo
-  echo -ne "\e[9;0r"
+  # number of lines
+  echo -ne "\e[10;0r"
+  # reset color
   echo -ne "\e[9B\e[1;m"
 fi
 
@@ -553,7 +562,7 @@ fi
 # ./asu64 set BootOrder.BootOrder 'Hard Disk 0=USB Storage=CD/DVD Rom'
 
 # run in according environment only
-if [[ $(imvirt) == "Physical" ]] ; then
+if [[ $(imvirt 2>/dev/null) == "Physical" ]] ; then
   DISK_OK=false
 
   # TODO / FIXME hardcoded for now, needs better check to support !ServeRAID[-MR10ie] as well
@@ -583,6 +592,7 @@ else
   if ! grep -q 'QEMU HARDDISK' /sys/block/${DISK}/device/model ; then
     echo "Error: /dev/${DISK} does not look like a virtual disk." >&2
     echo "Exiting to avoid possible data damage." >&2
+    echo "Note: imvirt output is $(imvirt)" >&2
     exit 1
   fi
 fi
@@ -609,7 +619,7 @@ echo "root:grml2011" | chpasswd
 
 ## partition disk
 # physical installation
-if [[ $(imvirt) == "Physical" ]] || $PRO_EDITION ; then
+if [[ $(imvirt 2>/dev/null) == "Physical" ]] || $PRO_EDITION ; then
   # remove existing partitioning
   #  dd if=/dev/zero of=/dev/${DISK} bs=512 count=1
   #  partprobe /dev/${DISK} ; sync
