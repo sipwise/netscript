@@ -40,6 +40,8 @@ USE_LOCAL_MIRROR=true
 LINUX_HA3=false
 TRUNK_VERSION=false
 DEBIAN_RELEASE=squeeze
+KANTAN=false
+HALT=false
 export DISK=sda # will be configured as /dev/sda
 
 ### helper functions {{{
@@ -219,6 +221,13 @@ if checkBootParam ngcpprofile && [ -n "$NETSCRIPT_SERVER" ] ; then
   fi
 fi
 
+if checkBootParam kantan ; then
+  KANTAN=true
+fi
+
+if checkBootParam ngcphalt ; then
+  HALT=true
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -299,6 +308,7 @@ for param in $* ; do
     *ngcphav3*) LINUX_HA3=true; PRO_EDITION=true;;
     *ngcpnobonding*) BONDING=false;;
     *ngcpbonding*) BONDING=true;;
+    *ngcphalt*) HALT=true;;
   esac
   shift
 done
@@ -496,6 +506,12 @@ fi
 
 # measure time of installation procedure - everyone loves stats!
 start_seconds=$(cut -d . -f 1 /proc/uptime)
+
+if "$KANTAN" ; then
+  if [[ "$SHLVL" == "2" ]] || [ -n "${NETSCRIPT:-}" ] ; then
+    echo "starting installation process at $(date)" | telnet 10.0.2.2 8888 || true
+  fi
+fi
 
 if "$LOGO" ; then
   echo -ne "\ec\e[1;32m"
@@ -1142,6 +1158,22 @@ fi
 
 [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
 echo "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
+
+# do not prompt when running inside kantan
+if "$KANTAN" ; then
+  if [[ "$SHLVL" == "2" ]] || [ -n "${NETSCRIPT:-}" ] ; then
+    echo "finished deployment process at $(date) [running ${SECONDS} seconds]" | telnet 10.0.2.2 8888 || true
+  fi
+  # if booting via ngcphalt then just system off...
+  if "$HALT" ; then
+    echo "triggering halt as requsted" | telnet 10.0.2.2 8888 || true
+    for key in s u o ; do
+      echo $key > /proc/sysrq-trigger
+      sleep 2
+    done
+  fi
+  exit 0
+fi
 
 echo "Do you want to [r]eboot or [h]alt the system now? (Press any other key to cancel.)"
 unset a
