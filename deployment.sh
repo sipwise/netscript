@@ -1172,11 +1172,12 @@ echo "Successfully finished deployment process [$(date) - running ${SECONDS} sec
 # do not prompt when running inside kantan
 if "$KANTAN" ; then
   if [[ "$SHLVL" == "2" ]] || [ -n "${NETSCRIPT:-}" ] ; then
-    echo "finished deployment process at $(date) [running ${SECONDS} seconds]" | telnet 10.0.2.2 8888 || true
+    echo "finished deployment process at $(date)" | telnet 10.0.2.2 8888 || true
+    echo "it took ${SECONDS} seconds" | telnet 10.0.2.2 8888 || true
   fi
   # if booting via ngcphalt then just system off...
   if "$HALT" ; then
-    echo "triggering halt as requsted" | telnet 10.0.2.2 8888 || true
+    echo "triggering halt as requested" | telnet 10.0.2.2 8888 || true
     for key in s u o ; do
       echo $key > /proc/sysrq-trigger
       sleep 2
