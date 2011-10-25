@@ -615,7 +615,7 @@ fi
 
 # remote login ftw
 /etc/init.d/ssh start >/dev/null &
-echo "root:grml2011" | chpasswd
+echo "root:grml" | chpasswd
 
 ## partition disk
 # physical installation
