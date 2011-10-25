@@ -615,7 +615,7 @@ fi
 
 # remote login ftw
 /etc/init.d/ssh start >/dev/null &
-echo "root:grml" | chpasswd
+echo "root:sipwise" | chpasswd
 
 ## partition disk
 # physical installation
