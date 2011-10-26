@@ -680,41 +680,20 @@ EOF
 fi
 
 # provide Debian mirror
-if [ -d /srv/mirror/debs ] && $USE_LOCAL_MIRROR ; then
-  echo "Debian directory /srv/mirror/debs found."
-  cd /srv/mirror/
-  if ! [ -d /srv/mirror/debian ] ; then
-    echo "Setting up configuration for reprepro."
-    mkdir -p /srv/mirror/debian/conf/
-    cat > /srv/mirror/debian/conf/distributions << EOF
-Origin: Debian
-Label: Debian
-Suite: stable
-Version: 6.0
-Codename: squeeze
-Architectures: amd64 source
-Components: main contrib non-free
-Description: Debian Mirror
-Log: logfile
-EOF
-
-    echo "Building local Debian mirror based on packages found in /srv/mirror/debs."
-    for f in /srv/mirror/debs/*deb ; do
-      reprepro --silent -b /srv/mirror/debian includedeb squeeze "$f"
-    done
-  fi
+if [ -d /srv/mirror/debian ] && $USE_LOCAL_MIRROR ; then
+  echo "Directory /srv/mirror/debian found, trying to use local mirror."
 
   # run local webserver
   if ps aux | grep -q '[p]ython -m SimpleHTTPServer' ; then
     kill $(ps aux | grep '[p]ython -m SimpleHTTPServer' | awk '{print $2}')
   fi
-  python -m SimpleHTTPServer &>/dev/null &
+  { cd /srv/mirror/ ; python -m SimpleHTTPServer &>/dev/null & }
 
   # make sure the mirror is ready before accessing it (fsck you, CDs!),
   # so retry it up to 30 seconds
   mirror_tries=1
   while [ "$mirror_tries" -lt 11 -a "$LOCAL_MIRROR" != "true" ] ; do
-    if wget -O /dev/null http://localhost:8000/debian/dists/squeeze/main/binary-amd64/Packages &>/dev/null ; then
+    if wget -O /dev/null http://localhost:8000/debian/dists/${DEBIAN_RELEASE}/main/binary-amd64/Packages &>/dev/null ; then
       echo "Found functional local mirror, using for first stage installation."
       MIRROR="http://localhost:8000/debian/"
       LOCAL_MIRROR=true
@@ -724,7 +703,6 @@ EOF
       sleep 3
     fi
   done
-
 fi
 
 if [ -z "$MIRROR" ] ; then
