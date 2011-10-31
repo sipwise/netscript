@@ -125,11 +125,6 @@ if checkBootParam ngcptrunk ; then
 fi
 export TRUNK_VERSION # make sure it's available within grml-chroot subshell
 
-if checkBootParam ngcprelease ; then
-  SKIP_SOURCES_LIST=true
-fi
-export SKIP_SOURCES_LIST # make sure it's available within grml-chroot subshell
-
 if checkBootParam nolocalmirror ; then
   USE_LOCAL_MIRROR=false
 fi
@@ -166,9 +161,10 @@ if "$PRO_EDITION" ; then
 fi
 
 # test unfinished releases against
-# "http://deb.sipwise.com/autobuild/ release-$NGCP_RELEASE"
-if checkBootParam ngcprelease ; then
-  NGCP_RELEASE=$(getBootParam ngcprelease)
+# "http://deb.sipwise.com/autobuild/ release-$AUTOBUILD_RELEASE"
+if checkBootParam ngcpautobuildrelease ; then
+  AUTOBUILD_RELEASE=$(getBootParam ngcpautobuildrelease)
+  export SKIP_SOURCES_LIST=true # make sure it's available within grml-chroot subshell
 fi
 
 # existing ngcp releases (like 2.2) with according repository and installer
@@ -843,25 +839,50 @@ if "$NGCP_INSTALLER" ; then
     fi
   fi
 
-  # support testing a new release without providing the according
-  # ngcp-installer package ahead...
-  if $SKIP_SOURCES_LIST && [ -n "$NGCP_RELEASE" ] ; then
+  if $PRO_EDITION ; then
+    INSTALLER_PATH="http://deb.sipwise.com/sppro/$INSTALLER_PATH"
+  else
+    INSTALLER_PATH="http://deb.sipwise.com/spce/$INSTALLER_PATH"
+  fi
+
+  # ngcp-installer from trunk
+  if [ "$INSTALLER_VERSION" = "trunk" ] || $TRUNK_VERSION ; then
+    INSTALLER_PATH='http://deb.sipwise.com/autobuild/debian/pool/main/n/ngcp-installer/'
+
+    wget --directory-prefix=debs --no-directories -r --no-parent "$INSTALLER_PATH"
+    VERSION=$(dpkg-scanpackages debs /dev/null 2>/dev/null | awk '/Version/ {print $2}' | sort -ur)
+
+    [ -n "$VERSION" ] || { echo "Error: installer version could not be detected." >&2 ; exit 1 ; }
+
+    if $PRO_EDITION ; then
+      INSTALLER="ngcp-installer-pro_${VERSION}_all.deb"
+    else
+      INSTALLER="ngcp-installer-ce_${VERSION}_all.deb"
+    fi
+  fi
+
+  # support testing rc releases without providing an according installer package ahead
+  if [ -n "$AUTOBUILD_RELEASE" ] ; then
+    echo "Running installer with sources.list for $DEBIAN_RELEASE + autobuild release-$AUTOBUILD_RELEASE"
+
     cat > $TARGET/etc/apt/sources.list << EOF
-#Debian repositories
-deb http://ftp.de.debian.org/debian/ squeeze main
-deb http://security.debian.org/ squeeze/updates main
-deb http://ftp.debian.org/debian squeeze-updates main
+## custom sources.list, deployed via deployment.sh
 
-#Sipwise repositories
-deb http://deb.sipwise.com/autobuild/ release-${NGCP_RELEASE} main
+# Debian repositories
+deb http://ftp.de.debian.org/debian/ ${DEBIAN_RELEASE} main
+deb http://security.debian.org/ ${DEBIAN_RELEASE}/updates main
+deb http://ftp.debian.org/debian ${DEBIAN_RELEASE}-updates main
 
-#Sipwise squeeze backports
-deb http://deb.sipwise.com/squeeze-backports/ squeeze-backports main
+# Sipwise repositories
+deb http://deb.sipwise.com/autobuild/ release-${AUTOBUILD_RELEASE} main
 
-#Percona's high performance mysql builds
-deb http://repo.percona.com/apt squeeze main
+# Sipwise ${DEBIAN_RELEASE} backports
+deb http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
 
-#Sipdoc.net repository for misc voip tools
+# Percona's high performance mysql builds
+deb http://repo.percona.com/apt ${DEBIAN_RELEASE} main
+
+# Sipdoc.net repository for misc voip tools
 deb http://deb.sipdoc.net debian main
 EOF
   fi
@@ -869,9 +890,8 @@ EOF
   # install and execute ngcp-installer
   if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
     cat << EOT | grml-chroot $TARGET /bin/bash
-PKG=$INSTALLER
-wget http://deb.sipwise.com/sppro/${INSTALLER_PATH}\$PKG
-dpkg -i \$PKG
+wget ${INSTALLER_PATH}/${INSTALLER}
+dpkg -i $INSTALLER
 TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
@@ -883,9 +903,8 @@ EOT
 
   elif $PRO_EDITION && $LINUX_HA3 ; then # HA v3
     cat << EOT | grml-chroot $TARGET /bin/bash
-PKG=$INSTALLER
-wget http://deb.sipwise.com/sppro/${INSTALLER_PATH}\$PKG
-dpkg -i \$PKG
+wget ${INSTALLER_PATH}/${INSTALLER}
+dpkg -i $INSTALLER
 TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
@@ -897,9 +916,8 @@ EOT
 
   else # spce
     cat << EOT | grml-chroot $TARGET /bin/bash
-PKG=$INSTALLER
-wget http://deb.sipwise.com/spce/${INSTALLER_PATH}\$PKG
-dpkg -i \$PKG
+wget ${INSTALLER_PATH}/${INSTALLER}
+dpkg -i $INSTALLER
 echo y | TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[1]}
 if [ \$RC -ne 0 ] ; then
