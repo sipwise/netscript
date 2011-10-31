@@ -1,10 +1,6 @@
 #!/bin/bash
 # Purpose: automatically install Debian squeeze + ngcp-installer
 
-# Ideas:
-# * rename kantan host into spce (bootoption in ISO)
-# * support configuration via wget-able config file
-
 # Never ever execute the script outside of a
 # running Grml live system because partitioning
 # disks might destroy data. Seriously.
@@ -82,7 +78,7 @@ loadNfsIpArray() {
     #  eval echo ${ind[$n]} - $i
     eval $1[${ind[n++]}]=$i
   done
-  [ "$n" == "7" ] && return 0 || return 1  
+  [ "$n" == "7" ] && return 0 || return 1
 }
 
 logo() {
@@ -411,7 +407,7 @@ if [ -z "$INSTALL_DEV" ] ; then
   if [ -n "$EIFACE" ] ; then
     INSTALL_DEV=$EIFACE
   else
-    INSTALL_DEV=$DEFAULT_INSTALL_DEV    
+    INSTALL_DEV=$DEFAULT_INSTALL_DEV
   fi
 fi
 INSTALL_IP="$(ifdata -pa $INSTALL_DEV)"
@@ -557,28 +553,11 @@ if "$PRO_EDITION" ; then
   fi
 fi
 
-# TODO
-# if checkBootParam ngcpfirmware ; then
-#  # uefi firmware upgrade
-#  if hwinfo --bios  | grep -q 'UEFI Primary Version -\[P9' ; then
-#    ./ibm_fw_uefi_p9e149a_linux_32-64.bin -s
-#  fi
-#
-#  # raid controller upgrade
-#  if hwinfo --disk | grep -q 'ServeRAID-MR10ie' ; then
-#   ./ibm_fw_sraidmr_10ie-11.0.1-0040.01_linux_32-64.bin -s
-#  fi
-# fi
-#
-# wget http://delivery04.dhe.ibm.com/sar/CMA/XSA/02gcs/1/ibm_utl_asu_asut72l_linux_x86-64.tgz
-# unp ibm_utl_asu_asut72l_linux_x86-64.tgz
-# ./asu64 set BootOrder.BootOrder 'Hard Disk 0=USB Storage=CD/DVD Rom'
-
 # run in according environment only
 if [[ $(imvirt 2>/dev/null) == "Physical" ]] ; then
   DISK_OK=false
 
-  # TODO / FIXME hardcoded for now, needs better check to support !ServeRAID[-MR10ie] as well
+  # TODO - hardcoded for now, to avoid data damage
   if grep -q 'ServeRAID' /sys/block/${DISK}/device/model ; then
     DISK_OK=true
   fi
@@ -1167,18 +1146,6 @@ umount $TARGET || umount -l $TARGET # fall back if a process is still being acti
 echo "Installation finished. \o/"
 echo
 echo
-
-if "$PRO_EDITION" ; then
-  echo "Execute:
-
-  asu64 set BootOrder.BootOrder 'Hard Disk 0=USB Storage=CD/DVD Rom'
-
-to boot from hard disk by default or
-
-  asu64 set BootOrder.BootOrder 'USB Storage=Hard Disk 0=CD/DVD Rom'
-
-to boot from USB storage by default."
-fi
 
 [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
 echo "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
