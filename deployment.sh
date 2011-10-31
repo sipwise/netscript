@@ -129,6 +129,11 @@ if checkBootParam ngcptrunk ; then
 fi
 export TRUNK_VERSION # make sure it's available within grml-chroot subshell
 
+if checkBootParam ngcprelease ; then
+  SKIP_SOURCES_LIST=true
+fi
+export SKIP_SOURCES_LIST # make sure it's available within grml-chroot subshell
+
 if checkBootParam nolocalmirror ; then
   USE_LOCAL_MIRROR=false
 fi
@@ -164,10 +169,18 @@ if "$PRO_EDITION" ; then
   fi
 fi
 
+# test unfinished releases against
+# "http://deb.sipwise.com/autobuild/ release-$NGCP_RELEASE"
+if checkBootParam ngcprelease ; then
+  NGCP_RELEASE=$(getBootParam ngcprelease)
+fi
+
+# existing ngcp releases (like 2.2) with according repository and installer
 if checkBootParam ngcpvers ; then
   SP_VERSION=$(getBootParam ngcpvers)
 fi
 
+# specific ngcp-installer version
 if checkBootParam ngcpinstvers ; then
   INSTALLER_VERSION=$(getBootParam ngcpinstvers)
 fi
@@ -851,13 +864,36 @@ if "$NGCP_INSTALLER" ; then
     fi
   fi
 
+  # support testing a new release without providing the according
+  # ngcp-installer package ahead...
+  if $SKIP_SOURCES_LIST && [ -n "$NGCP_RELEASE" ] ; then
+    cat > $TARGET/etc/apt/sources.list << EOF
+#Debian repositories
+deb http://ftp.de.debian.org/debian/ squeeze main
+deb http://security.debian.org/ squeeze/updates main
+deb http://ftp.debian.org/debian squeeze-updates main
+
+#Sipwise repositories
+deb http://deb.sipwise.com/autobuild/ release-${NGCP_RELEASE} main
+
+#Sipwise squeeze backports
+deb http://deb.sipwise.com/squeeze-backports/ squeeze-backports main
+
+#Percona's high performance mysql builds
+deb http://repo.percona.com/apt squeeze main
+
+#Sipdoc.net repository for misc voip tools
+deb http://deb.sipdoc.net debian main
+EOF
+  fi
+
   # install and execute ngcp-installer
   if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
     cat << EOT | grml-chroot $TARGET /bin/bash
 PKG=$INSTALLER
 wget http://deb.sipwise.com/sppro/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
-TRUNK_VERSION=$TRUNK_VERSION ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
@@ -871,7 +907,7 @@ EOT
 PKG=$INSTALLER
 wget http://deb.sipwise.com/sppro/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
-TRUNK_VERSION=$TRUNK_VERSION ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer (HA v3):" >&2
@@ -885,7 +921,7 @@ EOT
 PKG=$INSTALLER
 wget http://deb.sipwise.com/spce/${INSTALLER_PATH}\$PKG
 dpkg -i \$PKG
-echo y | TRUNK_VERSION=$TRUNK_VERSION ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+echo y | TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[1]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
