@@ -1178,14 +1178,18 @@ if "$KANTAN" ; then
     echo "finished deployment process at $(date)" | telnet 10.0.2.2 8888 || true
     echo "it took ${SECONDS} seconds" | telnet 10.0.2.2 8888 || true
   fi
+
   # if booting via ngcphalt then just system off...
   if "$HALT" ; then
-    echo "triggering halt as requested" | telnet 10.0.2.2 8888 || true
-    for key in s u o ; do
+    echo "Triggering sync and unmounted as requested" | telnet 10.0.2.2 8888 || true
+    for key in s u ; do
       echo $key > /proc/sysrq-trigger
       sleep 2
     done
   fi
+
+  echo "Terminating Kantan deployment process now."
+  echo kantan_terminate | telnet 10.0.2.2 8888 || true
   exit 0
 fi
 
