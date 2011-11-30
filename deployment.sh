@@ -1143,6 +1143,12 @@ if "$PRO_EDITION" ; then
 $IP1 sp1
 $IP2 sp2
 EOF
+else
+  # otherwise 'hostname --fqdn' does not work and causes delays with exim4 startup
+  cat >> $TARGET/etc/hosts << EOF
+# required for FQDN, please adjust if needed
+127.0.0.1 $TARGET_HOSTNAME
+EOF
 fi
 
 # make sure we don't leave any running processes
