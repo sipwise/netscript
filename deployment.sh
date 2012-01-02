@@ -608,23 +608,10 @@ fi
 echo "root:sipwise" | chpasswd
 
 ## partition disk
-# physical installation
-if [[ $(imvirt 2>/dev/null) == "Physical" ]] || $PRO_EDITION ; then
-  # remove existing partitioning
-  #  dd if=/dev/zero of=/dev/${DISK} bs=512 count=1
-  #  partprobe /dev/${DISK} ; sync
-
-  parted -s /dev/${DISK} mktable msdos
-  # hw-raid with rootfs + swap partition
-  parted -s /dev/${DISK} 'mkpart primary ext4 2048s 95%'
-  parted -s /dev/${DISK} 'mkpart primary linux-swap 95% -1'
-
-else # virtual installation
-  # just one disk, assuming VM installation without swap partition
-  parted -s /dev/${DISK} mktable msdos
-  parted -s /dev/${DISK} 'mkpart primary ext4 2048s 100%'
-fi
-
+parted -s /dev/${DISK} mktable msdos
+# hw-raid with rootfs + swap partition
+parted -s /dev/${DISK} 'mkpart primary ext4 2048s 95%'
+parted -s /dev/${DISK} 'mkpart primary linux-swap 95% -1'
 sync
 
 # otherwise e2fsck fails with "need terminal for interactive repairs"
@@ -754,6 +741,48 @@ if [[ $(imvirt) == "Physical" ]] || $PRO_EDITION ; then
   cat >> "${TARGET}/etc/fstab" << EOF
 $SWAP_PARTITION                      none           swap       sw,pri=0  0  0
 EOF
+elif $CE_EDITION ; then
+  # install self destructing init script which enables swap partition on first
+  # boot so we have swap in CE installations but don't add the initialised
+  # swap partition to our VM images (which would increase its size)
+  cat > ${TARGET}/etc/init.d/enableswap << EOF
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          enableswap
+# Required-Start:    checkroot
+# Required-Stop:
+# Default-Start:     S
+# Default-Stop:
+# X-Interactive:     true
+# Short-Description: Enable swap partition(s) on first boot
+### END INIT INFO
+
+PATH=/sbin:/bin
+
+# hardcoded for now
+partition=/dev/sda2
+
+[ -b "\$partition" ] || exit 0
+
+if grep -q "^\${partition}.*swap" /etc/fstab ; then
+  echo "\$0 - Nothing to do as \$partition is enabled already"
+else
+  echo "\$0 - Enabling swap partition \$partition in /etc/fstab"
+  echo "# enabled on 1st boot:"         >> /etc/fstab
+  echo "\${partition} none swap sw 0 0" >> /etc/fstab
+fi
+
+echo "\$0 - Removing itself now..."
+insserv -r enableswap
+rm -f "\$0"
+
+exit 0
+# EOF
+EOF
+
+  chroot $TARGET chmod 775 /etc/init.d/enableswap
+  chroot $TARGET ln -s /etc/init.d/enableswap /etc/rcS.d/S03enableswap
+  chroot $TARGET insserv enableswap
 fi
 
 # removals: packages which debootstrap installs but d-i doesn't
