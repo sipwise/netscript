@@ -614,6 +614,10 @@ parted -s /dev/${DISK} 'mkpart primary ext4 2048s 95%'
 parted -s /dev/${DISK} 'mkpart primary linux-swap 95% -1'
 sync
 
+SWAP_PARTITION="/dev/${DISK}2"
+echo "Initialising swap partition $SWAP_PARTITION"
+mkswap "$SWAP_PARTITION"
+
 # otherwise e2fsck fails with "need terminal for interactive repairs"
 echo FSCK=no >>/etc/debootstrap/config
 
