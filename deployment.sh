@@ -452,7 +452,7 @@ fi
 
 if "$PRO_EDITION" ; then
   case "$SP_VERSION" in
-    2.2) INSTALLER_VERSION="0.4.6" ;;
+    2.2) INSTALLER_VERSION="0.4.7" ;;
     2.3) INSTALLER_VERSION="0.5.3" ;;
     2.4) INSTALLER_VERSION="0.6.2";;
   esac
@@ -460,7 +460,7 @@ elif "$CE_EDITION" ; then
   case "$SP_VERSION" in
     # we do not have a local mirror for lenny, so disable it
     2.1) INSTALLER_VERSION="0.3.2" ; DEBIAN_RELEASE="lenny" ; USE_LOCAL_MIRROR='false' ;;
-    2.2) INSTALLER_VERSION="0.4.3";;
+    2.2) INSTALLER_VERSION="0.4.7";;
     2.4) INSTALLER_VERSION="0.6.2";;
   esac
 fi
