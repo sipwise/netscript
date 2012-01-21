@@ -27,6 +27,7 @@ TARGET=/mnt
 PRO_EDITION=false
 CE_EDITION=false
 NGCP_INSTALLER=false
+PUPPET=''
 INTERACTIVE=false
 LOCAL_MIRROR=false
 DHCP=false
@@ -158,6 +159,11 @@ if "$PRO_EDITION" ; then
   if checkBootParam ngcpsp2 ; then
     ROLE=sp2
   fi
+fi
+
+if checkBootParam "puppet" ; then
+  # we expected to get the IP address of the puppet server
+  PUPPET=$(getBootParam puppet)
 fi
 
 # test unfinished releases against
@@ -660,6 +666,14 @@ acpi acpid acpi-support-base
 EOF
 fi
 
+if [ -n "$PUPPET" ] ; then
+  cat >> /etc/debootstrap/packages << EOF
+# for interal use at sipwise
+openssh-server
+puppet
+EOF
+fi
+
 # provide Debian mirror
 if [ -d /srv/mirror/debian ] && $USE_LOCAL_MIRROR ; then
   echo "Directory /srv/mirror/debian found, trying to use local mirror."
@@ -1136,6 +1150,17 @@ else
 # required for FQDN, please adjust if needed
 127.0.0.1 $TARGET_HOSTNAME
 EOF
+fi
+
+if [ -n "$PUPPET" ] ; then
+  cat >> $TARGET/etc/hosts << EOF
+# puppet server
+$PUPPET puppet.sipwise.com puppet
+EOF
+
+  chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
+  echo "server=puppet.sipwise.com" >> ${TARGET}/etc/puppet/puppet.conf
+  echo "certname=$TARGET_HOSTNAME" >> ${TARGET}/etc/puppet/puppet.conf
 fi
 
 # make sure we don't leave any running processes
