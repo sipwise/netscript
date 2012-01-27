@@ -161,9 +161,9 @@ if "$PRO_EDITION" ; then
   fi
 fi
 
-if checkBootParam "puppet" ; then
-  # we expected to get the IP address of the puppet server
-  PUPPET=$(getBootParam puppet)
+if checkBootParam "puppetenv" ; then
+  # we expected to get the environment for puppet
+  PUPPET=$(getBootParam puppetenv)
 fi
 
 # test unfinished releases against
@@ -1153,20 +1153,23 @@ EOF
 fi
 
 if [ -n "$PUPPET" ] ; then
-  cat >> $TARGET/etc/hosts << EOF
-# puppet server
-$PUPPET puppet.sipwise.com puppet
+  chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
+
+  cat >> ${TARGET}/etc/puppet/puppet.conf << EOF
+server=puppet.mgm.sipwise.com
+certname=$TARGET_HOSTNAME
+
+[agent]
+environment = $PUPPET
 EOF
 
-  chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
-  echo "server=puppet.sipwise.com" >> ${TARGET}/etc/puppet/puppet.conf
-  echo "certname=$TARGET_HOSTNAME" >> ${TARGET}/etc/puppet/puppet.conf
+  grml-chroot $TARGET puppet agent --test --waitforcert 30 --fqdn ${TARGET_HOSTNAME} || true
 fi
 
 # make sure we don't leave any running processes
 for i in asterisk collectd collectdmon exim4 \
-         glusterfs glusterfsd haveged redis-server \
-         snmpd ; do
+         glusterfs glusterfsd haveged nscd   \
+	 redis-server snmpd ; do
   killall -9 $i >/dev/null 2>&1 || true
 done
 
