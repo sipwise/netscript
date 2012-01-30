@@ -1186,7 +1186,7 @@ sync
 umount $TARGET || umount -l $TARGET # fall back if a process is still being active
 
 # make sure /etc/fstab is up2date
-blockdev --rereadpt /dev/$DISK
+blockdev --rereadpt /dev/$DISK || true
 
 # party time! who brings the whiskey?
 echo "Installation finished. \o/"
