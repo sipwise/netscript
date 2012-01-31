@@ -39,7 +39,11 @@ TRUNK_VERSION=false
 DEBIAN_RELEASE=squeeze
 KANTAN=false
 HALT=false
-export DISK=sda # will be configured as /dev/sda
+if [ -L /sys/block/vda ] ; then
+  export DISK=vda # will be configured as /dev/vda
+else
+  export DISK=sda # will be configured as /dev/sda
+fi
 
 ### helper functions {{{
 CMD_LINE=$(cat /proc/cmdline)
@@ -557,35 +561,43 @@ if "$PRO_EDITION" ; then
   fi
 fi
 
-# run in according environment only
-if [[ $(imvirt 2>/dev/null) == "Physical" ]] ; then
-  DISK_OK=false
-
-  # TODO - hardcoded for now, to avoid data damage
+# TODO - hardcoded for now, to avoid data damage
+check_for_supported_disk() {
   if grep -q 'ServeRAID' /sys/block/${DISK}/device/model ; then
-    DISK_OK=true
+    return 0
   fi
 
   # IBM System x3250 M3
   if grep -q 'Logical Volume' /sys/block/${DISK}/device/model && \
     grep -q "LSILOGIC" /sys/block/${DISK}/device/vendor ; then
-    DISK_OK=true
+    return 0
   fi
 
   if grep -q 'PERC H700' /sys/block/${DISK}/device/model && \
     grep -q "DELL" /sys/block/${DISK}/device/vendor ; then
-    DISK_OK=true
+    return 0
   fi
 
-  if ! $DISK_OK ; then
-    echo "Error: /dev/${DISK} does not look like a ServeRAID, LSILOGIC or PowerEdge disk/controller." >&2
+  # no match so far?
+  return 1
+}
+
+# run in according environment only
+if [[ $(imvirt 2>/dev/null) == "Physical" ]] ; then
+
+  if ! check_for_supported_disk ; then
+    echo "Error: /dev/${DISK} does not look like a VirtIO, ServeRAID, LSILOGIC or PowerEdge disk/controller." >&2
     echo "Exiting to avoid possible data damage." >&2
     exit 1
   fi
 
 else
   # make sure it runs only within qemu/kvm
-  if ! grep -q 'QEMU HARDDISK' /sys/block/${DISK}/device/model ; then
+  if [[ "$DISK" == "vda" ]] && readlink -f /sys/block/vda/device | grep -q 'virtio' ; then
+    echo "Looks like a virtio disk, ok."
+  elif grep -q 'QEMU HARDDISK' /sys/block/${DISK}/device/model ; then
+    echo "Looks like a QEMU harddisk, ok."
+  else
     echo "Error: /dev/${DISK} does not look like a virtual disk." >&2
     echo "Exiting to avoid possible data damage." >&2
     echo "Note: imvirt output is $(imvirt)" >&2
