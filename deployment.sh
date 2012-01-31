@@ -1167,7 +1167,7 @@ EOF
 fi
 
 # make sure we don't leave any running processes
-for i in asterisk collectd collectdmon exim4 \
+for i in asterisk atd collectd collectdmon dbus-daemon exim4 \
          glusterfs glusterfsd haveged nscd   \
 	 redis-server snmpd ; do
   killall -9 $i >/dev/null 2>&1 || true
