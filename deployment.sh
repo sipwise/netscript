@@ -1121,9 +1121,16 @@ iface $EXTERNAL_DEV inet static
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
         dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
-# Example:
-# allow-hotplug eth0
-# iface eth0 inet static
+### Further usage examples
+
+## Enable IPv6 autoconfiguration:
+# auto eth1
+# iface eth1 inet6 manual
+#  up ifconfig eth1 up
+
+## Specific manual configuration:
+# allow-hotplug eth2
+# iface eth2 inet static
 #         address 192.168.1.101
 #         netmask 255.255.255.0
 #         network 192.168.1.0
