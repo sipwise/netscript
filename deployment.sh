@@ -659,8 +659,10 @@ firmware-bnx2x
 # required for dkms
 linux-headers-2.6-amd64
 
+# support acpi (d-i installs them as well)
+acpi acpid acpi-support-base
+
 # packages d-i installs but we ignore/skip:
-#acpi acpid acpi-support-base # installed in PRO
 #discover
 #gettext-base
 #installation-report
@@ -673,9 +675,6 @@ if "$PRO_EDITION" ; then
   cat >> /etc/debootstrap/packages << EOF
 # support 32bit binaries, e.g. for firmware upgrades
 ia32-libs
-
-# support acpi
-acpi acpid acpi-support-base
 EOF
 fi
 
