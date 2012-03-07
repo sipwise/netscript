@@ -5,11 +5,15 @@
 # $Rev$
 ################################################################################
 
-# try to set version to svn revision information
+# set version to svn revision information, initially enabled via
+# svn propset svn:keywords 'Id Revision' deployment.sh
 SCRIPT_VERSION="$Rev$"
+
 # not set? then fall back to timestamp of execution
-if [ -n "$SCRIPT_VERSION" ] || [ "$SCRIPT_VERSION" = '$' ] ; then
+if [ -z "$SCRIPT_VERSION" ] || [ "$SCRIPT_VERSION" = '$' ] ; then
   SCRIPT_VERSION=$(date +%s) # seconds since 1970-01-01 00:00:00 UTC
+else # we just want the ID from something like "$Rev: 7874 $"
+  SCRIPT_VERSION=$(echo $SCRIPT_VERSION | awk '{print $2}')
 fi
 
 # Never ever execute the script outside of a
@@ -1016,6 +1020,11 @@ EOT
   if [ -r /tmp/grml-debootstrap.log ] ; then
     cp /tmp/grml-debootstrap.log "${TARGET}"/var/log/
   fi
+
+  echo "# deployment.sh running on $(date)" > "${TARGET}"/var/log/deployment.log
+  echo "SCRIPT_VERSION=${SCRIPT_VERSION}" >> "${TARGET}"/var/log/deployment.log
+  echo "CMD_LINE=\"${CMD_LINE}\"" >> "${TARGET}"/var/log/deployment.log
+
 fi
 
 # leave system in according state
