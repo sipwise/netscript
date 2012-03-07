@@ -1,7 +1,16 @@
 #!/bin/bash
-# ID: $Id$
-# REV: $Rev$
 # Purpose: automatically install Debian + sip:provider platform
+################################################################################
+# $Id$
+# $Rev$
+################################################################################
+
+# try to set version to svn revision information
+SCRIPT_VERSION="$Rev$"
+# not set? then fall back to timestamp of execution
+if [ -n "$SCRIPT_VERSION" ] || [ "$SCRIPT_VERSION" = '$' ] ; then
+  SCRIPT_VERSION=$(date +%s) # seconds since 1970-01-01 00:00:00 UTC
+fi
 
 # Never ever execute the script outside of a
 # running Grml live system because partitioning
