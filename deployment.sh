@@ -1,4 +1,6 @@
 #!/bin/bash
+# ID: $Id$
+# REV: $Rev$
 # Purpose: automatically install Debian squeeze + ngcp-installer
 
 # Never ever execute the script outside of a
