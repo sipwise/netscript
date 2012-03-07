@@ -1,7 +1,7 @@
 #!/bin/bash
 # ID: $Id$
 # REV: $Rev$
-# Purpose: automatically install Debian squeeze + ngcp-installer
+# Purpose: automatically install Debian + sip:provider platform
 
 # Never ever execute the script outside of a
 # running Grml live system because partitioning
