@@ -989,6 +989,7 @@ EOT
     apache2 \
     asterisk \
     collectd \
+    exim4 \
     kamailio \
     kamailio-lb \
     kamailio-proxy \
