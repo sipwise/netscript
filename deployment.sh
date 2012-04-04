@@ -12,7 +12,7 @@ SCRIPT_VERSION="$Rev$"
 # not set? then fall back to timestamp of execution
 if [ -z "$SCRIPT_VERSION" ] || [ "$SCRIPT_VERSION" = '$' ] ; then
   SCRIPT_VERSION=$(date +%s) # seconds since 1970-01-01 00:00:00 UTC
-else # we just want the ID from something like "$Rev: 7874 $"
+else # we just want the ID from something like "$Rev$"
   SCRIPT_VERSION=$(echo $SCRIPT_VERSION | awk '{print $2}')
 fi
 
@@ -481,6 +481,7 @@ if "$PRO_EDITION" ; then
     2.3) INSTALLER_VERSION="0.5.3" ;;
     2.4) INSTALLER_VERSION="0.6.3";;
     2.5-rc1) INSTALLER_VERSION="0.6.4";;
+    2.5) INSTALLER_VERSION="0.7.1";;
   esac
 elif "$CE_EDITION" ; then
   case "$SP_VERSION" in
@@ -488,6 +489,7 @@ elif "$CE_EDITION" ; then
     2.1) INSTALLER_VERSION="0.3.2" ; DEBIAN_RELEASE="lenny" ; USE_LOCAL_MIRROR='false' ;;
     2.2) INSTALLER_VERSION="0.4.7";;
     2.4) INSTALLER_VERSION="0.6.3";;
+    2.5) INSTALLER_VERSION="0.7.1";;
   esac
 fi
 
