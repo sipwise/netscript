@@ -615,6 +615,8 @@ else
     echo "Looks like a virtio disk, ok."
   elif grep -q 'QEMU HARDDISK' /sys/block/${DISK}/device/model ; then
     echo "Looks like a QEMU harddisk, ok."
+  elif grep -q 'VBOX HARDDISK' /sys/block/${DISK}/device/model ; then
+    echo "Looks like a VBOX harddisk, ok."
   else
     echo "Error: /dev/${DISK} does not look like a virtual disk." >&2
     echo "Exiting to avoid possible data damage." >&2
