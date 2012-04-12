@@ -481,7 +481,7 @@ if "$PRO_EDITION" ; then
     2.3) INSTALLER_VERSION="0.5.3" ;;
     2.4) INSTALLER_VERSION="0.6.3";;
     2.5-rc1) INSTALLER_VERSION="0.6.4";;
-    2.5) INSTALLER_VERSION="0.7.1";;
+    2.5) INSTALLER_VERSION="0.7.2";;
   esac
 elif "$CE_EDITION" ; then
   case "$SP_VERSION" in
@@ -489,7 +489,7 @@ elif "$CE_EDITION" ; then
     2.1) INSTALLER_VERSION="0.3.2" ; DEBIAN_RELEASE="lenny" ; USE_LOCAL_MIRROR='false' ;;
     2.2) INSTALLER_VERSION="0.4.7";;
     2.4) INSTALLER_VERSION="0.6.3";;
-    2.5) INSTALLER_VERSION="0.7.1";;
+    2.5) INSTALLER_VERSION="0.7.2";;
   esac
 fi
 
