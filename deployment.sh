@@ -1217,28 +1217,35 @@ for i in asterisk atd collectd collectdmon dbus-daemon exim4 \
   killall -9 $i >/dev/null 2>&1 || true
 done
 
-# upload database dump
-chroot $TARGET /etc/init.d/mysql restart || true
+upload_db_dump() {
+  chroot $TARGET /etc/init.d/mysql restart || true
 
-# retrieve list of databases
-databases=$(chroot $TARGET mysql -B -N -e 'show databases' | grep -ve '^information_schema$' -ve '^mysql$')
+  # retrieve list of databases
+  databases=$(chroot $TARGET mysql -B -N -e 'show databases' | grep -ve '^information_schema$' -ve '^mysql$')
 
-if ! chroot $TARGET mysqldump --add-drop-database --no-data -B $databases > dump.db 2>/tmp/mysqldump.log ; then
-  echo "Error while dumping mysql databases." >&2
-  exit 1
-fi
+  if ! chroot $TARGET mysqldump --add-drop-database --no-data -B $databases > dump.db 2>/tmp/mysqldump.log ; then
+    echo "Error while dumping mysql databases." >&2
+    exit 1
+  fi
 
-chroot $TARGET /etc/init.d/mysql stop >/dev/null 2>&1 || true
+  chroot $TARGET /etc/init.d/mysql stop >/dev/null 2>&1 || true
 
-# upload database dump
-DB_MD5=$(curl --max-time 30 --connect-timeout 30 -F file=@/dump.db http://jenkins.mgm.sipwise.com:4567/upload)
+  # upload database dump
+  DB_MD5=$(curl --max-time 30 --connect-timeout 30 -F file=@/dump.db http://jenkins.mgm.sipwise.com:4567/upload)
 
-if [[ "$DB_MD5" == $(md5sum /dump.db | awk '{print $1}') ]] ; then
-  echo "Upload of database dump went fine."
-else
-  echo '#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!'
-  echo '#!#!#!#!#!#!#!      Warning: error while uploading database.      #!#!#!#!#!#!#!'
-  echo '#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!'
+  if [[ "$DB_MD5" == $(md5sum /dump.db | awk '{print $1}') ]] ; then
+    echo "Upload of database dump went fine."
+  else
+    echo '#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!'
+    echo '#!#!#!#!#!#!#!      Warning: error while uploading database.      #!#!#!#!#!#!#!'
+    echo '#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!'
+  fi
+}
+
+# upload db dump only if we're deploying a trunk version
+if $TRUNK_VERSION ; then
+  echo "Trunk version detected, uploading DB dump."
+  upload_db_dump
 fi
 
 # don't leave any mountpoints
