@@ -44,11 +44,9 @@ CE_EDITION=false
 NGCP_INSTALLER=false
 PUPPET=''
 INTERACTIVE=false
-LOCAL_MIRROR=false
 DHCP=false
 LOGO=true
 BONDING=false
-USE_LOCAL_MIRROR=true
 LINUX_HA3=false
 TRUNK_VERSION=false
 DEBIAN_RELEASE=squeeze
@@ -144,10 +142,6 @@ if checkBootParam ngcptrunk ; then
   TRUNK_VERSION=true
 fi
 export TRUNK_VERSION # make sure it's available within grml-chroot subshell
-
-if checkBootParam nolocalmirror ; then
-  USE_LOCAL_MIRROR=false
-fi
 
 ## detect environment {{{
 if dmidecode| grep -q 'Rack Mount Chassis' ; then
@@ -486,7 +480,7 @@ if "$PRO_EDITION" ; then
 elif "$CE_EDITION" ; then
   case "$SP_VERSION" in
     # we do not have a local mirror for lenny, so disable it
-    2.1) INSTALLER_VERSION="0.3.2" ; DEBIAN_RELEASE="lenny" ; USE_LOCAL_MIRROR='false' ;;
+    2.1) INSTALLER_VERSION="0.3.2" ; DEBIAN_RELEASE="lenny" ;;
     2.2) INSTALLER_VERSION="0.4.7";;
     2.4) INSTALLER_VERSION="0.6.3";;
     2.5) INSTALLER_VERSION="0.7.2";;
@@ -705,60 +699,15 @@ puppet
 EOF
 fi
 
-# provide Debian mirror
-if [ -d /srv/mirror/debian ] && $USE_LOCAL_MIRROR ; then
-  echo "Directory /srv/mirror/debian found, trying to use local mirror."
-
-  # run local webserver
-  if ps aux | grep -q '[p]ython -m SimpleHTTPServer' ; then
-    kill $(ps aux | grep '[p]ython -m SimpleHTTPServer' | awk '{print $2}')
-  fi
-  { cd /srv/mirror/ ; python -m SimpleHTTPServer &>/dev/null & }
-
-  # make sure the mirror is ready before accessing it (fsck you, CDs!),
-  # so retry it up to 30 seconds
-  mirror_tries=1
-  while [ "$mirror_tries" -lt 11 -a "$LOCAL_MIRROR" != "true" ] ; do
-    if wget -O /dev/null http://localhost:8000/debian/dists/${DEBIAN_RELEASE}/main/binary-amd64/Packages &>/dev/null ; then
-      echo "Found functional local mirror, using for first stage installation."
-      MIRROR="http://localhost:8000/debian/"
-      LOCAL_MIRROR=true
-    else
-      echo "Not yet found (will retry in 3 seconds, $mirror_tries out of 10)."
-      mirror_tries=$((mirror_tries + 1))
-      sleep 3
-    fi
-  done
-fi
-
-if [ -z "$MIRROR" ] ; then
-  MIRROR="http://debian.inode.at/debian/"
-fi
-
-if ! $LOCAL_MIRROR ; then
-  echo "Gave up using local mirror, falling back to $MIRROR instead."
-else
-  echo "Creating /etc/debootstrap/pre-scripts/adjust_sources_list"
-  mkdir -p /etc/debootstrap/pre-scripts
-  cat > /etc/debootstrap/pre-scripts/adjust_sources_list << EOT
-cat > \$MNTPOINT/etc/apt/sources.list << EOF
-# deployed via ngcp-deployment [net]script
-# to override partial-only local mirror
-deb http://debian.inode.at/debian ${DEBIAN_RELEASE} main contrib non-free
-deb http://security.debian.org ${DEBIAN_RELEASE}/updates main contrib non-free
-EOF
-chroot \$MNTPOINT apt-get -y update
-chroot \$MNTPOINT apt-get -y upgrade
-EOT
-
-  chmod +x /etc/debootstrap/pre-scripts/adjust_sources_list
-
-  # make sure we use --keep_src_list iff we write our own sources.list
-  # file through the adjust_sources_list pre-script and using a local
-  # mirror, otherwise we will end up with sources.list from plain
-  # debootstrap which we definitely do NOT want
-  EXTRA_DEBOOTSTRAP_OPTS='--pre-scripts /etc/debootstrap/pre-scripts --keep_src_list'
-fi
+# lenny is no longer available on default Debian mirrors
+case "$DEBIAN_RELEASE" in
+  lenny)
+    MIRROR='http://archive.debian.org/debian/'
+    ;;
+  *)
+    MIRROR='http://debian.inode.at/debian/'
+    ;;
+esac
 
 # install Debian
 echo y | grml-debootstrap \
