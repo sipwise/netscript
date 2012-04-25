@@ -675,6 +675,9 @@ linux-headers-2.6-amd64
 # support acpi (d-i installs them as well)
 acpi acpid acpi-support-base
 
+# be able to login on the system, even if just installing plain Debian
+openssh-server
+
 # packages d-i installs but we ignore/skip:
 #discover
 #gettext-base
