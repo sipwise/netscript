@@ -1175,12 +1175,29 @@ upload_db_dump() {
   # retrieve list of databases
   databases=$(chroot $TARGET mysql -B -N -e 'show databases' | grep -ve '^information_schema$' -ve '^mysql$')
 
-  if ! chroot $TARGET mysqldump --add-drop-database --no-data -B $databases > dump.db 2>/tmp/mysqldump.log ; then
+  if [ -z "$databases" ] ; then
+    echo "Warning: could not retrieve list of available databases, retrying in 10 seconds."
+    sleep 10
+    databases=$(chroot $TARGET mysql -B -N -e 'show databases' | grep -ve '^information_schema$' -ve '^mysql$')
+
+    if [ -z "$databases" ] ; then
+      echo "Warning: still could not retrieve list of available databases, giving up."
+      return 0
+    fi
+  fi
+
+  if ! chroot $TARGET mysqldump --add-drop-database --no-data -B $databases > /dump.db ; then
     echo "Error while dumping mysql databases." >&2
     exit 1
   fi
 
   chroot $TARGET /etc/init.d/mysql stop >/dev/null 2>&1 || true
+
+  # mysqldump writes errors to stdout, muhaha...
+  if grep -q '^Usage: mysqldump ' /dump.db ; then
+    echo "Error: invalid data inside database dump."
+    exit 1
+  fi
 
   # upload database dump
   DB_MD5=$(curl --max-time 30 --connect-timeout 30 -F file=@/dump.db http://jenkins.mgm.sipwise.com:4567/upload)
