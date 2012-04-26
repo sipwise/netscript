@@ -1170,6 +1170,13 @@ for i in asterisk atd collectd collectdmon dbus-daemon exim4 \
 done
 
 upload_db_dump() {
+  if "$CE_EDITION" ; then
+    echo "CE edition noticed, continuing..."
+  else
+    echo "This is not a CE edition, ignoring request to generate and upload DB dump."
+    return 0
+  fi
+
   chroot $TARGET /etc/init.d/mysql restart || true
 
   # retrieve list of databases
