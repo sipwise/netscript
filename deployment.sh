@@ -1236,7 +1236,7 @@ upload_db_dump() {
   chroot $TARGET /etc/init.d/mysql stop >/dev/null 2>&1 || true
 
   # mysqldump writes errors to stdout, muhaha...
-  if grep -q '^Usage: mysqldump ' /dump.db ; then
+  if ! grep -q 'Dump completed on' /dump.db ; then
     echo "Error: invalid data inside database dump."
     exit 1
   fi
