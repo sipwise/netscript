@@ -1204,6 +1204,22 @@ for i in asterisk atd collectd collectdmon dbus-daemon exim4 \
   killall -9 $i >/dev/null 2>&1 || true
 done
 
+upload_file() {
+  [ -n "$1" ] || return 1
+
+  file="$1"
+
+  DB_MD5=$(curl --max-time 180 --connect-timeout 30 -F file=@"${file}" http://jenkins.mgm.sipwise.com:4567/upload)
+
+  if [[ "$DB_MD5" == $(md5sum "${file}" | awk '{print $1}') ]] ; then
+    echo "Upload of $file went fine."
+  else
+    echo "#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!"
+    echo "#!#!#!#!#!#!#!      Warning: error while uploading ${file}.      #!#!#!#!#!#!#!"
+    echo "#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!"
+  fi
+}
+
 upload_db_dump() {
   if "$CE_EDITION" ; then
     echo "CE edition noticed, continuing..."
@@ -1241,22 +1257,72 @@ upload_db_dump() {
     exit 1
   fi
 
-  # upload database dump
-  DB_MD5=$(curl --max-time 180 --connect-timeout 30 -F file=@/dump.db http://jenkins.mgm.sipwise.com:4567/upload)
+  upload_file "/dump.db"
+}
 
-  if [[ "$DB_MD5" == $(md5sum /dump.db | awk '{print $1}') ]] ; then
-    echo "Upload of database dump went fine."
+upload_yml_cfg() {
+  if "$CE_EDITION" ; then
+    echo "CE edition noticed, continuing..."
   else
-    echo '#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!'
-    echo '#!#!#!#!#!#!#!      Warning: error while uploading database.      #!#!#!#!#!#!#!'
-    echo '#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!'
+    echo "This is not a CE edition, ignoring request to generate and upload  dump."
+    return 0
   fi
+
+  cat << EOT | grml-chroot $TARGET /bin/bash
+# CE
+/usr/share/ngcp-cfg-schema/cfg_scripts/init/0001_init_config_ce.up    /dev/null  /config_ce.yml
+/usr/share/ngcp-cfg-schema/cfg_scripts/init/0002_init_constants_ce.up /dev/null  /constants_ce.yml
+
+# PRO
+/usr/share/ngcp-cfg-schema/cfg_scripts/init/0001_init_config_pro.up    /dev/null /config_pro.yml
+/usr/share/ngcp-cfg-schema/cfg_scripts/init/0002_init_constants_pro.up /dev/null /constants_pro.yml
+
+# config.yml
+for file in /usr/share/ngcp-cfg-schema/cfg_scripts/config/*.up ; do
+  [ -r \$file ] || continue
+  case $(basename \$file) in
+    *_pro.up)
+      \$file /config_pro.yml /config_pro.yml
+      ;;
+    *_ce.up)
+      \$file /config_ce.yml  /config_ce.yml
+      ;;
+    *)
+      \$file /config_ce.yml  /config_ce.yml
+      \$file /config_pro.yml /config_pro.yml
+      ;;
+  esac
+done
+
+# constants.yml
+for file in /usr/share/ngcp-cfg-schema/cfg_scripts/constants/*.up ; do
+  [ -r \$file ] || continue
+  case $(basename \$file) in
+    *_pro.up)
+      \$file /constants_pro.yml /constants_pro.yml
+      ;;
+    *_ce.up)
+      \$file /constants_ce.yml  /constants_ce.yml
+      ;;
+    *)
+      \$file /constants_ce.yml  /constants_ce.yml
+      \$file /constants_pro.yml /constants_pro.yml
+      ;;
+  esac
+done
+EOT
+
+  for file in config_ce.yml constants_ce.yml config_pro.yml constants_pro.yml ; do
+    upload_file "${TARGET}/$file"
+  done
 }
 
 # upload db dump only if we're deploying a trunk version
 if $TRUNK_VERSION ; then
-  echo "Trunk version detected, uploading DB dump."
+  echo "Trunk version detected, considering DB dump upload."
   upload_db_dump
+  echo "Trunk version detected, considering yml configs upload."
+  upload_yml_cfg
 fi
 
 # don't leave any mountpoints
