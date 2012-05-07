@@ -1242,7 +1242,7 @@ upload_db_dump() {
   fi
 
   # upload database dump
-  DB_MD5=$(curl --max-time 30 --connect-timeout 30 -F file=@/dump.db http://jenkins.mgm.sipwise.com:4567/upload)
+  DB_MD5=$(curl --max-time 180 --connect-timeout 30 -F file=@/dump.db http://jenkins.mgm.sipwise.com:4567/upload)
 
   if [[ "$DB_MD5" == $(md5sum /dump.db | awk '{print $1}') ]] ; then
     echo "Upload of database dump went fine."
