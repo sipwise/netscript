@@ -179,6 +179,10 @@ if checkBootParam "puppetenv" ; then
   PUPPET=$(getBootParam puppetenv)
 fi
 
+if checkBootParam "debianrelease" ; then
+  DEBIAN_RELEASE=$(getBootParam debianrelease)
+fi
+
 # test unfinished releases against
 # "http://deb.sipwise.com/autobuild/ release-$AUTOBUILD_RELEASE"
 if checkBootParam ngcpautobuildrelease ; then
