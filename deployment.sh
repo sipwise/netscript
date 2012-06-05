@@ -1332,6 +1332,11 @@ if $TRUNK_VERSION ; then
   upload_yml_cfg
 fi
 
+# remove retrieved and generated files
+rm -f ${TARGET}/config_*yml
+rm -f ${TARGET}/constants_*.yml
+rm -f ${TARGET}/ngcp-installer*deb
+
 # don't leave any mountpoints
 sync
 umount ${TARGET}/proc       2>/dev/null || true
