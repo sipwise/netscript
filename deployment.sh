@@ -1257,10 +1257,13 @@ upload_db_dump() {
 
   # mysqldump writes errors to stdout, muhaha...
   if ! grep -q 'Dump completed on' /dump.db ; then
-    echo "Error: invalid data inside database dump."
+    echo "Error: invalid data inside database dump." >&2
     exit 1
   fi
 
+  echo "NOTE: you can safely IGNORE the message stating:"
+  echo "        ERROR 2002 (HY000): Can't connect to local MySQL server through socket ..."
+  echo "      listed above. If you're seeing this note here everything went fine."
   upload_file "/dump.db"
 }
 
