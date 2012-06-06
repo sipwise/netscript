@@ -1248,22 +1248,34 @@ upload_db_dump() {
     fi
   fi
 
+  # the only way to rely on mysqldump writing useful data is checking for "Dump
+  # completed on" inside the dump as it writes errors also to stdout, so before
+  # actually dumping it for committing it to VCS we need to dump it once without
+  # the "--skip-comments" option, do the check on that and then really dump it
+  # later...
   if ! chroot $TARGET mysqldump --add-drop-database --no-data -B $databases > /dump.db ; then
+    echo "Error while dumping mysql databases." >&2
+    exit 1
+  fi
+
+  if ! grep -q 'Dump completed on' /dump.db ; then
+    echo "Error: invalid data inside database dump." >&2
+    exit 1
+  fi
+
+  if ! chroot $TARGET mysqldump --add-drop-database --no-data --skip-comments -B $databases > /dump.db ; then
     echo "Error while dumping mysql databases." >&2
     exit 1
   fi
 
   chroot $TARGET /etc/init.d/mysql stop >/dev/null 2>&1 || true
 
-  # mysqldump writes errors to stdout, muhaha...
-  if ! grep -q 'Dump completed on' /dump.db ; then
-    echo "Error: invalid data inside database dump." >&2
-    exit 1
-  fi
-
+  echo
   echo "NOTE: you can safely IGNORE the message stating:"
   echo "        ERROR 2002 (HY000): Can't connect to local MySQL server through socket ..."
   echo "      listed above. If you're seeing this note here everything went fine."
+  echo
+
   upload_file "/dump.db"
 }
 
