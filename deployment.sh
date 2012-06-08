@@ -838,6 +838,15 @@ if "$NGCP_INSTALLER" ; then
     INSTALLER_PATH='http://deb.sipwise.com/autobuild/debian/pool/main/n/ngcp-installer/'
 
     wget --directory-prefix=debs --no-directories -r --no-parent "$INSTALLER_PATH"
+
+    # inside the pool there might be versions which have been released inside a
+    # maintenance branch but which don't cover recent changes in trunk,
+    # therefore get rid of every file without "svn" in the filename, so e.g.
+    #   ngcp-installer-ce_0.7.2+0~1339173026.svn9034.165_all.deb (trunk version)
+    # is preferred over
+    #   ngcp-installer-ce_0.7.3_all.deb (release into 2.5 repository)
+    find ./debs -type f -a ! -name \*svn\* -exec rm {} +
+
     VERSION=$(dpkg-scanpackages debs /dev/null 2>/dev/null | awk '/Version/ {print $2}' | sort -ur)
 
     [ -n "$VERSION" ] || { echo "Error: installer version could not be detected." >&2 ; exit 1 ; }
