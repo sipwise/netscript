@@ -644,7 +644,13 @@ fi
 echo "root:sipwise" | chpasswd
 
 ## partition disk
-parted -s /dev/${DISK} mktable msdos
+# 2000GB = 2097152000 blocks in /proc/partitions - so make a rough estimation
+if [ $(awk "/ ${DISK}$/ {print \$3}" /proc/partitions) -gt 2000000000 ] ; then
+  TABLE=gpt
+else
+  TABLE=msdos
+fi
+parted -s /dev/${DISK} mktable "$TABLE"
 # hw-raid with rootfs + swap partition
 parted -s /dev/${DISK} 'mkpart primary ext4 2048s 95%'
 parted -s /dev/${DISK} 'mkpart primary linux-swap 95% -1'
