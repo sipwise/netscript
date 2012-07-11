@@ -1000,7 +1000,6 @@ EOF
     asterisk \
     collectd \
     exim4 \
-    kamailio \
     kamailio-lb \
     kamailio-proxy \
     mediator \
