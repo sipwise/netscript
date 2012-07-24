@@ -116,6 +116,11 @@ EOF
 ### }}}
 
 # provide method to boot live system without running installer
+if checkBootParam debugmode ; then
+  set -x
+  PS4='+\t '
+fi
+
 if checkBootParam noinstall ; then
   echo "Exiting as requested via bootoption noinstall."
   exit 0
