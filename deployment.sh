@@ -188,6 +188,11 @@ if checkBootParam "debianrelease" ; then
   DEBIAN_RELEASE=$(getBootParam debianrelease)
 fi
 
+ARCH=$(dpkg --print-architecture)
+if checkBootParam "arch" ; then
+  ARCH=$(getBootParam arch)
+fi
+
 # test unfinished releases against
 # "http://deb.sipwise.com/autobuild/ release-$AUTOBUILD_RELEASE"
 if checkBootParam ngcpautobuildrelease ; then
@@ -729,6 +734,7 @@ esac
 
 # install Debian
 echo y | grml-debootstrap \
+  --arch "${ARCH}" \
   --grub /dev/${DISK} \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
