@@ -1356,7 +1356,7 @@ EOT
 }
 
 # upload db dump only if we're deploying a trunk version
-if $TRUNK_VERSION ; then
+if $TRUNK_VERSION && ! checkBootParam ngcpnoupload ; then
   echo "Trunk version detected, considering DB dump upload."
   upload_db_dump
   echo "Trunk version detected, considering yml configs upload."
