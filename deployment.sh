@@ -1000,7 +1000,7 @@ EOF
   chroot $TARGET ngcpcfg build /etc/ha.d/ha.cf
 }
 
-  if "$PRO_EDITION" && [ "$ROLE" = "sp1" ] ; then
+  if "$PRO_EDITION" ; then
     echo "Deploying PRO edition (sp1) - adjusting heartbeat device (hb_device)."
     adjust_hb_device
   fi
