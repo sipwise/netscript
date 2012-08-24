@@ -1013,6 +1013,7 @@ EOF
     asterisk \
     collectd \
     exim4 \
+    irqbalance \
     kamailio-lb \
     kamailio-proxy \
     mediator \
