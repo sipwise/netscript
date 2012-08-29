@@ -1295,7 +1295,7 @@ upload_db_dump() {
     exit 1
   fi
 
-  if ! chroot $TARGET mysqldump --add-drop-database --no-data --skip-comments -B $databases > /dump.db ; then
+  if ! chroot $TARGET mysqldump --add-drop-database --skip-comments -B $databases > /dump.db ; then
     echo "Error while dumping mysql databases." >&2
     exit 1
   fi
