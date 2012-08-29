@@ -1285,7 +1285,7 @@ upload_db_dump() {
   # actually dumping it for committing it to VCS we need to dump it once without
   # the "--skip-comments" option, do the check on that and then really dump it
   # later...
-  if ! chroot $TARGET mysqldump --add-drop-database --no-data -B $databases > /dump.db ; then
+  if ! chroot $TARGET mysqldump --add-drop-database --skip-comments -B $databases > /dump.db ; then
     echo "Error while dumping mysql databases." >&2
     exit 1
   fi
