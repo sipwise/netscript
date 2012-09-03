@@ -115,6 +115,26 @@ EOF
 }
 ### }}}
 
+# logging {{{
+cat > /etc/rsyslog.d/logsend.conf << EOF
+*.*  @@192.168.51.28
+EOF
+/etc/init.d/rsyslog restart
+
+logit() {
+  logger -t grml-deployment "$@"
+}
+
+die() {
+  logger -t grml-deployment "$@"
+  echo "$@" >&2
+  exit 1
+}
+
+logit "host-IP: $(ip-screen)"
+logit "deployment-version: $SCRIPT_VERSION"
+# }}}
+
 # provide method to boot live system without running installer
 if checkBootParam debugmode ; then
   set -x
@@ -261,8 +281,7 @@ if checkBootParam ngcpprofile && [ -n "$NETSCRIPT_SERVER" ] ; then
   PROFILE="$(getBootParam ngcpprofile)"
 
   if [ -z "$PROFILE" ] ; then
-    echo "Error: No argument for ngcpprofile found, can not continue." >&2
-    exit 1
+    die "Error: No argument for ngcpprofile found, can not continue."
   fi
 fi
 
@@ -388,14 +407,12 @@ if [ -n "$PROFILE" ] && [ -n "$NETSCRIPT_SERVER" ] ; then
       echo "Loading profile $PROFILE"
       . default.sh
     else
-      echo "Error: No default.sh in profile $PROFILE from $NETSCRIPT_SERVER" >&2
       rm -rf $DOWNLOADDIR/*
       rmdir -p $DOWNLOADDIR
-      exit 1
+      die "Error: No default.sh in profile $PROFILE from $NETSCRIPT_SERVER"
     fi
   else
-    echo "Error: Could not get profile $PROFILE from $NETSCRIPT_SERVER" >&2
-    exit 1
+    die "Error: Could not get profile $PROFILE from $NETSCRIPT_SERVER"
   fi
 fi
 
@@ -583,8 +600,7 @@ if "$PRO_EDITION" ; then
    if ifconfig "$INTERNAL_DEV" &>/dev/null ; then
      ifconfig "$INTERNAL_DEV" $INTERNAL_IP netmask $INTERNAL_NETMASK
    else
-     echo "Error: no $INTERNAL_DEV NIC found, can not deploy internal network. Exiting." >&2
-     exit 1
+     die "Error: no $INTERNAL_DEV NIC found, can not deploy internal network. Exiting."
    fi
 
   # ipmi on IBM hardware
@@ -618,9 +634,7 @@ check_for_supported_disk() {
 if [[ $(imvirt 2>/dev/null) == "Physical" ]] ; then
 
   if ! check_for_supported_disk ; then
-    echo "Error: /dev/${DISK} does not look like a VirtIO, ServeRAID, LSILOGIC or PowerEdge disk/controller." >&2
-    echo "Exiting to avoid possible data damage." >&2
-    exit 1
+    die "Error: /dev/${DISK} does not look like a VirtIO, ServeRAID, LSILOGIC or PowerEdge disk/controller. Exiting to avoid possible data damage."
   fi
 
 else
@@ -632,10 +646,7 @@ else
   elif grep -q 'VBOX HARDDISK' /sys/block/${DISK}/device/model ; then
     echo "Looks like a VBOX harddisk, ok."
   else
-    echo "Error: /dev/${DISK} does not look like a virtual disk." >&2
-    echo "Exiting to avoid possible data damage." >&2
-    echo "Note: imvirt output is $(imvirt)" >&2
-    exit 1
+    die "Error: /dev/${DISK} does not look like a virtual disk. Exiting to avoid possible data damage. Note: imvirt output is $(imvirt)"
   fi
 fi
 
@@ -750,9 +761,7 @@ echo y | grml-debootstrap \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
 
 if [ ${PIPESTATUS[1]} -ne 0 ]; then
-  echo "Error during installation of Debian ${DEBIAN_RELEASE}." >&2
-  echo "Details: mount /dev/${DISK}1 $TARGET ; ls $TARGET/debootstrap/*.log" >&2
-  exit 1
+  die "Error during installation of Debian ${DEBIAN_RELEASE}. Find details via: mount /dev/${DISK}1 $TARGET ; ls $TARGET/debootstrap/*.log"
 fi
 
 sync
@@ -872,7 +881,7 @@ if "$NGCP_INSTALLER" ; then
 
     VERSION=$(dpkg-scanpackages debs /dev/null 2>/dev/null | awk '/Version/ {print $2}' | sort -ur)
 
-    [ -n "$VERSION" ] || { echo "Error: installer version could not be detected." >&2 ; exit 1 ; }
+    [ -n "$VERSION" ] || die "Error: installer version could not be detected."
 
     if $PRO_EDITION ; then
       INSTALLER="ngcp-installer-pro_${VERSION}_all.deb"
@@ -908,6 +917,7 @@ EOF
   fi
 
   # install and execute ngcp-installer
+  logit "ngcp-installer: $INSTALLER"
   if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
     cat << EOT | grml-chroot $TARGET /bin/bash
 wget ${INSTALLER_PATH}/${INSTALLER}
@@ -915,6 +925,7 @@ dpkg -i $INSTALLER
 TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
+  logit "installer: error"
   echo "Fatal error while running ngcp-installer:" >&2
   tail -10 /tmp/ngcp-installer.log
   exit \$RC
@@ -928,6 +939,7 @@ dpkg -i $INSTALLER
 TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
+  logit "installer: error"
   echo "Fatal error while running ngcp-installer (HA v3):" >&2
   tail -10 /tmp/ngcp-installer.log
   exit \$RC
@@ -941,6 +953,7 @@ dpkg -i $INSTALLER
 echo y | TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[1]}
 if [ \$RC -ne 0 ] ; then
+  logit "installer: error"
   echo "Fatal error while running ngcp-installer:" >&2
   tail -10 /tmp/ngcp-installer.log
   exit \$RC
@@ -949,11 +962,11 @@ EOT
   fi
 
   # baby, something went wrong!
-  if [ $? -ne 0 ] ; then
-    echo "Error during installation of ngcp." >&2
-    echo "Details: $TARGET/tmp/ngcp-installer.log" >&2
-    echo "         $TARGET/tmp/ngcp-installer-debug.log" >&2
-    exit 1
+  if [ $? -eq 0 ] ; then
+    logit "installer: success"
+  else
+    logit "installer: error"
+    die "Error during installation of ngcp. Find details at: $TARGET/tmp/ngcp-installer.log $TARGET/tmp/ngcp-installer-debug.log"
   fi
 
   # we require those packages for dkms, so do NOT remove them:
@@ -965,8 +978,7 @@ EOT
       # brrrr, don't tell this anyone or i'll commit with http://whatthecommit.com/ as commit msg!
       KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | sort -u | head -1))
       if [ -z "$KERNELHEADERS" ] ; then
-         echo "Error: no kernel headers found for building the ngcp-mediaproxy-ng kernel module." >&2
-         exit 1
+         die "Error: no kernel headers found for building the ngcp-mediaproxy-ng kernel module."
       fi
       KERNELVERSION=${KERNELHEADERS##linux-headers-}
       NGCPVERSION=$(chroot $TARGET dkms status | grep ngcp-mediaproxy-ng | awk -F, '{print $2}' | sed 's/:.*//')
@@ -1286,18 +1298,15 @@ upload_db_dump() {
   # the "--skip-comments" option, do the check on that and then really dump it
   # later...
   if ! chroot $TARGET mysqldump --add-drop-database -B $databases > /dump.db ; then
-    echo "Error while dumping mysql databases." >&2
-    exit 1
+    die "Error while dumping mysql databases."
   fi
 
   if ! grep -q 'Dump completed on' /dump.db ; then
-    echo "Error: invalid data inside database dump." >&2
-    exit 1
+    die "Error: invalid data inside database dump."
   fi
 
   if ! chroot $TARGET mysqldump --add-drop-database --skip-comments -B $databases > /dump.db ; then
-    echo "Error while dumping mysql databases." >&2
-    exit 1
+    die "Error while dumping mysql databases."
   fi
 
   chroot $TARGET /etc/init.d/mysql stop >/dev/null 2>&1 || true
@@ -1405,6 +1414,7 @@ echo
 echo
 
 [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
+logit "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 echo "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 
 # do not prompt when running inside kantan
