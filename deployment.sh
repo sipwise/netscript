@@ -1033,6 +1033,7 @@ EOF
     kamailio-lb \
     kamailio-proxy \
     mediator \
+    monit \
     mysql \
     ngcp-mediaproxy-ng-daemon \
     ngcp-rate-o-mat \
