@@ -936,7 +936,6 @@ dpkg -i $INSTALLER
 TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
-  logit "installer: error"
   echo "Fatal error while running ngcp-installer:" >&2
   tail -10 /tmp/ngcp-installer.log
   exit \$RC
@@ -950,7 +949,6 @@ dpkg -i $INSTALLER
 TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
-  logit "installer: error"
   echo "Fatal error while running ngcp-installer (HA v3):" >&2
   tail -10 /tmp/ngcp-installer.log
   exit \$RC
@@ -964,7 +962,6 @@ dpkg -i $INSTALLER
 echo y | TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[1]}
 if [ \$RC -ne 0 ] ; then
-  logit "installer: error"
   echo "Fatal error while running ngcp-installer:" >&2
   tail -10 /tmp/ngcp-installer.log
   exit \$RC
