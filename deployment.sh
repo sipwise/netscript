@@ -52,6 +52,7 @@ TRUNK_VERSION=false
 DEBIAN_RELEASE=squeeze
 KANTAN=false
 HALT=false
+REBOOT=false
 if [ -L /sys/block/vda ] ; then
   export DISK=vda # will be configured as /dev/vda
 else
@@ -292,6 +293,10 @@ fi
 if checkBootParam ngcphalt ; then
   HALT=true
 fi
+
+if checkBootParam ngcpreboot ; then
+  REBOOT=true
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -373,6 +378,7 @@ for param in $* ; do
     *ngcpnobonding*) BONDING=false;;
     *ngcpbonding*) BONDING=true;;
     *ngcphalt*) HALT=true;;
+    *ngcpreboot*) REBOOT=true;;
   esac
   shift
 done
@@ -1417,6 +1423,14 @@ echo
 [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
 logit "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 echo "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
+
+if "$REBOOT" ; then
+  echo "Rebooting system as requested via ngcpreboot"
+  for key in s u b ; do
+    echo $key > /proc/sysrq-trigger
+    sleep 2
+  done
+fi
 
 # do not prompt when running inside kantan
 if "$KANTAN" ; then
