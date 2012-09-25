@@ -47,6 +47,7 @@ INTERACTIVE=false
 DHCP=false
 LOGO=true
 BONDING=false
+VLAN=false
 LINUX_HA3=false
 TRUNK_VERSION=false
 DEBIAN_RELEASE=squeeze
@@ -162,6 +163,10 @@ fi
 
 if checkBootParam ngcpbonding ; then
   BONDING=true
+fi
+
+if checkBootParam ngcpvlan ; then
+  VLAN=true
 fi
 
 if checkBootParam ngcptrunk ; then
@@ -1105,7 +1110,44 @@ EOF
   fi
 else
   # assume host system has a valid configuration
-  if "$PRO_EDITION" && "$BONDING" ; then
+  if "$PRO_EDITION" && "$VLAN" ; then
+    cat > $TARGET/etc/network/interfaces << EOF
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+auto $EXTERNAL_DEV
+iface $EXTERNAL_DEV inet static
+        address $(ifdata -pa $EXTERNAL_DEV)
+        netmask $(ifdata -pn $EXTERNAL_DEV)
+        gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
+        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
+        bond-slaves $EXTERNAL_DEV $INTERNAL_DEV
+        bond_mode 802.3ad
+        bond_miimon 100
+        bond_lacp_rate 1
+
+auto vlan3
+iface vlan3 inet static
+        address $(ifdata -pa $INTERNAL_DEV)
+        netmask $(ifdata -pn $INTERNAL_DEV)
+        vlan-raw-device $EXTERNAL_DEV
+
+# Example:
+# allow-hotplug eth0
+# iface eth0 inet static
+#         address 192.168.1.101
+#         netmask 255.255.255.0
+#         network 192.168.1.0
+#         broadcast 192.168.1.255
+#         gateway 192.168.1.1
+#         # dns-* options are implemented by the resolvconf package, if installed
+#         dns-nameservers 195.58.160.194 195.58.161.122
+#         dns-search sipwise.com
+EOF
+  elif "$PRO_EDITION" && "$BONDING" ; then
     cat > $TARGET/etc/network/interfaces << EOF
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
