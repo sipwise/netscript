@@ -1115,8 +1115,8 @@ else
 auto lo
 iface lo inet loopback
 
-auto $EXTERNAL_DEV
-iface $EXTERNAL_DEV inet static
+auto b0
+iface b0 inet static
         address $(ifdata -pa $EXTERNAL_DEV)
         netmask $(ifdata -pn $EXTERNAL_DEV)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
