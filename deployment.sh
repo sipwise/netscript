@@ -107,7 +107,7 @@ $(cat /etc/grml_version)
 Host IP(s): $(ip-screen) | Deployment version: $SCRIPT_VERSION
 $(lscpu | awk '/^CPU\(s\)/ {print $2}') CPU(s) | $(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)kB RAM | $CHASSIS
 
-Install ngcp: $NGCP_INSTALLER | Install pro: $PRO_EDITION | Install ce: $CE_EDITION
+Install ngcp: $NGCP_INSTALLER | Install pro: $PRO_EDITION [$ROLE] | Install ce: $CE_EDITION
 Installing $SP_VERSION_STR platform using installer version $INSTALLER_VERSION_STR
 Install IP: $INSTALL_IP | Started deployment at $(date)
 
