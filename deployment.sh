@@ -48,6 +48,7 @@ DHCP=false
 LOGO=true
 BONDING=false
 VLAN=false
+RETRIEVE_NETWORK_CONFIG=false
 LINUX_HA3=false
 TRUNK_VERSION=false
 DEBIAN_RELEASE=squeeze
@@ -167,6 +168,11 @@ fi
 
 if checkBootParam ngcpvlan ; then
   VLAN=true
+fi
+
+if checkBootParam ngcpmgmt ; then
+  MANAGEMENT_IP=$(getBootParam ngcpmgmt)
+  RETRIEVE_NETWORK_CONFIG=true
 fi
 
 if checkBootParam ngcptrunk ; then
@@ -833,6 +839,21 @@ if "$PRO_EDITION" ; then
   fi
 fi
 
+if "$RETRIEVE_NETWORK_CONFIG" ; then
+  echo "Retrieving network configuration from management server"
+  wget --timeout=30 -O /etc/network/interfaces "${MANAGEMENT_IP}:3000/nwconfig/$(cat ${TARGET}/etc/hostname)"
+
+  cp /etc/network/interfaces "${TARGET}/etc/network/interfaces"
+
+  # make sure we can access the management system which might be reachable
+  # through a specific VLAN only
+  ip link set dev "$INTERNAL_DEV" down # avoid conflicts with VLAN device(s)
+  for interface in $(awk '/^auto vlan/ {print $2}' /etc/network/interfaces) ; do
+    echo "Bringing up VLAN interface $interface"
+    ifup "$interface"
+  done
+fi
+
 if "$PRO_EDITION" && [[ $(imvirt) != "Physical" ]] ; then
   echo "Generating udev persistent net rules."
   INT_MAC=$(udevadm info -a -p /sys/class/net/${INTERNAL_DEV} | awk -F== '/ATTR{address}/ {print $2}')
@@ -1081,7 +1102,9 @@ cat > $TARGET/etc/hostname << EOF
 ${TARGET_HOSTNAME}
 EOF
 
-if "$DHCP" ; then
+if "$RETRIEVE_NETWORK_CONFIG" ; then
+  echo "Nothing to do, /etc/network/interfaces was already set up."
+elif "$DHCP" ; then
   cat > $TARGET/etc/network/interfaces << EOF
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
