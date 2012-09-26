@@ -873,6 +873,13 @@ if "$RETRIEVE_MGMT_CONFIG" ; then
   # make sure we can access the management system which might be reachable
   # through a specific VLAN only
   ip link set dev "$INTERNAL_DEV" down # avoid conflicts with VLAN device(s)
+
+  # vlan-raw-device b0 doesn't exist in the live environment, if we don't
+  # adjust it accordingly for our environment the vlan device(s) can't be
+  # brought up
+  # note: we do NOT modify the /e/n/i file from $TARGET here by intention
+  sed -i "s/vlan-raw-device .*/vlan-raw-device eth0/" /etc/network/interfaces
+
   for interface in $(awk '/^auto vlan/ {print $2}' /etc/network/interfaces) ; do
     echo "Bringing up VLAN interface $interface"
     ifup "$interface"
