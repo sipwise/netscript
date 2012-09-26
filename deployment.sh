@@ -48,7 +48,7 @@ DHCP=false
 LOGO=true
 BONDING=false
 VLAN=false
-RETRIEVE_NETWORK_CONFIG=false
+RETRIEVE_MGMT_CONFIG=false
 LINUX_HA3=false
 TRUNK_VERSION=false
 DEBIAN_RELEASE=squeeze
@@ -172,7 +172,7 @@ fi
 
 if checkBootParam ngcpmgmt ; then
   MANAGEMENT_IP=$(getBootParam ngcpmgmt)
-  RETRIEVE_NETWORK_CONFIG=true
+  RETRIEVE_MGMT_CONFIG=true
 fi
 
 if checkBootParam ngcptrunk ; then
@@ -823,6 +823,12 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
 
+# needed for carrier
+if "$RETRIEVE_MGMT_CONFIG" ; then
+  echo "Retrieving /etc/hosts configuration from management server"
+  wget --timeout=30 -O "$TARGET/etc/hosts" "${MANAGEMENT_IP}:3000/hostconfig/$(cat ${TARGET}/etc/hostname)"
+fi
+
 if "$PRO_EDITION" ; then
   if [ -n "$CROLE" ] ; then
     echo "Writing $CROLE to /etc/ngcp_ha_role"
@@ -858,7 +864,7 @@ fi
 
 # needs to be executed *after* udev rules have been set up,
 # otherwise we get duplicated MAC address<->device name mappings
-if "$RETRIEVE_NETWORK_CONFIG" ; then
+if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Retrieving network configuration from management server"
   wget --timeout=30 -O /etc/network/interfaces "${MANAGEMENT_IP}:3000/nwconfig/$(cat ${TARGET}/etc/hostname)"
 
@@ -1110,7 +1116,7 @@ cat > $TARGET/etc/hostname << EOF
 ${TARGET_HOSTNAME}
 EOF
 
-if "$RETRIEVE_NETWORK_CONFIG" ; then
+if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Nothing to do, /etc/network/interfaces was already set up."
 elif "$DHCP" ; then
   cat > $TARGET/etc/network/interfaces << EOF
