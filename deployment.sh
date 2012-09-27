@@ -1293,8 +1293,10 @@ EOF
   fi
 fi # if $DHCP
 
-# finalise hostname configuration
-cat > $TARGET/etc/hosts << EOF
+generate_etc_hosts() {
+
+  # finalise hostname configuration
+  cat > $TARGET/etc/hosts << EOF
 127.0.0.1 localhost
 
 # The following lines are desirable for IPv6 capable hosts
@@ -1306,11 +1308,8 @@ ff02::2 ip6-allrouters
 
 EOF
 
-# append hostnames of sp1/sp2 so they can talk to each other
-# in the HA setup
-if "$RETRIEVE_MGMT_CONFIG" ; then
-  echo "Nothing to do, /etc/hosts was already set up."
-else
+  # append hostnames of sp1/sp2 so they can talk to each other
+  # in the HA setup
   if "$PRO_EDITION" ; then
     cat >> $TARGET/etc/hosts << EOF
 $IP1 sp1
@@ -1323,6 +1322,14 @@ EOF
 127.0.0.1 $TARGET_HOSTNAME
 EOF
   fi
+
+}
+
+if "$RETRIEVE_MGMT_CONFIG" ; then
+  echo "Nothing to do, /etc/hosts was already set up."
+else
+  echo "Generting /etc/hosts"
+  generate_etc_hosts
 fi
 
 if [ -n "$PUPPET" ] ; then
