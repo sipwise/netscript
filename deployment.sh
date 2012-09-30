@@ -1558,8 +1558,16 @@ echo
 logit "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 echo "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 
+if "$KANTAN" ; then
+  if [[ "$SHLVL" == "2" ]] || [ -n "${NETSCRIPT:-}" ] ; then
+    echo "finished deployment process at $(date)" | telnet 10.0.2.2 8888 || true
+    echo "it took ${SECONDS} seconds" | telnet 10.0.2.2 8888 || true
+  fi
+fi
+
 set_deploy_status "finished"
 
+# do not prompt when running in automated mode
 if "$REBOOT" ; then
   echo "Rebooting system as requested via ngcpreboot"
   for key in s u b ; do
@@ -1568,22 +1576,20 @@ if "$REBOOT" ; then
   done
 fi
 
-# do not prompt when running inside kantan
+if "$HALT" ; then
+  echo "Halting system as requested via ngcphalt"
+
+  if "$KANTAN" ; then
+    echo "Triggering sync and unmount as requested" | telnet 10.0.2.2 8888 || true
+  fi
+
+  for key in s u ; do
+    echo $key > /proc/sysrq-trigger
+    sleep 2
+  done
+fi
+
 if "$KANTAN" ; then
-  if [[ "$SHLVL" == "2" ]] || [ -n "${NETSCRIPT:-}" ] ; then
-    echo "finished deployment process at $(date)" | telnet 10.0.2.2 8888 || true
-    echo "it took ${SECONDS} seconds" | telnet 10.0.2.2 8888 || true
-  fi
-
-  # if booting via ngcphalt then just system off...
-  if "$HALT" ; then
-    echo "Triggering sync and unmounted as requested" | telnet 10.0.2.2 8888 || true
-    for key in s u ; do
-      echo $key > /proc/sysrq-trigger
-      sleep 2
-    done
-  fi
-
   echo "Terminating Kantan deployment process now."
   echo kantan_terminate | telnet 10.0.2.2 8888 || true
   exit 0
