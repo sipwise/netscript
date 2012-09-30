@@ -55,13 +55,30 @@ DEBIAN_RELEASE=squeeze
 KANTAN=false
 HALT=false
 REBOOT=false
+STATUS_DIRECTORY=/srv/deployment/
+
 if [ -L /sys/block/vda ] ; then
   export DISK=vda # will be configured as /dev/vda
 else
   export DISK=sda # will be configured as /dev/sda
 fi
 
+
 ### helper functions {{{
+set_deploy_status() {
+  [ -n "$1" ] || return 1
+  echo "$*" > "${STATUS_DIRECTORY}"/status
+}
+
+enable_deploy_status_server() {
+  mkdir -p "${STATUS_DIRECTORY}"
+
+  (
+    cd "${STATUS_DIRECTORY}"
+    python -m SimpleHTTPServer 4242 &
+  )
+}
+
 CMD_LINE=$(cat /proc/cmdline)
 stringInString() {
   local to_test_="$1"   # matching pattern
@@ -137,6 +154,10 @@ die() {
 logit "host-IP: $(ip-screen)"
 logit "deployment-version: $SCRIPT_VERSION"
 # }}}
+
+enable_deploy_status_server
+
+set_deploy_status "checkBootParam"
 
 # provide method to boot live system without running installer
 if checkBootParam debugmode ; then
@@ -400,6 +421,8 @@ if ! "$NGCP_INSTALLER" ; then
   unset ROLE
 fi
 
+set_deploy_status "getconfig"
+
 # load site specific profile if specified
 if [ -n "$PROFILE" ] && [ -n "$NETSCRIPT_SERVER" ] ; then
   getconfig() {
@@ -541,6 +564,8 @@ elif "$CE_EDITION" ; then
   esac
 fi
 
+set_deploy_status "settings"
+
 ### echo settings
 [ -n "$SP_VERSION" ] && SP_VERSION_STR=$SP_VERSION \
     || SP_VERSION_STR="<latest>"
@@ -592,6 +617,8 @@ fi
 
 ##### all parameters set #######################################################
 
+set_deploy_status "start"
+
 # measure time of installation procedure - everyone loves stats!
 start_seconds=$(cut -d . -f 1 /proc/uptime)
 
@@ -625,6 +652,8 @@ if "$PRO_EDITION" ; then
     ifconfig usb0 169.254.1.102 netmask 255.255.0.0
   fi
 fi
+
+set_deploy_status "diskverify"
 
 # TODO - hardcoded for now, to avoid data damage
 check_for_supported_disk() {
@@ -688,6 +717,8 @@ fi
 echo "root:sipwise" | chpasswd
 
 ## partition disk
+set_deploy_status "disksetup"
+
 # 2000GB = 2097152000 blocks in /proc/partitions - so make a rough estimation
 if [ $(awk "/ ${DISK}$/ {print \$3}" /proc/partitions) -gt 2000000000 ] ; then
   TABLE=gpt
@@ -765,6 +796,8 @@ case "$DEBIAN_RELEASE" in
     MIRROR='http://debian.inode.at/debian/'
     ;;
 esac
+
+set_deploy_status "debootstrap"
 
 # install Debian
 echo y | grml-debootstrap \
@@ -968,6 +1001,8 @@ deb http://deb.sipwise.com/percona/ ${DEBIAN_RELEASE} main
 deb http://deb.sipdoc.net debian main
 EOF
   fi
+
+set_deploy_status "ngcp-installer"
 
   # install and execute ngcp-installer
   logit "ngcp-installer: $INSTALLER"
@@ -1480,6 +1515,7 @@ EOT
 
 # upload db dump only if we're deploying a trunk version
 if $TRUNK_VERSION && ! checkBootParam ngcpnoupload ; then
+  set_deploy_status "upload_data"
   echo "Trunk version detected, considering DB dump upload."
   upload_db_dump
   echo "Trunk version detected, considering yml configs upload."
@@ -1517,6 +1553,8 @@ echo
 [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
 logit "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 echo "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
+
+set_deploy_status "finished"
 
 if "$REBOOT" ; then
   echo "Rebooting system as requested via ngcpreboot"
