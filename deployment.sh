@@ -166,7 +166,7 @@ if checkBootParam debugmode ; then
 fi
 
 if checkBootParam ngcpstatus ; then
-  STATUS_WAIT=$(getBootParam ngcpstatus)
+  STATUS_WAIT=$(getBootParam ngcpstatus || true)
   [ -n "$STATUS_WAIT" ] || STATUS_WAIT=30
 fi
 
