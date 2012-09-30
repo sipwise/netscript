@@ -56,6 +56,7 @@ KANTAN=false
 HALT=false
 REBOOT=false
 STATUS_DIRECTORY=/srv/deployment/
+STATUS_WAIT=0
 
 if [ -L /sys/block/vda ] ; then
   export DISK=vda # will be configured as /dev/vda
@@ -159,10 +160,14 @@ enable_deploy_status_server
 
 set_deploy_status "checkBootParam"
 
-# provide method to boot live system without running installer
 if checkBootParam debugmode ; then
   set -x
   PS4='+\t '
+fi
+
+if checkBootParam ngcpstatus ; then
+  STATUS_WAIT=$(getBootParam ngcpstatus)
+  [ -n "$STATUS_WAIT" ] || STATUS_WAIT=30
 fi
 
 if checkBootParam noinstall ; then
@@ -1566,6 +1571,11 @@ if "$KANTAN" ; then
 fi
 
 set_deploy_status "finished"
+
+# if ngcpstatus boot option is used wait for a specific so a
+# remote host has a chance to check for deploy status "finished",
+# defaults to 0 seconds otherwise
+sleep "$STATUS_WAIT"
 
 # do not prompt when running in automated mode
 if "$REBOOT" ; then
