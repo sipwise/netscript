@@ -1007,6 +1007,7 @@ set_deploy_status "ngcp-installer"
   # install and execute ngcp-installer
   logit "ngcp-installer: $INSTALLER"
   if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
+    echo "TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE" > /tmp/ngcp-installer-cmdline.log
     cat << EOT | grml-chroot $TARGET /bin/bash
 wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
@@ -1020,6 +1021,7 @@ fi
 EOT
 
   elif $PRO_EDITION && $LINUX_HA3 ; then # HA v3
+    echo "TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $MCASTADDR" > /tmp/ngcp-installer-cmdline.log
     cat << EOT | grml-chroot $TARGET /bin/bash
 wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
@@ -1033,6 +1035,7 @@ fi
 EOT
 
   else # spce
+    echo "TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer" > /tmp/ngcp-installer-cmdline.log
     cat << EOT | grml-chroot $TARGET /bin/bash
 wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
@@ -1150,6 +1153,7 @@ EOF
   echo "# deployment.sh running on $(date)" > "${TARGET}"/var/log/deployment.log
   echo "SCRIPT_VERSION=${SCRIPT_VERSION}" >> "${TARGET}"/var/log/deployment.log
   echo "CMD_LINE=\"${CMD_LINE}\"" >> "${TARGET}"/var/log/deployment.log
+  echo "NGCP_INSTALLER_CMDLINE=\"TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $MCASTADDR\"" >> "${TARGET}"/var/log/deployment.log
 
 fi
 
