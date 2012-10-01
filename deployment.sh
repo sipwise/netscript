@@ -835,7 +835,7 @@ EOF
 
 # removals: packages which debootstrap installs but d-i doesn't
 chroot $TARGET apt-get --purge -y remove \
-ca-certificates console-tools openssl tcpd xauth
+ca-certificates openssl tcpd xauth
 
 if "$PRO_EDITION" ; then
   echo "Pro edition: keeping firmware* packages."
