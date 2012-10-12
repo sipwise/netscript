@@ -676,7 +676,8 @@ check_for_supported_disk() {
     return 0
   fi
 
-  if grep -q 'PERC H700' /sys/block/${DISK}/device/model && \
+  # PERC H700, PERC H710,...
+  if grep -q 'PERC' /sys/block/${DISK}/device/model && \
     grep -q "DELL" /sys/block/${DISK}/device/vendor ; then
     return 0
   fi
