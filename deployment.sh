@@ -1181,12 +1181,16 @@ if "$PRO_EDITION" ; then
     exit 0
   fi
 
+  cp /etc/ngcp-config/network.yml /etc/ngcp-config/network.yml.factory_default
+
   ngcp-network --set-interface=lo --set-interface=$DEFAULT_INSTALL_DEV --set-interface=$INTERNAL_DEV
   ngcp-network --peer=$PEER
   ngcp-network --host=$PEER --peer=$ROLE --set-interface=lo
   ngcp-network --set-interface=$INTERNAL_DEV
   ngcp-network --move-from=lo --move-to=$INTERNAL_DEV --type=ha_int
   ngcp-network --set-interface=eth1 --host=$PEER --ip=$DEFAULT_IP2 --netmask=$DEFAULT_INTERNAL_NETMASK --type=ha_int
+
+  cp /etc/ngcp-config/network.yml /mnt/glusterfs/shared_config/network.yml
 
   ngcpcfg build
 EOT
