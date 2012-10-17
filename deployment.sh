@@ -1172,6 +1172,31 @@ cat > $TARGET/etc/hostname << EOF
 ${TARGET_HOSTNAME}
 EOF
 
+# adjust network.yml
+if "$PRO_EDITION" ; then
+  # set variable to have the *other* node from the PRO setup available for ngcp-network
+  case $ROLE in
+    sp1) PEER=sp2 ;;
+    sp2) PEER=sp1 ;;
+  esac
+
+  cat << EOT | grml-chroot $TARGET /bin/bash
+  if ! [ -r /etc/ngcp-config/network.yml ] ; then
+    echo '/etc/ngcp-config/network.yml does not exist'
+    exit 0
+  fi
+
+  ngcp-network --set-interface=lo --set-interface=$DEFAULT_INSTALL_DEV --set-interface=$INTERNAL_DEV
+  ngcp-network --peer=$PEER
+  ngcp-network --host=$PEER --peer=$ROLE --set-interface=lo
+  ngcp-network --set-interface=$INTERNAL_DEV
+  ngcp-network --move-from=lo --move-to=$INTERNAL_DEV --type=ha_int
+  ngcp-network --set-interface=eth1 --host=$PEER --ip=$DEFAULT_IP2 --netmask=$DEFAULT_INTERNAL_NETMASK --type=ha_int
+
+  ngcpcfg build
+EOT
+fi
+
 if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Nothing to do, /etc/network/interfaces was already set up."
 elif "$DHCP" ; then
