@@ -1167,11 +1167,6 @@ EOF
 
 fi
 
-# leave system in according state
-cat > $TARGET/etc/hostname << EOF
-${TARGET_HOSTNAME}
-EOF
-
 # adjust network.yml
 if "$PRO_EDITION" ; then
   # set variable to have the *other* node from the PRO setup available for ngcp-network
