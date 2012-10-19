@@ -1184,13 +1184,20 @@ if "$PRO_EDITION" ; then
   if [ "$ROLE" = "sp1" ] ; then
     cp /etc/ngcp-config/network.yml /etc/ngcp-config/network.yml.factory_default
 
-    ngcp-network --host=$ROLE --set-interface=lo --set-interface=$DEFAULT_INSTALL_DEV --set-interface=$INTERNAL_DEV
+    ngcp-network --host=$ROLE --set-interface=lo --ip=auto --netmask=auto --hwaddr=auto --ipv6='::1' --type=web_int
+    ngcp-network --host=$ROLE --set-interface=lo --shared-ip=none --shared-ipv6=none
+    ngcp-network --host=$ROLE --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
+    ngcp-network --host=$ROLE --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto
     ngcp-network --host=$ROLE --peer=$PEER
-    ngcp-network --host=$PEER --peer=$ROLE --set-interface=lo
-    ngcp-network --host=$ROLE --set-interface=$INTERNAL_DEV
     ngcp-network --host=$ROLE --move-from=lo --move-to=$INTERNAL_DEV --type=ha_int
+
+    ngcp-network --host=$PEER --peer=$ROLE
+    ngcp-network --host=$PEER --set-interface=lo --shared-ip=none --shared-ipv6=none
+    ngcp-network --host=$PEER --set-interface=lo --ipv6='::1' --ip=auto --netmask=auto --hwaddr=auto
     ngcp-network --host=$PEER --set-interface=eth1 --ip=$DEFAULT_IP2 --netmask=$DEFAULT_INTERNAL_NETMASK --type=ha_int
     ngcp-network --host=$PEER --role=proxy --role=lb --role=mgmt
+    ngcp-network --host=$PEER --set-interface=lo --type=sip_int --type=web_ext --type=sip_ext \
+                              --type=rtp_ext --type=ssh_ext --type=mon_ext --type=web_int
 
     cp /etc/ngcp-config/network.yml /mnt/glusterfs/shared_config/network.yml
 
