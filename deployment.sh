@@ -913,20 +913,30 @@ if "$RETRIEVE_MGMT_CONFIG" ; then
 
   cp /etc/network/interfaces "${TARGET}/etc/network/interfaces"
 
-  # make sure we can access the management system which might be reachable
-  # through a specific VLAN only
-  ip link set dev "$INTERNAL_DEV" down # avoid conflicts with VLAN device(s)
+  # restart networking for the time being only when running either in toram mode
+  # or not booting from NFS, once we've finished the carrier setup procedure we
+  # should be able to make this as our only supported default mode and drop
+  # everything inside the 'else' statement...
+  if grep -q 'toram' /proc/cmdline || ! grep -q 'root=/dev/nfs' /proc/cmdline ; then
+    echo  'Restarting networking'
+    logit 'Restarting networking'
+    /etc/init.d/networking restart
+  else
+    # make sure we can access the management system which might be reachable
+    # through a specific VLAN only
+    ip link set dev "$INTERNAL_DEV" down # avoid conflicts with VLAN device(s)
 
-  # vlan-raw-device b0 doesn't exist in the live environment, if we don't
-  # adjust it accordingly for our environment the vlan device(s) can't be
-  # brought up
-  # note: we do NOT modify the /e/n/i file from $TARGET here by intention
-  sed -i "s/vlan-raw-device .*/vlan-raw-device eth0/" /etc/network/interfaces
+    # vlan-raw-device b0 doesn't exist in the live environment, if we don't
+    # adjust it accordingly for our environment the vlan device(s) can't be
+    # brought up
+    # note: we do NOT modify the /e/n/i file from $TARGET here by intention
+    sed -i "s/vlan-raw-device .*/vlan-raw-device eth0/" /etc/network/interfaces
 
-  for interface in $(awk '/^auto vlan/ {print $2}' /etc/network/interfaces) ; do
-    echo "Bringing up VLAN interface $interface"
-    ifup "$interface"
-  done
+    for interface in $(awk '/^auto vlan/ {print $2}' /etc/network/interfaces) ; do
+      echo "Bringing up VLAN interface $interface"
+      ifup "$interface"
+    done
+  fi # toram
 fi
 
 
