@@ -1198,6 +1198,15 @@ if "$PRO_EDITION" ; then
     ngcp-network --host=$ROLE --set-interface=lo --shared-ip=none --shared-ipv6=none
     ngcp-network --host=$ROLE --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
     ngcp-network --host=$ROLE --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto
+    for nameserver in $(awk '/^nameserver/ {print $2}' /etc/resolv.conf) ; do
+      ngcp-network --host=$ROLE --set-interface=$INTERNAL_DEV --dns=\$nameserver
+    done
+
+    GW=$(ip route show dev $INTERNAL_DEV | awk '/^default via/ {print $3}')
+    if [ -n "\$GW" ] ; then
+      ngcp-network --host=$ROLE --set-interface=$INTERNAL_DEV --gateway="\$GW"
+    fi
+
     ngcp-network --host=$ROLE --peer=$PEER
     ngcp-network --host=$ROLE --move-from=lo --move-to=$INTERNAL_DEV --type=ha_int
 
