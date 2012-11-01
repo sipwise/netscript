@@ -870,6 +870,10 @@ EOF
 if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Retrieving /etc/hosts configuration from management server"
   wget --timeout=30 -O "$TARGET/etc/hosts" "${MANAGEMENT_IP}:3000/hostconfig/$(cat ${TARGET}/etc/hostname)"
+
+  echo "# replication workaround"        >> $TARGET/etc/hosts
+  echo "127.0.0.1 $HOSTNAME"             >> $TARGET/etc/hosts
+  echo "# end of replication workaround" >> $TARGET/etc/hosts
 fi
 
 if "$PRO_EDITION" ; then
