@@ -1433,7 +1433,7 @@ EOF
 if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Nothing to do, /etc/hosts was already set up."
 else
-  echo "Generting /etc/hosts"
+  echo "Generating /etc/hosts"
   generate_etc_hosts
 fi
 
