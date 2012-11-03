@@ -1131,11 +1131,22 @@ EOF
     adjust_hb_device
   fi
 
+  if [ -n "$CROLE" ] ; then
+    case $CROLE in
+      mgmt)
+	echo  "Carrier role mgmt identified, installing ngcp-bootenv-carrier"
+	logit "Carrier role mgmt identified, installing ngcp-bootenv-carrier"
+	chroot $TARGET apt-get -y install ngcp-bootenv-carrier
+	;;
+    esac
+  fi
+
   # make sure all services are stopped
   for service in \
     apache2 \
     asterisk \
     collectd \
+    dnsmasq \
     exim4 \
     irqbalance \
     kamailio-lb \
@@ -1143,6 +1154,7 @@ EOF
     mediator \
     monit \
     mysql \
+    nfs-kernel-server \
     ngcp-mediaproxy-ng-daemon \
     ngcp-rate-o-mat \
     ntp \
