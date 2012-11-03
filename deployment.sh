@@ -753,10 +753,11 @@ cat > /etc/debootstrap/packages << EOF
 # addons: packages which d-i installs but debootstrap doesn't
 eject
 grub-pc
-locales
 pciutils
 usbutils
 ucf
+# locales -> but we want locales-all instead:
+locales-all
 
 # required e.g. for "Broadcom NetXtreme II BCM5709S Gigabit Ethernet"
 # lacking the firmware will result in non-working network on
