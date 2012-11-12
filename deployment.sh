@@ -1233,6 +1233,7 @@ if "$PRO_EDITION" ; then
 
     cp /etc/ngcp-config/network.yml /mnt/glusterfs/shared_config/network.yml
 
+    ngcpcfg commit 'deployed /etc/ngcp-config/network.yml'
     ngcpcfg build
   else # ROLE = sp2
     cp /mnt/glusterfs/shared_config/network.yml /etc/ngcp-config/network.yml
