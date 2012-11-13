@@ -1164,6 +1164,11 @@ EOF
 	logit "Carrier role mgmt identified, installing ngcp-bootenv-carrier"
 	chroot $TARGET apt-get -y install ngcp-bootenv-carrier
 	;;
+      *)
+	echo  "Carrier role identified, installing ngcp-ngcpcfg-carrier"
+	logit "Carrier role identified, installing ngcp-ngcpcfg-carrier"
+	chroot $TARGET apt-get -y install ngcp-ngcpcfg-carrier
+	;;
     esac
   fi
 
