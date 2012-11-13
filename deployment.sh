@@ -1260,8 +1260,10 @@ if "$PRO_EDITION" ; then
 
     ngcpcfg commit 'deployed /etc/ngcp-config/network.yml'
     ngcpcfg build
+    ngcpcfg push --shared-only
   else # ROLE = sp2
     ngcpcfg pull
+    ngcpcfg push --shared-only
     ngcpcfg build
   fi
 EOT
