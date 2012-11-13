@@ -943,6 +943,31 @@ fi
 
 if "$NGCP_INSTALLER" ; then
 
+  if "$RETRIEVE_MGMT_CONFIG" ; then
+    password=sipwise
+    echo "Retrieving SSH keys from management server (using password ${password})"
+
+    mkdir -p "${TARGET}"/root/.ssh
+
+    wget --timeout=30 -O "${TARGET}"/root/.ssh/authorized_keys "${MANAGEMENT_IP}:3000/ssh/authorized_keys"
+    wget --timeout=30 -O "${TARGET}"/root/.ssh/id_rsa          "${MANAGEMENT_IP}:3000/ssh/id_rsa?password=${password}"
+    wget --timeout=30 -O "${TARGET}"/root/.ssh/id_rsa.pub      "${MANAGEMENT_IP}:3000/ssh/id_rsa_pub"
+
+    chmod 600 "${TARGET}"/root/.ssh/authorized_keys
+    chmod 600 "${TARGET}"/root/.ssh/id_rsa
+    chmod 644 "${TARGET}"/root/.ssh/id_rsa.pub
+
+    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_dsa_key     "${MANAGEMENT_IP}:3000/ssh/host_dsa_key?password=${password}"
+    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_dsa_key.pub "${MANAGEMENT_IP}:3000/ssh/host_dsa_key_pub"
+    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_rsa_key     "${MANAGEMENT_IP}:3000/ssh/host_rsa_key?password=${password}"
+    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_rsa_key.pub "${MANAGEMENT_IP}:3000/ssh/host_rsa_key_pub"
+
+    chmod 600 "${TARGET}"/etc/ssh/ssh_host_dsa_key
+    chmod 644 "${TARGET}"/etc/ssh/ssh_host_dsa_key.pub
+    chmod 600 "${TARGET}"/etc/ssh/ssh_host_rsa_key
+    chmod 644 "${TARGET}"/etc/ssh/ssh_host_rsa_key.pub
+  fi
+
   # add sipwise user
   chroot $TARGET adduser sipwise --disabled-login --gecos "Sipwise"
   echo "sipwise:sipwise" | chroot $TARGET chpasswd
@@ -1140,29 +1165,6 @@ EOF
 	chroot $TARGET apt-get -y install ngcp-bootenv-carrier
 	;;
     esac
-  fi
-
-  if "$RETRIEVE_MGMT_CONFIG" ; then
-    password=sipwise
-    echo "Retrieving SSH keys from management server (using password ${password})"
-
-    wget --timeout=30 -O "${TARGET}"/root/.ssh/authorized_keys "${MANAGEMENT_IP}:3000/ssh/authorized_keys"
-    wget --timeout=30 -O "${TARGET}"/root/.ssh/id_rsa          "${MANAGEMENT_IP}:3000/ssh/id_rsa?password=${password}"
-    wget --timeout=30 -O "${TARGET}"/root/.ssh/id_rsa.pub      "${MANAGEMENT_IP}:3000/ssh/id_rsa_pub"
-
-    chmod 600 "${TARGET}"/root/.ssh/authorized_keys
-    chmod 600 "${TARGET}"/root/.ssh/id_rsa
-    chmod 644 "${TARGET}"/root/.ssh/id_rsa.pub
-
-    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_dsa_key     "${MANAGEMENT_IP}:3000/ssh/host_dsa_key?password=${password}"
-    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_dsa_key.pub "${MANAGEMENT_IP}:3000/ssh/host_dsa_key_pub"
-    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_rsa_key     "${MANAGEMENT_IP}:3000/ssh/host_rsa_key?password=${password}"
-    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_rsa_key.pub "${MANAGEMENT_IP}:3000/ssh/host_rsa_key_pub"
-
-    chmod 600 "${TARGET}"/etc/ssh/ssh_host_dsa_key
-    chmod 644 "${TARGET}"/etc/ssh/ssh_host_dsa_key.pub
-    chmod 600 "${TARGET}"/etc/ssh/ssh_host_rsa_key
-    chmod 644 "${TARGET}"/etc/ssh/ssh_host_rsa_key.pub
   fi
 
   # make sure all services are stopped
