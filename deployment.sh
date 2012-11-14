@@ -1225,22 +1225,30 @@ if "$PRO_EDITION" ; then
   # set variable to have the *other* node from the PRO setup available for ngcp-network
   case $ROLE in
     sp1)
-      if [ -n "$TARGET_HOSTNAME" ] ; then # usually carrier env
+      logit "Role matching sp1"
+      if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *a ]] ; then # usually carrier env
+	logit "Target hostname is set and ends with 'a'"
 	THIS_HOST="$TARGET_HOSTNAME"
 	PEER="${TARGET_HOSTNAME%a}b"
       else # usually PRO env
+	logit "Target hostname is not set or does not end with 'a'"
 	THIS_HOST="$ROLE"
 	PEER=sp2
       fi
       ;;
     sp2)
-      if [ -n "$TARGET_HOSTNAME" ] ; then # usually carrier env
+      logit "Role matching sp2"
+      if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *b ]] ; then # usually carrier env
 	THIS_HOST="$TARGET_HOSTNAME"
 	PEER="${TARGET_HOSTNAME%b}a"
       else # usually PRO env
+	logit "Target hostname is not set or does not end with 'b'"
 	THIS_HOST="$ROLE"
 	PEER=sp1
       fi
+      ;;
+    *)
+      logit "Using unsupported role: $ROLE"
       ;;
   esac
 
