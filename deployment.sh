@@ -1296,6 +1296,7 @@ if "$PRO_EDITION" ; then
     ngcpcfg commit "deployed /etc/ngcp-config/network.yml on $ROLE"
     ngcpcfg push --shared-only
     ssh-keyscan $PEER >> ~/.ssh/known_hosts
+    ssh $PEER "ssh-keyscan $THIS_HOST >> ~/.ssh/known_hosts"
     ssh $PEER ngcpcfg pull
     ngcpcfg build
   fi
