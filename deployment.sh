@@ -1314,6 +1314,8 @@ if "$PRO_EDITION" ; then
 
     ssh $PEER ngcpcfg pull
     ngcpcfg build
+
+    ngcpcfg init-mgmt $MANAGEMENT_IP
   fi
 EOT
 fi
