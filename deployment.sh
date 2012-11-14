@@ -1224,8 +1224,24 @@ fi
 if "$PRO_EDITION" ; then
   # set variable to have the *other* node from the PRO setup available for ngcp-network
   case $ROLE in
-    sp1) PEER=sp2 ;;
-    sp2) PEER=sp1 ;;
+    sp1)
+      if [ -n "$TARGET_HOSTNAME" ] ; then # usually carrier env
+	THIS_HOST="$TARGET_HOSTNAME"
+	PEER="${TARGET_HOSTNAME%a}b"
+      else # usually PRO env
+	THIS_HOST="$ROLE"
+	PEER=sp2
+      fi
+      ;;
+    sp2)
+      if [ -n "$TARGET_HOSTNAME" ] ; then # usually carrier env
+	THIS_HOST="$TARGET_HOSTNAME"
+	PEER="${TARGET_HOSTNAME%b}a"
+      else # usually PRO env
+	THIS_HOST="$ROLE"
+	PEER=sp1
+      fi
+      ;;
   esac
 
   cat << EOT | grml-chroot $TARGET /bin/bash
@@ -1237,23 +1253,23 @@ if "$PRO_EDITION" ; then
   if [ "$ROLE" = "sp1" ] ; then
     cp /etc/ngcp-config/network.yml /etc/ngcp-config/network.yml.factory_default
 
-    ngcp-network --host=$ROLE --set-interface=lo --ip=auto --netmask=auto --hwaddr=auto --ipv6='::1' --type=web_int
-    ngcp-network --host=$ROLE --set-interface=lo --shared-ip=none --shared-ipv6=none
-    ngcp-network --host=$ROLE --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
-    ngcp-network --host=$ROLE --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto
+    ngcp-network --host=$THIS_HOST --set-interface=lo --ip=auto --netmask=auto --hwaddr=auto --ipv6='::1' --type=web_int
+    ngcp-network --host=$THIS_HOST --set-interface=lo --shared-ip=none --shared-ipv6=none
+    ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
+    ngcp-network --host=$THIS_HOST --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto
     for nameserver in $(awk '/^nameserver/ {print $2}' /etc/resolv.conf) ; do
-      ngcp-network --host=$ROLE --set-interface=$DEFAULT_INSTALL_DEV --dns=\$nameserver
+      ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --dns=\$nameserver
     done
 
     GW=$(ip route show dev $DEFAULT_INSTALL_DEV | awk '/^default via/ {print $3}')
     if [ -n "\$GW" ] ; then
-      ngcp-network --host=$ROLE --set-interface=$DEFAULT_INSTALL_DEV --gateway="\$GW"
+      ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --gateway="\$GW"
     fi
 
-    ngcp-network --host=$ROLE --peer=$PEER
-    ngcp-network --host=$ROLE --move-from=lo --move-to=$INTERNAL_DEV --type=ha_int
+    ngcp-network --host=$THIS_HOST --peer=$PEER
+    ngcp-network --host=$THIS_HOST --move-from=lo --move-to=$INTERNAL_DEV --type=ha_int
 
-    ngcp-network --host=$PEER --peer=$ROLE
+    ngcp-network --host=$PEER --peer=$THIS_HOST
     ngcp-network --host=$PEER --set-interface=lo --shared-ip=none --shared-ipv6=none
     ngcp-network --host=$PEER --set-interface=lo --ipv6='::1' --ip=auto --netmask=auto --hwaddr=auto
     ngcp-network --host=$PEER --set-interface=eth1 --ip=$DEFAULT_IP2 --netmask=$DEFAULT_INTERNAL_NETMASK --type=ha_int
