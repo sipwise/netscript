@@ -1280,7 +1280,6 @@ if "$PRO_EDITION" ; then
     ngcp-network --host=$PEER --peer=$THIS_HOST
     ngcp-network --host=$PEER --set-interface=lo --shared-ip=none --shared-ipv6=none
     ngcp-network --host=$PEER --set-interface=lo --ipv6='::1' --ip=auto --netmask=auto --hwaddr=auto
-    ngcp-network --host=$PEER --set-interface=eth1 --ip=$DEFAULT_IP2 --netmask=$DEFAULT_INTERNAL_NETMASK --type=ha_int
     ngcp-network --host=$PEER --role=proxy --role=lb --role=mgmt
     ngcp-network --host=$PEER --set-interface=lo --type=sip_int --type=web_ext --type=sip_ext \
                               --type=rtp_ext --type=ssh_ext --type=mon_ext --type=web_int
@@ -1293,8 +1292,11 @@ if "$PRO_EDITION" ; then
   else # ROLE = sp2
     ngcpcfg pull
     ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
+    ngcp-network --host=$THIS_HOST --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto --type=ha_int
     ngcpcfg commit "deployed /etc/ngcp-config/network.yml on $ROLE"
     ngcpcfg push --shared-only
+    ssh-keyscan $PEER >> ~/.ssh/known_hosts
+    ssh $PEER ngcpcfg pull
     ngcpcfg build
   fi
 EOT
