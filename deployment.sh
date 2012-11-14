@@ -1302,12 +1302,15 @@ if "$PRO_EDITION" ; then
 
     ngcpcfg commit "deployed /etc/ngcp-config/network.yml on $ROLE"
     ngcpcfg push --shared-only
+
+    # make sure login from second node to first node works
     ssh-keyscan $PEER >> ~/.ssh/known_hosts
 
     # live system uses a different SSH host key than the finally installed
     # system, so do NOT use ssh-keyscan here
-    SSH_KEY="$(awk '{print $1 " " $2}' /etc/ssh/ssh_host_rsa_key.pub)"
-    ssh $PEER "echo $THIS_HOST \$SSH_KEY >> ~/.ssh/known_hosts"
+    tail -1 ~/.ssh/known_hosts | sed "s/\w* /$THIS_HOST /" >> ~/.ssh/known_hosts
+    tail -1 ~/.ssh/known_hosts | sed "s/\w* /$MANAGEMENT_IP /" >> ~/.ssh/known_hosts
+    scp ~/.ssh/known_hosts $PEER:~/.ssh/known_hosts
 
     ssh $PEER ngcpcfg pull
     ngcpcfg build
