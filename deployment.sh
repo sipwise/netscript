@@ -1287,11 +1287,13 @@ if "$PRO_EDITION" ; then
 
     cp /etc/ngcp-config/network.yml /mnt/glusterfs/shared_config/network.yml
 
-    ngcpcfg commit 'deployed /etc/ngcp-config/network.yml'
+    ngcpcfg commit "deployed /etc/ngcp-config/network.yml on $ROLE"
     ngcpcfg build
     ngcpcfg push --shared-only
   else # ROLE = sp2
     ngcpcfg pull
+    ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
+    ngcpcfg commit "deployed /etc/ngcp-config/network.yml on $ROLE"
     ngcpcfg push --shared-only
     ngcpcfg build
   fi
