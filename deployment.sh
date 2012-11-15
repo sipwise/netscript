@@ -1315,7 +1315,11 @@ if "$PRO_EDITION" ; then
     ssh $PEER ngcpcfg pull
     ngcpcfg build
 
-    ngcpcfg init-mgmt $MANAGEMENT_IP
+    if ngcpcfg --help |grep -q init-mgmt ; then
+      ngcpcfg init-mgmt $MANAGEMENT_IP
+    else
+      echo "Skipping ngcpcfg init-mgmt as it is not available"
+    fi
   fi
 EOT
 fi
