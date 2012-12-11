@@ -1277,7 +1277,7 @@ if "$PRO_EDITION" ; then
     ngcp-network --host=$THIS_HOST --peer=$PEER
     ngcp-network --host=$THIS_HOST --move-from=lo --move-to=$INTERNAL_DEV --type=ha_int
     # set *_ext types accordingly for PRO setup
-    ngcp-network --host=$THIS_HOST --move-from=lo --move-to=$INTERNAL_DEV --type=web_ext \
+    ngcp-network --host=$THIS_HOST --move-from=lo --move-to=$EXTERNAL_DEV --type=web_ext \
                                    --type=sip_ext --type=rtp_ext --type=ssh_ext --type=mon_ext
 
     ngcp-network --host=$PEER --peer=$THIS_HOST
@@ -1302,7 +1302,7 @@ if "$PRO_EDITION" ; then
     # finalize the --ip=$IP2 from previous run on first node
     ngcp-network --host=$THIS_HOST --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto --type=ha_int
     # set *_ext types accordingly for PRO setup
-    ngcp-network --host=$THIS_HOST --set-interface=$INTERNAL_DEV --type=web_ext --type=sip_ext \
+    ngcp-network --host=$THIS_HOST --set-interface=$EXTERNAL_DEV --type=web_ext --type=sip_ext \
                               --type=rtp_ext --type=ssh_ext --type=mon_ext
 
     ngcpcfg commit "deployed /etc/ngcp-config/network.yml on $ROLE"
