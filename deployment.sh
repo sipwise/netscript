@@ -1262,7 +1262,7 @@ if "$PRO_EDITION" ; then
     cp /etc/ngcp-config/network.yml /etc/ngcp-config/network.yml.factory_default
 
     ngcp-network --host=$THIS_HOST --set-interface=lo --ip=auto --netmask=auto --hwaddr=auto --ipv6='::1' --type=web_int
-    ngcp-network --host=$THIS_HOST --set-interface=lo --shared-ip=none --shared-ipv6=none
+    ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --shared-ip=none --shared-ipv6=none
     ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
     ngcp-network --host=$THIS_HOST --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto
     for nameserver in $(awk '/^nameserver/ {print $2}' /etc/resolv.conf) ; do
@@ -1281,7 +1281,7 @@ if "$PRO_EDITION" ; then
                                    --type=sip_ext --type=rtp_ext --type=ssh_ext --type=mon_ext
 
     ngcp-network --host=$PEER --peer=$THIS_HOST
-    ngcp-network --host=$PEER --set-interface=lo --shared-ip=none --shared-ipv6=none
+    ngcp-network --host=$PEER --set-interface=$EXTERNAL_DEV --shared-ip=none --shared-ipv6=none
     ngcp-network --host=$PEER --set-interface=lo --ipv6='::1' --ip=auto --netmask=auto --hwaddr=auto
 
     # needed to make sure MySQL setup is OK for first node until second node is set up
