@@ -70,9 +70,6 @@ else
     fi
   done
 fi
-test -z "${DISK}" 
-  && die "Error: No non-removable disk suitable for installation found"
-
 
 ### helper functions {{{
 set_deploy_status() {
@@ -168,6 +165,9 @@ die() {
 logit "host-IP: $(ip-screen)"
 logit "deployment-version: $SCRIPT_VERSION"
 # }}}
+
+test -z "${DISK}" \
+  && die "Error: No non-removable disk suitable for installation found"
 
 enable_deploy_status_server
 
