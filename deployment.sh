@@ -61,8 +61,17 @@ STATUS_WAIT=0
 if [ -L /sys/block/vda ] ; then
   export DISK=vda # will be configured as /dev/vda
 else
-  export DISK=sda # will be configured as /dev/sda
+  # in some cases, sda is not the HDD, but the CDROM,
+  # so better walk through all devices.
+  for i in /sys/block/sd*; do 
+    if grep -q 0 ${i}/removable; then 
+      export DISK=$(basename $i)
+      break
+    fi
+  done
 fi
+test -z "${DISK}" 
+  && die "Error: No non-removable disk suitable for installation found"
 
 
 ### helper functions {{{
