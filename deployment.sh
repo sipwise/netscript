@@ -685,6 +685,12 @@ check_for_supported_disk() {
     return 0
   fi
 
+  # IBM System HS23 LSISAS2004
+  if grep -q 'Logical Volume' /sys/block/${DISK}/device/model && \
+    grep -q "LSI" /sys/block/${DISK}/device/vendor ; then
+    return 0
+  fi
+
   # PERC H700, PERC H710,...
   if grep -q 'PERC' /sys/block/${DISK}/device/model && \
     grep -q "DELL" /sys/block/${DISK}/device/vendor ; then
