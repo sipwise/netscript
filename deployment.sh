@@ -777,6 +777,8 @@ EOF
   dd if=/dev/zero of=/dev/${DISK} bs=1M count=1
   blockdev --rereadpt /dev/${DISK}
 
+  export LOGDIR='/tmp/setup-storage'
+  mkdir -p $LOGDIR
   setup-storage -f /tmp/partition_setup.txt -X
 
   # used later by installer
