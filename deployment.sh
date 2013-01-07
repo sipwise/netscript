@@ -57,6 +57,7 @@ HALT=false
 REBOOT=false
 STATUS_DIRECTORY=/srv/deployment/
 STATUS_WAIT=0
+LVM=false
 
 if [ -L /sys/block/vda ] ; then
   export DISK=vda # will be configured as /dev/vda
@@ -326,6 +327,10 @@ fi
 # site specific profile file
 if checkBootParam netscript ; then
   NETSCRIPT_SERVER="$(dirname $(getBootParam netscript))"
+fi
+
+if checkBootParam ngcplvm ; then
+  LVM=true
 fi
 
 if checkBootParam ngcpprofile && [ -n "$NETSCRIPT_SERVER" ] ; then
@@ -756,15 +761,42 @@ if [ $(awk "/ ${DISK}$/ {print \$3}" /proc/partitions) -gt 2000000000 ] ; then
 else
   TABLE=msdos
 fi
-parted -s /dev/${DISK} mktable "$TABLE"
-# hw-raid with rootfs + swap partition
-parted -s /dev/${DISK} 'mkpart primary ext4 2048s 95%'
-parted -s /dev/${DISK} 'mkpart primary linux-swap 95% -1'
-sync
 
-SWAP_PARTITION="/dev/${DISK}2"
-echo "Initialising swap partition $SWAP_PARTITION"
-mkswap "$SWAP_PARTITION"
+if "$LVM" ; then
+  cat > /tmp/partition_setup.txt << EOF
+disk_config ${DISK} disklabel:${TABLE} bootable:1
+primary -       4096-   -       -
+
+disk_config lvm
+vg ngcp       ${DISK}1
+ngcp-root     /       95%       ext3 rw
+ngcp-swap     swap    5%-10G    swap sw
+EOF
+
+  # make sure setup-storage doesn't fail if LVM is already present
+  dd if=/dev/zero of=/dev/${DISK} bs=1M count=1
+  blockdev --rereadpt /dev/${DISK}
+
+  setup-storage -f /tmp/partition_setup.txt -X
+
+  # used later by installer
+  ROOT_FS="/dev/mapper/ngcp-root"
+  SWAP_PARTITION="/dev/mapper/ngcp-swap"
+
+else # no LVM (default)
+  parted -s /dev/${DISK} mktable "$TABLE"
+  # hw-raid with rootfs + swap partition
+  parted -s /dev/${DISK} 'mkpart primary ext4 2048s 95%'
+  parted -s /dev/${DISK} 'mkpart primary linux-swap 95% -1'
+  sync
+
+  # used later by installer
+  ROOT_FS="/dev/${DISK}1"
+  SWAP_PARTITION="/dev/${DISK}2"
+
+  echo "Initialising swap partition $SWAP_PARTITION"
+  mkswap "$SWAP_PARTITION"
+fi
 
 # otherwise e2fsck fails with "need terminal for interactive repairs"
 echo FSCK=no >>/etc/debootstrap/config
@@ -804,6 +836,13 @@ openssh-server
 #os-prober
 EOF
 
+if "$LVM" ; then
+  cat >> /etc/debootstrap/packages << EOF
+# support LVM
+lvm2
+EOF
+fi
+
 if "$PRO_EDITION" ; then
   cat >> /etc/debootstrap/packages << EOF
 # support 32bit binaries, e.g. for firmware upgrades
@@ -839,18 +878,17 @@ echo y | grml-debootstrap \
   --mirror "$MIRROR" \
   --debopt '--no-check-gpg' $EXTRA_DEBOOTSTRAP_OPTS \
   -r "$DEBIAN_RELEASE" \
-  -t "/dev/${DISK}1" \
+  -t "$ROOT_FS" \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
 
 if [ ${PIPESTATUS[1]} -ne 0 ]; then
-  die "Error during installation of Debian ${DEBIAN_RELEASE}. Find details via: mount /dev/${DISK}1 $TARGET ; ls $TARGET/debootstrap/*.log"
+  die "Error during installation of Debian ${DEBIAN_RELEASE}. Find details via: mount $ROOT_FS $TARGET ; ls $TARGET/debootstrap/*.log"
 fi
 
 sync
-mount /dev/${DISK}1 $TARGET
+mount "$ROOT_FS" "$TARGET"
 
 # provide useable swap partition
-SWAP_PARTITION="/dev/${DISK}2"
 echo "Enabling swap partition $SWAP_PARTITION via /etc/fstab"
 cat >> "${TARGET}/etc/fstab" << EOF
 $SWAP_PARTITION                      none           swap       sw,pri=0  0  0
@@ -1730,6 +1768,12 @@ sync
 
 # unmount chroot - what else?
 umount $TARGET || umount -l $TARGET # fall back if a process is still being active
+
+if "$LVM" ; then
+  # make sure no device mapper handles are open, otherwise
+  # rereading partition table won't work
+  dmsetup remove_all || true
+fi
 
 # make sure /etc/fstab is up2date
 if ! blockdev --rereadpt /dev/$DISK ; then
