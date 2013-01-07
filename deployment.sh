@@ -780,7 +780,7 @@ EOF
   export LOGDIR='/tmp/setup-storage'
   mkdir -p $LOGDIR
   export disklist=$(/usr/lib/fai/disk-info | sort)
-  setup-storage -f /tmp/partition_setup.txt -X
+  PATH=/usr/lib/fai:${PATH} setup-storage -f /tmp/partition_setup.txt -X
 
   # used later by installer
   ROOT_FS="/dev/mapper/ngcp-root"
