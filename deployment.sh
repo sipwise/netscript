@@ -1327,8 +1327,9 @@ if "$PRO_EDITION" ; then
     ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --shared-ip=none --shared-ipv6=none
     ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
     ngcp-network --host=$THIS_HOST --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto
-    for nameserver in $(awk '/^nameserver/ {print $2}' /etc/resolv.conf) ; do
-      ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --dns=\$nameserver
+    nameserver="$(awk '/^nameserver/ {print $2}' /etc/resolv.conf)"
+    for entry in \$nameserver ; do
+      ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --dns=\$entry
     done
 
     GW=$(ip route show dev $DEFAULT_INSTALL_DEV | awk '/^default via/ {print $3}')
