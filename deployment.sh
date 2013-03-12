@@ -779,6 +779,15 @@ EOF
 
   export LOGDIR='/tmp/setup-storage'
   mkdir -p $LOGDIR
+
+  # /usr/lib/fai/fai-disk-info is available as of FAI 4.0,
+  # older versions shipped /usr/lib/fai/disk-info which doesn't
+  # support the partition setup syntax we use in our setup
+  if ! [ -x /usr/lib/fai/fai-disk-info ] ; then
+    echo "You are using an outdated ISO, please update it to have fai-setup-storage >=4.0.6 available." >&2
+    exit 1
+  fi
+
   export disklist=$(/usr/lib/fai/fai-disk-info | sort)
   PATH=/usr/lib/fai:${PATH} setup-storage -f /tmp/partition_setup.txt -X
 
