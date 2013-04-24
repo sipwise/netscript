@@ -583,17 +583,17 @@ if "$PRO_EDITION" ; then
 elif "$CE_EDITION" ; then
   case "$SP_VERSION" in
     # we do not have a local mirror for lenny, so disable it
-    2.1) INSTALLER_VERSION="0.3.2" ; DEBIAN_RELEASE="lenny" ;;
-    2.2) INSTALLER_VERSION="0.4.7";;
-    2.4) INSTALLER_VERSION="0.6.3";;
-    2.5) INSTALLER_VERSION="0.7.3";;
-    2.6-rc1) INSTALLER_VERSION="0.8.1";;
-    2.6-rc2) INSTALLER_VERSION="0.8.2";;
-    2.6) INSTALLER_VERSION="0.8.3";;
-    2.7-rc2) INSTALLER_VERSION="0.9.0";;
-    2.7-rc3) INSTALLER_VERSION="0.9.1";;
-    2.7) INSTALLER_VERSION="0.9.2";;
-    2.8) INSTALLER_VERSION="0.10.2";;
+    2.1)     INSTALLER_VERSION="0.3.2" ;  DEBIAN_RELEASE="lenny" ;;
+    2.2)     INSTALLER_VERSION="0.4.7" ;  DEBIAN_RELEASE="squeeze" ;;
+    2.4)     INSTALLER_VERSION="0.6.3" ;  DEBIAN_RELEASE="squeeze" ;;
+    2.5)     INSTALLER_VERSION="0.7.3" ;  DEBIAN_RELEASE="squeeze" ;;
+    2.6-rc1) INSTALLER_VERSION="0.8.1" ;  DEBIAN_RELEASE="squeeze" ;;
+    2.6-rc2) INSTALLER_VERSION="0.8.2" ;  DEBIAN_RELEASE="squeeze" ;;
+    2.6)     INSTALLER_VERSION="0.8.3" ;  DEBIAN_RELEASE="squeeze" ;;
+    2.7-rc2) INSTALLER_VERSION="0.9.0" ;  DEBIAN_RELEASE="squeeze" ;;
+    2.7-rc3) INSTALLER_VERSION="0.9.1" ;  DEBIAN_RELEASE="squeeze" ;;
+    2.7)     INSTALLER_VERSION="0.9.2" ;  DEBIAN_RELEASE="squeeze" ;;
+    2.8)     INSTALLER_VERSION="0.10.2" ; DEBIAN_RELEASE="squeeze" ;;
   esac
 fi
 
