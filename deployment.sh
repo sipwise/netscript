@@ -87,7 +87,7 @@ enable_deploy_status_server() {
 
   (
     cd "${STATUS_DIRECTORY}"
-    python -m SimpleHTTPServer 4242 &
+    python -m SimpleHTTPServer 4242 >/tmp/status_server.log 2>&1 &
   )
 }
 
