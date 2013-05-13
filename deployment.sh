@@ -747,8 +747,8 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 
-127.0.0.1 $HOSTNAME
-$INSTALL_IP $HOSTNAME
+127.0.0.1 $ROLE $HOSTNAME
+$INSTALL_IP $ROLE $HOSTNAME
 EOF
 fi
 
