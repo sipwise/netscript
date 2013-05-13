@@ -929,11 +929,14 @@ if [[ $(chroot $TARGET dpkg --list | awk '/^rc/ {print $2}') != "" ]] ; then
   chroot $TARGET dpkg --purge $(chroot $TARGET dpkg --list | awk '/^rc/ {print $2}')
 fi
 
+# make sure `hostname` and `hostname --fqdn` return data from chroot
+grml-chroot $TARGET /etc/init.d/hostname.sh
+
 # make sure installations of packages works, will be overriden later again
 [ -n "$HOSTNAME" ] || HOSTNAME="kantan"
 cat > $TARGET/etc/hosts << EOF
 127.0.0.1       localhost
-127.0.0.1 $HOSTNAME
+127.0.0.1       $HOSTNAME
 
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
@@ -941,9 +944,6 @@ ff00::0         ip6-mcastprefix
 ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
-
-# make sure `hostname` and `hostname --fqdn` return data from chroot
-grml-chroot $TARGET /etc/init.d/hostname.sh
 
 # needed for carrier
 if "$RETRIEVE_MGMT_CONFIG" ; then
