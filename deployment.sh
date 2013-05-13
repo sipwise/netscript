@@ -942,6 +942,9 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
 
+# make sure `hostname` and `hostname --fqdn` return data from chroot
+grml-chroot $TARGET /etc/init.d/hostname.sh
+
 # needed for carrier
 if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Retrieving /etc/hosts configuration from management server"
