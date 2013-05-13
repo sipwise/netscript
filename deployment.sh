@@ -296,6 +296,13 @@ if checkBootParam ngcphostname ; then
   TARGET_HOSTNAME="$(getBootParam ngcphostname)" || true
 fi
 
+if [ -n "$TARGET_HOSTNAME" ] ; then
+  export HOSTNAME="$TARGET_HOSTNAME"
+else
+  [ -n "$HOSTNAME" ] || HOSTNAME="nohostname"
+  export HOSTNAME
+fi
+
 if checkBootParam ngcpip1 ; then
   IP1=$(getBootParam ngcpip1)
 fi
@@ -933,7 +940,6 @@ fi
 grml-chroot $TARGET /etc/init.d/hostname.sh
 
 # make sure installations of packages works, will be overriden later again
-[ -n "$HOSTNAME" ] || HOSTNAME="kantan"
 cat > $TARGET/etc/hosts << EOF
 127.0.0.1       localhost
 127.0.0.1       $HOSTNAME
