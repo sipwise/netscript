@@ -1089,11 +1089,14 @@ if "$NGCP_INSTALLER" ; then
 
     # inside the pool there might be versions which have been released inside a
     # maintenance branch but which don't cover recent changes in trunk,
-    # therefore get rid of every file without "svn" in the filename, so e.g.
-    #   ngcp-installer-ce_0.7.2+0~1339173026.svn9034.165_all.deb (trunk version)
+    # therefore get rid of every file without "gbp" in the filename, so e.g.
+    #   ngcp-installer-pro_0.10.2+0~1368529812.299+wheezy~1.gbp1691a0_all.deb (trunk version)
     # is preferred over
-    #   ngcp-installer-ce_0.7.3_all.deb (release into 2.5 repository)
-    find ./debs -type f -a ! -name \*svn\* -exec rm {} +
+    #   ngcp-installer-pro_0.10.2_all.deb (release in 2.8 repository)
+    find ./debs -type f -a ! -name \*gbp\* -exec rm {} +
+
+    # same for files not matching the Debian relase we want to install
+    find ./debs -type f -a ! -name \*${DEBIAN_RELEASE}\* -exec rm {} +
 
     VERSION=$(dpkg-scanpackages debs /dev/null 2>/dev/null | awk '/Version/ {print $2}' | sort -ur)
 
