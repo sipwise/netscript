@@ -24,10 +24,6 @@ if ! [ -r /etc/grml_cd ] ; then
   exit 1
 fi
 
-# Exit on any error. Horrible for programming,
-# but be as defense as possible. Murhpy, you know.
-set -e
-
 # better safe than sorry
 export LC_ALL=C
 export LANG=C
@@ -160,6 +156,7 @@ logit() {
 die() {
   logger -t grml-deployment "$@"
   echo "$@" >&2
+  set_deploy_status "error"
   exit 1
 }
 
@@ -795,8 +792,7 @@ EOF
   # older versions shipped /usr/lib/fai/disk-info which doesn't
   # support the partition setup syntax we use in our setup
   if ! [ -x /usr/lib/fai/fai-disk-info ] ; then
-    echo "You are using an outdated ISO, please update it to have fai-setup-storage >=4.0.6 available." >&2
-    exit 1
+    die "You are using an outdated ISO, please update it to have fai-setup-storage >=4.0.6 available."
   fi
 
   export disklist=$(/usr/lib/fai/fai-disk-info | sort)
@@ -979,8 +975,7 @@ if "$PRO_EDITION" && [[ $(imvirt) != "Physical" ]] ; then
   EXT_MAC=$(udevadm info -a -p /sys/class/net/${EXTERNAL_DEV} | awk -F== '/ATTR{address}/ {print $2}')
 
   if [ "$INT_MAC" = "$EXT_MAC" ] ; then
-    echo "Error: MAC address for $INTERNAL_DEV is same as for $EXTERNAL_DEV" >&2
-    exit 1
+    die "Error: MAC address for $INTERNAL_DEV is same as for $EXTERNAL_DEV"
   fi
 
   cat > $TARGET/etc/udev/rules.d/70-persistent-net.rules << EOF
@@ -1199,7 +1194,7 @@ EOT
       # brrrr, don't tell this anyone or i'll commit with http://whatthecommit.com/ as commit msg!
       KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | sort -u | head -1))
       if [ -z "$KERNELHEADERS" ] ; then
-         die "Error: no kernel headers found for building the ngcp-mediaproxy-ng kernel module."
+        die "Error: no kernel headers found for building the ngcp-mediaproxy-ng kernel module."
       fi
       KERNELVERSION=${KERNELHEADERS##linux-headers-}
       NGCPVERSION=$(chroot $TARGET dkms status | grep ngcp-mediaproxy-ng | awk -F, '{print $2}' | sed 's/:.*//')
