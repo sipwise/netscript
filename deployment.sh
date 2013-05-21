@@ -1,19 +1,13 @@
 #!/bin/bash
 # Purpose: automatically install Debian + sip:provider platform
 ################################################################################
-# $Id$
-# $Rev$
-################################################################################
 
-# set version to svn revision information, initially enabled via
-# svn propset svn:keywords 'Id Revision' deployment.sh
-SCRIPT_VERSION="$Rev$"
+# set version to git commit ID
+SCRIPT_VERSION="%SCRIPT_VERSION%"
 
 # not set? then fall back to timestamp of execution
-if [ -z "$SCRIPT_VERSION" ] || [ "$SCRIPT_VERSION" = '$' ] ; then
+if [ -z "$SCRIPT_VERSION" ] || [ "$SCRIPT_VERSION" = '%SCRIPT_VERSION%' ] ; then
   SCRIPT_VERSION=$(date +%s) # seconds since 1970-01-01 00:00:00 UTC
-else # we just want the ID from something like "$Rev$"
-  SCRIPT_VERSION=$(echo $SCRIPT_VERSION | awk '{print $2}')
 fi
 
 # Never ever execute the script outside of a
