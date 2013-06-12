@@ -322,21 +322,8 @@ if checkBootParam ngcpcmaster ; then
   CMASTER=$(getBootParam ngcpcmaster)
 fi
 
-# site specific profile file
-if checkBootParam netscript ; then
-  NETSCRIPT_SERVER="$(dirname $(getBootParam netscript))"
-fi
-
 if checkBootParam ngcplvm ; then
   LVM=true
-fi
-
-if checkBootParam ngcpprofile && [ -n "$NETSCRIPT_SERVER" ] ; then
-  PROFILE="$(getBootParam ngcpprofile)"
-
-  if [ -z "$PROFILE" ] ; then
-    die "Error: No argument for ngcpprofile found, can not continue."
-  fi
 fi
 
 if checkBootParam kantan ; then
@@ -377,7 +364,6 @@ Control installation parameters:
   noinstall        - do not install neither Debian nor NGCP
   ngcpinst         - force usage of NGCP installer
   ngcpinstvers=... - use specific NGCP installer version
-  ngcpprofile=...  - download additional configuration profile (WIP)
 
 Control target system:
 
@@ -418,7 +404,6 @@ for param in $* ; do
     *ngcpinst*) NGCP_INSTALLER=true;;
     *ngcpinstvers=*) INSTALLER_VERSION=$(echo $param | sed 's/ngcpinstvers=//');;
     *ngcphostname=*) TARGET_HOSTNAME=$(echo $param | sed 's/ngcphostname=//');;
-    *ngcpprofile=*) PROFILE=$(echo $param | sed 's/ngcpprofile=//');;
     *ngcpeiface=*) EIFACE=$(echo $param | sed 's/ngcpeiface=//');;
     *ngcpeaddr=*) EADDR=$(echo $param | sed 's/ngcpeaddr=//');;
     *ngcpip1=*) IP1=$(echo $param | sed 's/ngcpip1=//');;
@@ -443,39 +428,6 @@ if ! "$NGCP_INSTALLER" ; then
 fi
 
 set_deploy_status "getconfig"
-
-# load site specific profile if specified
-if [ -n "$PROFILE" ] && [ -n "$NETSCRIPT_SERVER" ] ; then
-  getconfig() {
-    wget -r --no-parent --timeout=10 --dns-timeout=10  --connect-timeout=10 --tries=1 \
-         --read-timeout=10 ${NETSCRIPT_SERVER}/$PROFILE/ && return 0 || return 1
-  }
-
-  echo "Trying to get ${NETSCRIPT_SERVER}/$PROFILE/*"
-  counter=10
-  while ! getconfig && [[ "$counter" != 0 ]] ; do
-    echo -n "Sleeping for 1 second and trying to get config again... "
-    counter=$(( counter-1 ))
-    echo "$counter tries left" ; sleep 1
-  done
-
-  DOWNLOADDIR=$(echo ${NETSCRIPT_SERVER}/$PROFILE | sed 's|^http://||')
-  if [ -d "$DOWNLOADDIR" ] ; then
-    if [ -s "$DOWNLOADDIR/default.sh" ] ; then
-      rm -rf $DOWNLOADDIR/index.html*
-      mv $DOWNLOADDIR/* ./
-      rmdir -p $DOWNLOADDIR
-      echo "Loading profile $PROFILE"
-      . default.sh
-    else
-      rm -rf $DOWNLOADDIR/*
-      rmdir -p $DOWNLOADDIR
-      die "Error: No default.sh in profile $PROFILE from $NETSCRIPT_SERVER"
-    fi
-  else
-    die "Error: Could not get profile $PROFILE from $NETSCRIPT_SERVER"
-  fi
-fi
 
 # when using ip=....:$HOSTNAME:eth0:off file /etc/hosts doesn't contain the
 # hostname by default, avoid warning/error messages in the host system
@@ -519,7 +471,7 @@ if [ -z "$INSTALL_DEV" ] ; then
 fi
 INSTALL_IP="$(ifdata -pa $INSTALL_DEV)"
 
-# final external device and IP are same as installation, if not set in profile
+# final external device and IP are same as installation
 [ -n "$EXTERNAL_DEV" ] || EXTERNAL_DEV=$INSTALL_DEV
 [ -n "$EXTERNAL_IP" ] || EXTERNAL_IP=$INSTALL_IP
 
