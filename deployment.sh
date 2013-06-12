@@ -752,7 +752,7 @@ else # no LVM (default)
   parted -s /dev/${DISK} mktable "$TABLE" || die "Failed to set up partition table"
   # hw-raid with rootfs + swap partition
   parted -s /dev/${DISK} 'mkpart primary ext4 2048s 95%' || die "Failed to set up primary partition"
-  parted -s /dev/${DISK} 'mkpart primary linux-swap 95% 100%' || die "Failed to set up swap partition"
+  parted -s /dev/${DISK} 'mkpart primary linux-swap 95% -1' || die "Failed to set up swap partition"
   sync
 
   # used later by installer
