@@ -138,10 +138,10 @@ EOF
 ### }}}
 
 # logging {{{
-cat > /etc/rsyslog.d/logsend.conf << EOF
-*.*  @@192.168.51.28
-EOF
-/etc/init.d/rsyslog restart
+#cat > /etc/rsyslog.d/logsend.conf << EOF
+#*.*  @@192.168.51.28
+#EOF
+#/etc/init.d/rsyslog restart
 
 logit() {
   logger -t grml-deployment "$@"
