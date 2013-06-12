@@ -790,17 +790,17 @@ EOF
   fi
 
   export disklist=$(/usr/lib/fai/fai-disk-info | sort)
-  PATH=/usr/lib/fai:${PATH} setup-storage -f /tmp/partition_setup.txt -X || exit 1
+  PATH=/usr/lib/fai:${PATH} setup-storage -f /tmp/partition_setup.txt -X || die "Failure during execution of setup-storage"
 
   # used later by installer
   ROOT_FS="/dev/mapper/ngcp-root"
   SWAP_PARTITION="/dev/mapper/ngcp-swap"
 
 else # no LVM (default)
-  parted -s /dev/${DISK} mktable "$TABLE" || exit 1
+  parted -s /dev/${DISK} mktable "$TABLE" || die "Failed to set up partition table"
   # hw-raid with rootfs + swap partition
-  parted -s /dev/${DISK} 'mkpart primary ext4 2048s 95%' || exit 1
-  parted -s /dev/${DISK} 'mkpart primary linux-swap 95% -1' || exit 1
+  parted -s /dev/${DISK} 'mkpart primary ext4 2048s 95%' || die "Failed to set up primary partition"
+  parted -s /dev/${DISK} 'mkpart primary linux-swap 95% -1' || die "Failed to set up swap partition"
   sync
 
   # used later by installer
@@ -808,7 +808,7 @@ else # no LVM (default)
   SWAP_PARTITION="/dev/${DISK}2"
 
   echo "Initialising swap partition $SWAP_PARTITION"
-  mkswap "$SWAP_PARTITION" || exit 1
+  mkswap "$SWAP_PARTITION" || die "Failed to initialise swap partition"
 fi
 
 # otherwise e2fsck fails with "need terminal for interactive repairs"
