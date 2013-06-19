@@ -54,8 +54,8 @@ if [ -L /sys/block/vda ] ; then
 else
   # in some cases, sda is not the HDD, but the CDROM,
   # so better walk through all devices.
-  for i in /sys/block/sd*; do 
-    if grep -q 0 ${i}/removable; then 
+  for i in /sys/block/sd*; do
+    if grep -q 0 ${i}/removable; then
       export DISK=$(basename $i)
       break
     fi
@@ -1568,17 +1568,40 @@ else
 fi
 
 if [ -n "$PUPPET" ] ; then
+  echo "Rebuilding /etc/hosts"
+  cat > $TARGET/etc/hosts << EOF
+# Generated via deployment.sh
+127.0.0.1 localhost
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+EOF
+
+  echo "Setting hostname to $TARGET_HOSTNAME"
+  echo "$TARGET_HOSTNAME" > ${TARGET}/etc/hostname
+  grml-chroot $TARGET /etc/init.d/hostname.sh
+
+  chroot $TARGET apt-get -y install resolvconf libnss-myhostname
+
   chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
 
   cat >> ${TARGET}/etc/puppet/puppet.conf << EOF
 server=puppet.mgm.sipwise.com
-certname=$TARGET_HOSTNAME
+
+[master]
+ssl_client_header = SSL_CLIENT_S_DN
+ssl_client_verify_header = SSL_CLIENT_VERIFY
 
 [agent]
 environment = $PUPPET
 EOF
 
-  grml-chroot $TARGET puppet agent --test --waitforcert 30 --fqdn ${TARGET_HOSTNAME} || true
+  grml-chroot $TARGET puppet agent --test --waitforcert 30 || true
 fi
 
 # make sure we don't leave any running processes
