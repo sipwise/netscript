@@ -1590,15 +1590,25 @@ EOF
 
   chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
 
-  cat >> ${TARGET}/etc/puppet/puppet.conf << EOF
+  cat > ${TARGET}/etc/puppet/puppet.conf << EOF
+# Deployed via deployment.sh
+[main]
+logdir=/var/log/puppet
+vardir=/var/lib/puppet
+ssldir=/var/lib/puppet/ssl
+rundir=/var/run/puppet
+factpath=$vardir/lib/facter
+templatedir=$confdir/templates
+prerun_command=/etc/puppet/etckeeper-commit-pre
+postrun_command=/etc/puppet/etckeeper-commit-post
 server=puppet.mgm.sipwise.com
 
 [master]
-ssl_client_header = SSL_CLIENT_S_DN
-ssl_client_verify_header = SSL_CLIENT_VERIFY
+ssl_client_header=SSL_CLIENT_S_DN
+ssl_client_verify_header=SSL_CLIENT_VERIFY
 
 [agent]
-environment = $PUPPET
+environment=$PUPPET
 EOF
 
   grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || true
