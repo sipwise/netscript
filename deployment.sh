@@ -1601,7 +1601,7 @@ ssl_client_verify_header = SSL_CLIENT_VERIFY
 environment = $PUPPET
 EOF
 
-  grml-chroot $TARGET puppet agent --test --waitforcert 30 || true
+  grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || true
 fi
 
 # make sure we don't leave any running processes
