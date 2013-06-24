@@ -1135,7 +1135,7 @@ EOT
   # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
   if chroot $TARGET dkms status | grep -q ngcp-mediaproxy-ng ; then
     if chroot $TARGET dkms status | grep -q '^ngcp-mediaproxy-ng.*: installed' ; then
-      echo "ngcp-mediaproxy-ng. kernel package already installed, skipping"
+      echo "ngcp-mediaproxy-ng. kernel package already installed, skipping" | tee -a /tmp/dkms.log
     else
       # brrrr, don't tell this anyone or i'll commit with http://whatthecommit.com/ as commit msg!
       KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | sort -u | head -1))
@@ -1145,8 +1145,8 @@ EOT
       KERNELVERSION=${KERNELHEADERS##linux-headers-}
       NGCPVERSION=$(chroot $TARGET dkms status | grep ngcp-mediaproxy-ng | awk -F, '{print $2}' | sed 's/:.*//')
       chroot $TARGET dkms build -k $KERNELVERSION --kernelsourcedir /usr/src/$KERNELHEADERS \
-             -m ngcp-mediaproxy-ng -v $NGCPVERSION
-      chroot $TARGET dkms install -k $KERNELVERSION -m ngcp-mediaproxy-ng -v $NGCPVERSION
+             -m ngcp-mediaproxy-ng -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
+      chroot $TARGET dkms install -k $KERNELVERSION -m ngcp-mediaproxy-ng -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
     fi
   fi
 
