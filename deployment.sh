@@ -1133,8 +1133,11 @@ EOT
 
   # we require those packages for dkms, so do NOT remove them:
   # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
-  if chroot $TARGET dkms status | grep -q ngcp-mediaproxy-ng ; then
-    if chroot $TARGET dkms status | grep -q '^ngcp-mediaproxy-ng.*: installed' ; then
+  if ! grml-chroot $TARGET dkms status | grep -q ngcp-mediaproxy-ng ; then
+    echo "dkms status failed:" | tee -a /tmp/dkms.log
+    grml-chroot $TARGET dkms status 2>&1| tee -a /tmp/dkms.log
+  else
+    if grml-chroot $TARGET dkms status | grep -q '^ngcp-mediaproxy-ng.*: installed' ; then
       echo "ngcp-mediaproxy-ng. kernel package already installed, skipping" | tee -a /tmp/dkms.log
     else
       # brrrr, don't tell this anyone or i'll commit with http://whatthecommit.com/ as commit msg!
@@ -1143,10 +1146,10 @@ EOT
         die "Error: no kernel headers found for building the ngcp-mediaproxy-ng kernel module."
       fi
       KERNELVERSION=${KERNELHEADERS##linux-headers-}
-      NGCPVERSION=$(chroot $TARGET dkms status | grep ngcp-mediaproxy-ng | awk -F, '{print $2}' | sed 's/:.*//')
-      chroot $TARGET dkms build -k $KERNELVERSION --kernelsourcedir /usr/src/$KERNELHEADERS \
+      NGCPVERSION=$(grml-chroot $TARGET dkms status | grep ngcp-mediaproxy-ng | awk -F, '{print $2}' | sed 's/:.*//')
+      grml-chroot $TARGET dkms build -k $KERNELVERSION --kernelsourcedir /usr/src/$KERNELHEADERS \
              -m ngcp-mediaproxy-ng -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
-      chroot $TARGET dkms install -k $KERNELVERSION -m ngcp-mediaproxy-ng -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
+      grml-chroot $TARGET dkms install -k $KERNELVERSION -m ngcp-mediaproxy-ng -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
     fi
   fi
 
