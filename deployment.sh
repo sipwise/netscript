@@ -47,7 +47,7 @@ HALT=false
 REBOOT=false
 STATUS_DIRECTORY=/srv/deployment/
 STATUS_WAIT=0
-LVM=false
+LVM=true
 
 if [ -L /sys/block/vda ] ; then
   export DISK=vda # will be configured as /dev/vda
@@ -322,7 +322,21 @@ if checkBootParam ngcpcmaster ; then
   CMASTER=$(getBootParam ngcpcmaster)
 fi
 
+if checkBootParam ngcpnolvm ; then
+  logit "Disabling LVM due to ngcpnolvm boot option"
+  LVM=false
+fi
+
+case "$SP_VERSION" in
+  2.*)
+    logit "Disabling LVM due to SP_VERSION [$SP_VERSION] matching 2.*"
+    LVM=false
+    ;;
+esac
+
+# allow forcing LVM mode
 if checkBootParam ngcplvm ; then
+  logit "Enabling LVM due to ngcplvm boot option"
   LVM=true
 fi
 
