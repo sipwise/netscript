@@ -1084,9 +1084,6 @@ deb http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backpo
 
 # Percona's high performance mysql builds
 deb http://deb.sipwise.com/percona/ ${DEBIAN_RELEASE} main
-
-# Sipdoc.net repository for misc voip tools
-deb http://deb.sipdoc.net debian main
 EOF
   fi
 
