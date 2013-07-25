@@ -1662,7 +1662,7 @@ upload_db_dump() {
   chroot $TARGET /etc/init.d/mysql restart || true
 
   # retrieve list of databases
-  databases=$(chroot $TARGET mysql -B -N -e 'show databases' | grep -ve '^information_schema$' -ve '^mysql$')
+  databases=$(chroot $TARGET mysql -B -N -e 'show databases' | grep -ve '^information_schema$' -ve '^mysql$' -ve '^performance_schema$')
 
   if [ -z "$databases" ] ; then
     echo "Warning: could not retrieve list of available databases, retrying in 10 seconds."
