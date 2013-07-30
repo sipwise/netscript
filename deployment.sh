@@ -1038,7 +1038,7 @@ if "$NGCP_INSTALLER" ; then
 
   # ngcp-installer from trunk or a release build
   if [ "$INSTALLER_VERSION" = "trunk" ] || $TRUNK_VERSION || [ -n "$AUTOBUILD_RELEASE" ] ; then
-    INSTALLER_PATH='http://deb.sipwise.com/autobuild/debian/pool/main/n/ngcp-installer/'
+    INSTALLER_PATH='http://deb.sipwise.com/autobuild/pool/main/n/ngcp-installer/'
 
     wget --directory-prefix=debs --no-directories -r --no-parent "$INSTALLER_PATH"
 
