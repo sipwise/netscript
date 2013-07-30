@@ -1082,8 +1082,6 @@ deb http://deb.sipwise.com/autobuild/release/release-${AUTOBUILD_RELEASE} releas
 # Sipwise ${DEBIAN_RELEASE} backports
 deb http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
 
-# Percona's high performance mysql builds
-deb http://deb.sipwise.com/percona/ ${DEBIAN_RELEASE} main
 EOF
   fi
 
