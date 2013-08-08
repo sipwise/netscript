@@ -1046,16 +1046,27 @@ if "$NGCP_INSTALLER" ; then
 
     wget --directory-prefix=debs --no-directories -r --no-parent "$INSTALLER_PATH"
 
-    # inside the pool there might be versions which have been released inside a
-    # maintenance branch but which don't cover recent changes in trunk,
-    # therefore get rid of every file without "gbp" in the filename, so e.g.
-    #   ngcp-installer-pro_0.10.2+0~1368529812.299+wheezy~1.gbp1691a0_all.deb (trunk version)
-    # is preferred over
-    #   ngcp-installer-pro_0.10.2_all.deb (release in 2.8 repository)
-    find ./debs -type f -a ! -name \*gbp\* -exec rm {} +
-
-    # same for files not matching the Debian relase we want to install
-    find ./debs -type f -a ! -name \*${DEBIAN_RELEASE}\* -exec rm {} +
+    # As soon as a *tagged* version against $DEBIAN_RELEASE enters the pool
+    # (e.g. during release time) the according package which includes the
+    # $DEBIAN_RELEASE string disappears, in such a situation instead choose the
+    # highest version number instead.
+    count_distri_package="$(find ./debs -type f -a -name \*\+${DEBIAN_RELEASE}\*.deb)"
+    if [ -z "$count_distri_package" ] ; then
+      echo  "Could not find any $DEBIAN_RELEASE specific packages, going for highest version number instead."
+      logit "Could not find any $DEBIAN_RELEASE specific packages, going for highest version number instead."
+    else
+      echo  "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
+      logit "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
+      # inside the pool there might be versions which have been released inside a
+      # maintenance branch but which don't cover recent changes in trunk,
+      # therefore get rid of every file without "gbp" in the filename, so e.g.
+      #   ngcp-installer-pro_0.10.2+0~1368529812.299+wheezy~1.gbp1691a0_all.deb (trunk version)
+      # is preferred over
+      #   ngcp-installer-pro_0.10.2_all.deb (release in 2.8 repository)
+      find ./debs -type f -a ! -name \*gbp\* -exec rm {} +
+      # same for files not matching the Debian relase we want to install
+      find ./debs -type f -a ! -name \*\+${DEBIAN_RELEASE}\* -exec rm {} +
+    fi
 
     VERSION=$(dpkg-scanpackages debs /dev/null 2>/dev/null | awk '/Version/ {print $2}' | sort -ur)
 
