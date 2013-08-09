@@ -1244,6 +1244,7 @@ EOF
     ngcp-mediaproxy-ng-daemon \
     ngcp-rate-o-mat \
     ntp \
+    prosody \
     rsyslog \
     sems ; \
   do
