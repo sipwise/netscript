@@ -781,6 +781,9 @@ else # no LVM (default)
 
   echo "Initialising swap partition $SWAP_PARTITION"
   mkswap -L ngcp-swap "$SWAP_PARTITION" || die "Failed to initialise swap partition"
+
+  # for later usage in /etc/fstab use /dev/disk/by-label/ngcp-swap instead of /dev/${DISK}2
+  SWAP_PARTITION="/dev/disk/by-label/ngcp-swap"
 fi
 
 # otherwise e2fsck fails with "need terminal for interactive repairs"
@@ -874,9 +877,9 @@ sync
 mount "$ROOT_FS" "$TARGET"
 
 # provide useable swap partition
-echo "Enabling swap partition with label ngcp-swap via /etc/fstab"
+echo "Enabling swap partition $SWAP_PARTITION via /etc/fstab"
 cat >> "${TARGET}/etc/fstab" << EOF
-/dev/disk/by-label/ngcp-swap   none           swap       sw,pri=0  0  0
+$SWAP_PARTITION                      none           swap       sw,pri=0  0  0
 EOF
 
 # removals: packages which debootstrap installs but d-i doesn't
