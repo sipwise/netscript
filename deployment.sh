@@ -42,7 +42,6 @@ RETRIEVE_MGMT_CONFIG=false
 LINUX_HA3=false
 TRUNK_VERSION=false
 DEBIAN_RELEASE=squeeze
-KANTAN=false
 HALT=false
 REBOOT=false
 STATUS_DIRECTORY=/srv/deployment/
@@ -340,10 +339,6 @@ if checkBootParam ngcplvm ; then
   LVM=true
 fi
 
-if checkBootParam kantan ; then
-  KANTAN=true
-fi
-
 if checkBootParam ngcphalt ; then
   HALT=true
 fi
@@ -624,12 +619,6 @@ set_deploy_status "start"
 
 # measure time of installation procedure - everyone loves stats!
 start_seconds=$(cut -d . -f 1 /proc/uptime)
-
-if "$KANTAN" ; then
-  if [[ "$SHLVL" == "2" ]] || [ -n "${NETSCRIPT:-}" ] ; then
-    echo "starting installation process at $(date)" | telnet 10.0.2.2 8888 || true
-  fi
-fi
 
 if "$LOGO" ; then
   reset
@@ -1826,13 +1815,6 @@ echo
 logit "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 echo "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 
-if "$KANTAN" ; then
-  if [[ "$SHLVL" == "2" ]] || [ -n "${NETSCRIPT:-}" ] ; then
-    echo "finished deployment process at $(date)" | telnet 10.0.2.2 8888 || true
-    echo "it took ${SECONDS} seconds" | telnet 10.0.2.2 8888 || true
-  fi
-fi
-
 set_deploy_status "finished"
 
 # if ngcpstatus boot option is used wait for a specific so a
@@ -1852,20 +1834,10 @@ fi
 if "$HALT" ; then
   echo "Halting system as requested via ngcphalt"
 
-  if "$KANTAN" ; then
-    echo "Triggering sync and unmount as requested" | telnet 10.0.2.2 8888 || true
-  fi
-
   for key in s u o ; do
     echo $key > /proc/sysrq-trigger
     sleep 2
   done
-fi
-
-if "$KANTAN" ; then
-  echo "Terminating Kantan deployment process now."
-  echo kantan_terminate | telnet 10.0.2.2 8888 || true
-  exit 0
 fi
 
 echo "Do you want to [r]eboot or [h]alt the system now? (Press any other key to cancel.)"
