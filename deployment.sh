@@ -1856,7 +1856,7 @@ if "$HALT" ; then
     echo "Triggering sync and unmount as requested" | telnet 10.0.2.2 8888 || true
   fi
 
-  for key in s u ; do
+  for key in s u o ; do
     echo $key > /proc/sysrq-trigger
     sleep 2
   done
