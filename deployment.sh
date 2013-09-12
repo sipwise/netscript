@@ -778,10 +778,6 @@ fi
 # otherwise e2fsck fails with "need terminal for interactive repairs"
 echo FSCK=no >>/etc/debootstrap/config
 
-# otherwise we can't use packages with missing key http://deb.sipwise.com/autobuild/680FBA8A.asc
-# from our own $MIRROR - note: this could need some love...
-echo "DPKG_OPTIONS='-o APT::Get::AllowUnauthenticated=true -o aptitude::Cmdline::ignore-trust-violations=yes'" >> /etc/debootstrap/config
-
 # package selection
 cat > /etc/debootstrap/packages << EOF
 # addons: packages which d-i installs but debootstrap doesn't
@@ -845,7 +841,7 @@ case "$DEBIAN_RELEASE" in
     MIRROR='http://archive.debian.org/debian/'
     ;;
   *)
-    MIRROR='http://deb.sipwise.com/debian/'
+    MIRROR='http://debian.inode.at/debian/'
     ;;
 esac
 
