@@ -841,7 +841,7 @@ case "$DEBIAN_RELEASE" in
     MIRROR='http://archive.debian.org/debian/'
     ;;
   *)
-    MIRROR='http://debian.inode.at/debian/'
+    MIRROR='http://deb.sipwise.com/debian/'
     ;;
 esac
 
