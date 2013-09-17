@@ -1391,7 +1391,7 @@ auto lo
 iface lo inet loopback
 
 # The primary network interface
-allow-hotplug $EXTERNAL_DEV
+auto $EXTERNAL_DEV
 iface $EXTERNAL_DEV inet dhcp
 EOF
   # make sure internal network is available even with external
