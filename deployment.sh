@@ -47,6 +47,7 @@ REBOOT=false
 STATUS_DIRECTORY=/srv/deployment/
 STATUS_WAIT=0
 LVM=true
+VAGRANT=false
 
 if [ -L /sys/block/vda ] ; then
   export DISK=vda # will be configured as /dev/vda
@@ -346,6 +347,10 @@ fi
 if checkBootParam ngcpreboot ; then
   REBOOT=true
 fi
+
+if checkBootParam vagrant ; then
+  VAGRANT=true
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -426,6 +431,7 @@ for param in $* ; do
     *ngcpbonding*) BONDING=true;;
     *ngcphalt*) HALT=true;;
     *ngcpreboot*) REBOOT=true;;
+    *vagrant*) VAGRANT=true;;
   esac
   shift
 done
@@ -1582,11 +1588,95 @@ EOF
 
 }
 
+vagrant_configuration() {
+  # bzip2, linux-headers-amd64 and make are required for VirtualBox Guest Additions installer
+  # less + sudo are required for Vagrant itself
+  echo "Installing software for VirtualBox Guest Additions installer"
+  chroot "$TARGET" apt-get -y install bzip2 less linux-headers-amd64 make sudo
+
+  ngcp_vmbuilder='/tmp/ngcp-vmbuilder/'
+  if [ -d "${ngcp_vmbuilder}" ] ; then
+    echo "Checkout of ngcp-vmbuilder exists already, nothing to do"
+  else
+    echo "Checking out ngcp-vmbuilder git repository"
+    git clone git://git.mgm.sipwise.com/vmbuilder "${ngcp_vmbuilder}"
+  fi
+
+  echo "Adjusting sudo configuration"
+  mkdir -p "${TARGET}/etc/sudoers.d"
+  echo "sipwise ALL=NOPASSWD: ALL" > "${TARGET}/etc/sudoers.d/vagrant"
+  chmod 0440 "${TARGET}/etc/sudoers.d/vagrant"
+
+  if chroot $TARGET getent passwd | grep '^sipwise' ; then
+    echo "User sipwise exists already, nothing to do"
+  else
+    echo "Adding user sipwise"
+    chroot $TARGET adduser sipwise --disabled-login --gecos "Sipwise"
+  fi
+
+  if grep -q '^# Added for Vagrant' "${TARGET}/home/sipwise/.profile" ; then
+    echo "PATH configuration for user Sipwise is already adjusted"
+  else
+    echo "Adjusting PATH configuration for user Sipwise"
+    echo '# Added for Vagrant' >> "${TARGET}/home/sipwise/.profile"
+    echo PATH="\$PATH:/sbin:/usr/sbin" >> "${TARGET}/home/sipwise/.profile"
+  fi
+
+  echo "Adjusting ssh configuration for user sipwise"
+  mkdir -p $TARGET/home/sipwise/.ssh/
+  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub > "${TARGET}/home/sipwise/.ssh/authorized_keys"
+  chroot "${TARGET}" chown sipwise:sipwise /home/sipwise/.ssh /home/sipwise/.ssh/authorized_keys
+
+  echo "Adjusting ssh configuration for user root"
+  mkdir -p "${TARGET}/root/.ssh/"
+  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub > "${TARGET}/root/.ssh/authorized_keys"
+
+  # see https://github.com/mitchellh/vagrant/issues/1673
+  # and https://bugs.launchpad.net/ubuntu/+source/xen-3.1/+bug/1167281
+  if grep -q 'adjusted for Vagrant' "${TARGET}/root/.profile" ; then
+    echo "Workaround for annoying bug 'stdin: is not a tty' Vagrant message seems to be present already"
+  else
+    echo "Adding workaround for annoying bug 'stdin: is not a tty' Vagrant message"
+    sed -ri -e "s/mesg\s+n/# adjusted for Vagrant\ntty -s \&\& mesg n/" "${TARGET}/root/.profile"
+  fi
+
+  isofile="/usr/share/virtualbox/VBoxGuestAdditions.iso"
+  if [ -r "$isofile" ] ; then
+    echo "/usr/share/virtualbox/VBoxGuestAdditions.iso exists already"
+  else
+    echo "/usr/share/virtualbox/VBoxGuestAdditions.iso does not exist, installing virtualbox-guest-additions-iso"
+    apt-get update
+    apt-get -y --no-install-recommends install virtualbox-guest-additions-iso
+  fi
+
+  if [ ! -r "$isofile" ] ; then
+    echo "Error: could not find $isofile" >&2
+    echo "TIP:   Make sure to have virtualbox-guest-additions-iso installed."
+  fi
+
+  mkdir -p "${TARGET}/media/cdrom"
+  mountpoint "${TARGET}/media/cdrom" >/dev/null && umount "${TARGET}/media/cdrom"
+  mount -t iso9660 $isofile "${TARGET}/media/cdrom/"
+  grml-chroot "$TARGET" /media/cdrom/VBoxLinuxAdditions.run --nox11
+  tail -10 "${TARGET}/var/log/VBoxGuestAdditions.log"
+  umount "${TARGET}/media/cdrom/"
+
+  # MACs are different on buildbox and on local VirtualBox
+  # see http://ablecoder.com/b/2012/04/09/vagrant-broken-networking-when-packaging-ubuntu-boxes/
+  echo "Removing /etc/udev/rules.d/70-persistent-net.rules"
+  rm -f "${TARGET}/etc/udev/rules.d/70-persistent-net.rules"
+}
+
 if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Nothing to do, /etc/hosts was already set up."
 else
   echo "Generating /etc/hosts"
   generate_etc_hosts
+fi
+
+if $VAGRANT ; then
+  echo "Bootoption vagrant present, executing vagrant_configuration."
+  vagrant_configuration
 fi
 
 if [ -n "$PUPPET" ] ; then
