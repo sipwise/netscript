@@ -1244,12 +1244,14 @@ EOF
     ngcp-mediaproxy-ng-daemon \
     ngcp-rate-o-mat \
     ntp \
-    prosody \
     rsyslog \
     sems ; \
   do
     chroot $TARGET /etc/init.d/$service stop || true
   done
+
+  # prosody's init script requires mounted /proc
+  grml-chroot $TARGET /etc/init.d/prosody stop || true
 
   # nuke files
   for i in $(find "$TARGET/var/log" -type f -size +0 -not -name \*.ini 2>/dev/null); do
