@@ -1720,7 +1720,7 @@ vagrant_configuration() {
   fi
 
   # required for fake_uname and VBoxLinuxAdditions.run
-  grml-chroot $TARGET apt-get -y install gcc
+  grml-chroot $TARGET apt-get -y install libc6-dev gcc
   fake_uname
 
   KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | sort -u | head -1))
