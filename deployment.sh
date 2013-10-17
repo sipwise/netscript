@@ -485,6 +485,14 @@ if [ -z "$INSTALL_DEV" ] ; then
   fi
 fi
 INSTALL_IP="$(ifdata -pa $INSTALL_DEV)"
+logit "INSTALL_IP is $INSTALL_IP"
+
+# if the default network device (eth0) is unconfigured try to retrieve configuration from eth1
+if [ "$INSTALL_IP" = "NON-IP" ] && [ "$INSTALL_DEV" = "$DEFAULT_INSTALL_DEV" ] ; then
+  logit "Falling back to device eth1 for INSTALL_IP because $DEFAULT_INSTALL_DEV is unconfigured"
+  INSTALL_IP="$(ifdata -pa eth1)"
+  logit "INSTALL_IP is $INSTALL_IP"
+fi
 
 # final external device and IP are same as installation
 [ -n "$EXTERNAL_DEV" ] || EXTERNAL_DEV=$INSTALL_DEV
