@@ -1106,10 +1106,10 @@ deb http://security.debian.org/ ${DEBIAN_RELEASE}/updates main
 deb http://ftp.debian.org/debian ${DEBIAN_RELEASE}-updates main
 
 # Sipwise repositories
-deb http://deb.sipwise.com/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
+deb [arch=amd64] http://deb.sipwise.com/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
 
 # Sipwise ${DEBIAN_RELEASE} backports
-deb http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
+deb [arch=amd64] http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
 
 EOF
   fi
