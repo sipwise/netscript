@@ -48,6 +48,7 @@ STATUS_DIRECTORY=/srv/deployment/
 STATUS_WAIT=0
 LVM=true
 VAGRANT=false
+ADJUST_FOR_LOW_PERFORMANCE=false
 
 if [ -L /sys/block/vda ] ; then
   export DISK=vda # will be configured as /dev/vda
@@ -351,6 +352,10 @@ fi
 if checkBootParam vagrant ; then
   VAGRANT=true
 fi
+
+if checkBootParam lowperformance ; then
+  ADJUST_FOR_LOW_PERFORMANCE=true
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -432,6 +437,7 @@ for param in $* ; do
     *ngcphalt*) HALT=true;;
     *ngcpreboot*) REBOOT=true;;
     *vagrant*) VAGRANT=true;;
+    *lowperformance*) ADJUST_FOR_LOW_PERFORMANCE=true;;
   esac
   shift
 done
@@ -1745,6 +1751,28 @@ vagrant_configuration() {
   rm -f "${TARGET}/etc/udev/rules.d/70-persistent-net.rules"
 }
 
+adjust_for_low_performance() {
+  # record configuration file changes
+  chroot "$TARGET" etckeeper commit "Snapshot before decreasing default resource usage [$(date)]" || true
+  chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot before decreasing default resource usage [$(date)]\" || true"
+
+  echo "Decreasing default resource usage"
+  # sems
+  sed -i -e 's/media_processor_threads=10$/media_processor_threads=1/g' ${TARGET}/etc/ngcp-config/templates/etc/sems/sems.conf.tt2
+  # kamailio
+  sed -i -e 's/tcp_children: 8$/tcp_children: 1/g' ${TARGET}/etc/ngcp-config/config.yml
+  sed -i -e 's/udp_children: 8$/udp_children: 1/g' ${TARGET}/etc/ngcp-config/config.yml
+  sed -i -e 's/children: 8$/children: 1/g'         ${TARGET}/etc/ngcp-config/config.yml
+  # apache
+  sed -i -e 's/StartServers.*[0-9]$/StartServers 1/g'       ${TARGET}/etc/apache2/apache2.conf
+  sed -i -e 's/MinSpareServers.*[0-9]$/MinSpareServers 1/g' ${TARGET}/etc/apache2/apache2.conf
+  sed -i -e 's/MaxSpareServers.*[0-9]$/MaxSpareServers 1/g' ${TARGET}/etc/apache2/apache2.conf
+
+  # record configuration file changes
+  chroot "$TARGET" etckeeper commit "Snapshot after decreasing default resource usage [$(date)]" || true
+  chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot after decreasing default resource usage [$(date)]\" || true"
+}
+
 if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Nothing to do, /etc/hosts was already set up."
 else
@@ -1755,6 +1783,11 @@ fi
 if $VAGRANT ; then
   echo "Bootoption vagrant present, executing vagrant_configuration."
   vagrant_configuration
+fi
+
+if $ADJUST_FOR_LOW_PERFORMANCE ; then
+  echo "Bootoption lowperformance present, executing adjust_for_low_performance"
+  adjust_for_low_performance
 fi
 
 if [ -n "$PUPPET" ] ; then
