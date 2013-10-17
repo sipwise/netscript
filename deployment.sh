@@ -1695,12 +1695,12 @@ vagrant_configuration() {
 
   echo "Adjusting ssh configuration for user sipwise"
   mkdir -p $TARGET/home/sipwise/.ssh/
-  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub > "${TARGET}/home/sipwise/.ssh/authorized_keys"
+  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/home/sipwise/.ssh/authorized_keys"
   chroot "${TARGET}" chown sipwise:sipwise /home/sipwise/.ssh /home/sipwise/.ssh/authorized_keys
 
   echo "Adjusting ssh configuration for user root"
   mkdir -p "${TARGET}/root/.ssh/"
-  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub > "${TARGET}/root/.ssh/authorized_keys"
+  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/root/.ssh/authorized_keys"
 
   # see https://github.com/mitchellh/vagrant/issues/1673
   # and https://bugs.launchpad.net/ubuntu/+source/xen-3.1/+bug/1167281
