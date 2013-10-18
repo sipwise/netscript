@@ -1663,7 +1663,12 @@ vagrant_configuration() {
   # bzip2, linux-headers-amd64 and make are required for VirtualBox Guest Additions installer
   # less + sudo are required for Vagrant itself
   echo "Installing software for VirtualBox Guest Additions installer"
-  chroot "$TARGET" apt-get -y install bzip2 less linux-headers-amd64 make sudo
+  # there's no linux-headers-amd64 package in squeeze:
+  case "$DEBIAN_RELEASE" in
+    squeeze) local linux_headers_package="linux-headers-2.6-amd64" ;;
+          *) local linux_headers_package="linux-headers-amd64"     ;;
+  esac
+  chroot "$TARGET" apt-get -y install bzip2 less ${linux_headers_package} make sudo
 
   ngcp_vmbuilder='/tmp/ngcp-vmbuilder/'
   if [ -d "${ngcp_vmbuilder}" ] ; then
