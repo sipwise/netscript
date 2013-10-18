@@ -1064,6 +1064,9 @@ if "$NGCP_INSTALLER" ; then
 
     wget --directory-prefix=debs --no-directories -r --no-parent "$INSTALLER_PATH"
 
+    # Get rid of unused ngcp-installer-pro-ha-v3 packages to avoid version number problems
+    rm -f debs/ngcp-installer-pro-ha-v3*
+
     # As soon as a *tagged* version against $DEBIAN_RELEASE enters the pool
     # (e.g. during release time) the according package which includes the
     # $DEBIAN_RELEASE string disappears, in such a situation instead choose the
