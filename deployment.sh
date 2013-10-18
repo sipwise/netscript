@@ -1703,10 +1703,10 @@ vagrant_configuration() {
   fi
 
   echo "Adjusting ssh configuration for user sipwise"
-  local homedir="${TARGET}/$(readlink -f $TARGET/home)"
-  mkdir -p "${homedir}/sipwise/.ssh/"
-  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${homedir}/sipwise/.ssh/authorized_keys"
-  chroot "${TARGET}" chown sipwise:sipwise /home/sipwise/.ssh /home/sipwise/.ssh/authorized_keys
+  local homedir="$(readlink -f $TARGET/home)"
+  mkdir -p "${TARGET}/${homedir}/sipwise/.ssh/"
+  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/${homedir}/sipwise/.ssh/authorized_keys"
+  chroot "${TARGET}" chown sipwise:sipwise ${homedir}/sipwise/.ssh ${homedir}/sipwise/.ssh/authorized_keys
 
   echo "Adjusting ssh configuration for user root"
   mkdir -p "${TARGET}/root/.ssh/"
