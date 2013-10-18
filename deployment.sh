@@ -1707,7 +1707,7 @@ vagrant_configuration() {
 
   echo "Adjusting ssh configuration for user sipwise"
   if [ -L "$TARGET/home" ] ; then
-    local homedir="$(readlink -f $TARGET/home)" # PRO
+    local homedir="$(readlink $TARGET/home)" # PRO
   else
     local homedir='/home' # CE/plain Debian
   fi
