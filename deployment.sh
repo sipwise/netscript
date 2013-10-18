@@ -1703,7 +1703,11 @@ vagrant_configuration() {
   fi
 
   echo "Adjusting ssh configuration for user sipwise"
-  local homedir="$(readlink -f $TARGET/home)"
+  if [ -L "$TARGET/home" ] ; then
+    local homedir="$(readlink -f $TARGET/home)" # PRO
+  else
+    local homedir='/home' # CE/plain Debian
+  fi
   mkdir -p "${TARGET}/${homedir}/sipwise/.ssh/"
   cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/${homedir}/sipwise/.ssh/authorized_keys"
   chroot "${TARGET}" chown sipwise:sipwise ${homedir}/sipwise/.ssh ${homedir}/sipwise/.ssh/authorized_keys
