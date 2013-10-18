@@ -2,6 +2,10 @@
 # Purpose: automatically install Debian + sip:provider platform
 ################################################################################
 
+INSTALL_LOG='/tmp/deployment-installer-debug.log'
+exec  > >(tee -a $INSTALL_LOG    )
+exec 2> >(tee -a $INSTALL_LOG >&2)
+
 # set version to git commit ID
 SCRIPT_VERSION="%SCRIPT_VERSION%"
 
@@ -1988,6 +1992,10 @@ fi
 rm -f ${TARGET}/config_*yml
 rm -f ${TARGET}/constants_*.yml
 rm -f ${TARGET}/ngcp-installer*deb
+
+if [ -r "${INSTALL_LOG}" ] && [ -d "${TARGET}"/var/log/ ] ; then
+  cp "${INSTALL_LOG}" "${TARGET}"/var/log/
+fi
 
 # don't leave any mountpoints
 sync
