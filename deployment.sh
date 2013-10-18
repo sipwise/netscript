@@ -1685,17 +1685,18 @@ vagrant_configuration() {
     chroot $TARGET adduser sipwise --disabled-login --gecos "Sipwise"
   fi
 
-  if grep -q '^# Added for Vagrant' "${TARGET}/home/sipwise/.profile" ; then
+  if grep -q '^# Added for Vagrant' "${TARGET}/home/sipwise/.profile" 2>/dev/null ; then
     echo "PATH configuration for user Sipwise is already adjusted"
   else
     echo "Adjusting PATH configuration for user Sipwise"
-    echo '# Added for Vagrant' >> "${TARGET}/home/sipwise/.profile"
-    echo PATH="\$PATH:/sbin:/usr/sbin" >> "${TARGET}/home/sipwise/.profile"
+    chroot $TARGET bash -c 'echo "# Added for Vagrant" >> /home/sipwise/.profile'
+    chroot $TARGET bash -c 'echo PATH=\$PATH:/sbin:/usr/sbin >> /home/sipwise/.profile'
   fi
 
   echo "Adjusting ssh configuration for user sipwise"
-  mkdir -p $TARGET/home/sipwise/.ssh/
-  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/home/sipwise/.ssh/authorized_keys"
+  local homedir="${TARGET}/$(readlink -f $TARGET/home)"
+  mkdir -p "${homedir}/sipwise/.ssh/"
+  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${homedir}/sipwise/.ssh/authorized_keys"
   chroot "${TARGET}" chown sipwise:sipwise /home/sipwise/.ssh /home/sipwise/.ssh/authorized_keys
 
   echo "Adjusting ssh configuration for user root"
