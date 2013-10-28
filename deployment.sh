@@ -159,6 +159,21 @@ die() {
   exit 1
 }
 
+enable_trace() {
+  if checkBootParam debugmode ; then
+    set -x
+    PS4='+\t '
+  fi
+}
+
+disable_trace() {
+  if checkBootParam debugmode ; then
+    set +x
+    PS4=''
+  fi
+}
+
+
 logit "host-IP: $(ip-screen)"
 logit "deployment-version: $SCRIPT_VERSION"
 # }}}
@@ -170,10 +185,7 @@ enable_deploy_status_server
 
 set_deploy_status "checkBootParam"
 
-if checkBootParam debugmode ; then
-  set -x
-  PS4='+\t '
-fi
+enable_trace
 
 if checkBootParam ngcpstatus ; then
   STATUS_WAIT=$(getBootParam ngcpstatus || true)
@@ -645,10 +657,20 @@ set_deploy_status "start"
 start_seconds=$(cut -d . -f 1 /proc/uptime)
 
 if "$LOGO" ; then
-  reset
+  # reset terminal, see MT#4697
+  if checkBootParam debugmode ; then
+    reset >/dev/console 2>&1 </dev/console
+  else
+    reset
+  fi
   # color
   echo -ne "\ec\e[1;32m"
+  # temporary disable trace, see MT#4697
+  disable_trace
+  #print logo
   logo
+  # restore trace if necessary, see MT#4697
+  enable_trace
   # number of lines
   echo -ne "\e[10;0r"
   # reset color
