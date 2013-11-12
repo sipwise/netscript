@@ -661,7 +661,7 @@ start_seconds=$(cut -d . -f 1 /proc/uptime)
 if "$LOGO" ; then
   # reset terminal, see MT#4697
   if checkBootParam debugmode ; then
-    reset >/dev/console 2>&1 </dev/console
+    clear
   else
     reset
   fi
