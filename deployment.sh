@@ -1396,7 +1396,13 @@ if "$PRO_EDITION" ; then
 
     cp /etc/ngcp-config/network.yml /mnt/glusterfs/shared_config/network.yml
 
-    ngcpcfg --no-db-sync commit "deployed /etc/ngcp-config/network.yml on $ROLE"
+    # use --no-db-sync only if supported by ngcp[cfg] version
+    if grep -q -- --no-db-sync /usr/sbin/ngcpcfg ; then
+      ngcpcfg --no-db-sync commit "deployed /etc/ngcp-config/network.yml on $ROLE"
+    else
+      ngcpcfg commit "deployed /etc/ngcp-config/network.yml on $ROLE"
+    fi
+
     ngcpcfg build
     ngcpcfg push --shared-only
   else # ROLE = sp2
@@ -1409,7 +1415,13 @@ if "$PRO_EDITION" ; then
     ngcp-network --host=$THIS_HOST --set-interface=$EXTERNAL_DEV --type=web_ext --type=sip_ext \
                               --type=rtp_ext --type=ssh_ext --type=mon_ext
 
-    ngcpcfg --no-db-sync commit "deployed /etc/ngcp-config/network.yml on $ROLE"
+    # use --no-db-sync only if supported by ngcp[cfg] version
+    if grep -q -- --no-db-sync /usr/sbin/ngcpcfg ; then
+      ngcpcfg --no-db-sync commit "deployed /etc/ngcp-config/network.yml on $ROLE"
+    else
+      ngcpcfg commit "deployed /etc/ngcp-config/network.yml on $ROLE"
+    fi
+
     ngcpcfg push --shared-only
 
     # make sure login from second node to first node works
