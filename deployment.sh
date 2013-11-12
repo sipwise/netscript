@@ -1774,7 +1774,7 @@ vagrant_configuration() {
   fi
 
   if [ ! -r "$isofile" ] ; then
-    echo "Error: could not find $isofile" >&2
+    die "Error: could not find $isofile" >&2
     echo "TIP:   Make sure to have virtualbox-guest-additions-iso installed."
   fi
 
