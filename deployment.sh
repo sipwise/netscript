@@ -738,6 +738,8 @@ else
     echo "Looks like a QEMU harddisk, ok."
   elif grep -q 'VBOX HARDDISK' /sys/block/${DISK}/device/model ; then
     echo "Looks like a VBOX harddisk, ok."
+  elif grep -q 'Virtual disk' /sys/block/${DISK}/device/model && [[ $(imvirt) == "VMware ESX Server" ]] ; then
+    echo "Looks like a VMware ESX Server harddisk, ok."
   else
     die "Error: /dev/${DISK} does not look like a virtual disk. Exiting to avoid possible data damage. Note: imvirt output is $(imvirt)"
   fi
