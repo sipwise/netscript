@@ -578,6 +578,7 @@ if "$PRO_EDITION" ; then
     3.0-rc2) INSTALLER_VERSION="0.11.3";;
     3.0) INSTALLER_VERSION="0.11.6";;
     3.1-rc1) INSTALLER_VERSION="0.12.5";;
+    3.1-rc2) INSTALLER_VERSION="0.12.6";;
   esac
 elif "$CE_EDITION" ; then
   case "$SP_VERSION" in
@@ -597,6 +598,7 @@ elif "$CE_EDITION" ; then
     3.0-rc2) INSTALLER_VERSION="0.11.3" ; DEBIAN_RELEASE="wheezy" ;;
     3.0)     INSTALLER_VERSION="0.11.6" ; DEBIAN_RELEASE="wheezy" ;;
     3.1-rc1) INSTALLER_VERSION="0.12.5" ; DEBIAN_RELEASE="wheezy" ;;
+    3.1-rc2) INSTALLER_VERSION="0.12.6" ; DEBIAN_RELEASE="wheezy" ;;
   esac
 fi
 
