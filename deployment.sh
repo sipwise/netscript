@@ -1788,7 +1788,7 @@ vagrant_configuration() {
   grml-chroot $TARGET apt-get -y install libc6-dev gcc
   fake_uname
 
-  KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | sort -u | head -1))
+  KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u | head -1))
   if [ -z "$KERNELHEADERS" ] ; then
     die "Error: no kernel headers found for building the ngcp-mediaproxy-ng kernel module."
   fi
