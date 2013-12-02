@@ -1212,11 +1212,11 @@ EOT
     echo "dkms status failed:" | tee -a /tmp/dkms.log
     grml-chroot $TARGET dkms status 2>&1| tee -a /tmp/dkms.log
   else
-    if grml-chroot $TARGET dkms status | grep -q '^ngcp-mediaproxy-ng.*: installed' ; then
+    if grml-chroot $TARGET dkms status | grep -v -- '-rt-amd64' | grep -q '^ngcp-mediaproxy-ng.*: installed' ; then
       echo "ngcp-mediaproxy-ng. kernel package already installed, skipping" | tee -a /tmp/dkms.log
     else
       # brrrr, don't tell this anyone or i'll commit with http://whatthecommit.com/ as commit msg!
-      KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | sort -u | head -1))
+      KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u | head -1))
       if [ -z "$KERNELHEADERS" ] ; then
         die "Error: no kernel headers found for building the ngcp-mediaproxy-ng kernel module."
       fi
