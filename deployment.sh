@@ -1790,7 +1790,7 @@ vagrant_configuration() {
 
   KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u | head -1))
   if [ -z "$KERNELHEADERS" ] ; then
-    die "Error: no kernel headers found for building the ngcp-mediaproxy-ng kernel module."
+    die "Error: no kernel headers found for building the VirtualBox Guest Additions kernel module."
   fi
   KERNELVERSION=${KERNELHEADERS##linux-headers-}
   if [ -z "$KERNELVERSION" ] ; then
