@@ -874,13 +874,6 @@ lvm2
 EOF
 fi
 
-if "$PRO_EDITION" ; then
-  cat >> /etc/debootstrap/packages << EOF
-# support 32bit binaries, e.g. for firmware upgrades
-ia32-libs
-EOF
-fi
-
 if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/packages << EOF
 # for interal use at sipwise
