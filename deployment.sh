@@ -1810,15 +1810,22 @@ adjust_for_low_performance() {
 
   echo "Decreasing default resource usage"
   # sems
-  sed -i -e 's/media_processor_threads=10$/media_processor_threads=1/g' ${TARGET}/etc/ngcp-config/templates/etc/sems/sems.conf.tt2
+  sed -i -e 's/media_processor_threads=[0-9]\+$/media_processor_threads=1/g' ${TARGET}/etc/ngcp-config/templates/etc/sems/sems.conf.tt2
   # kamailio
-  sed -i -e 's/tcp_children: 8$/tcp_children: 1/g' ${TARGET}/etc/ngcp-config/config.yml
-  sed -i -e 's/udp_children: 8$/udp_children: 1/g' ${TARGET}/etc/ngcp-config/config.yml
-  sed -i -e 's/children: 8$/children: 1/g'         ${TARGET}/etc/ngcp-config/config.yml
+  sed -i -e 's/children: [0-9]\+$/children: 1/g'			${TARGET}/etc/ngcp-config/config.yml
+  sed -i -e 's/tcp_children: [0-9]\+$/tcp_children: 1/g' 		${TARGET}/etc/ngcp-config/config.yml
+  sed -i -e 's/udp_children: [0-9]\+$/udp_children: 1/g' 		${TARGET}/etc/ngcp-config/config.yml
+  sed -i -e 's/natping_processes: [0-9]\+$/natping_processes: 1/g'	${TARGET}/etc/ngcp-config/config.yml
+  sed -i -e 's/tcp_children=[0-9]\+$/tcp_children=1/g'			${TARGET}/etc/ngcp-config/templates/etc/kamailio/proxy/kamailio.cfg.tt2
   # apache
-  sed -i -e 's/StartServers.*[0-9]$/StartServers 1/g'       ${TARGET}/etc/apache2/apache2.conf
-  sed -i -e 's/MinSpareServers.*[0-9]$/MinSpareServers 1/g' ${TARGET}/etc/apache2/apache2.conf
-  sed -i -e 's/MaxSpareServers.*[0-9]$/MaxSpareServers 1/g' ${TARGET}/etc/apache2/apache2.conf
+  sed -i -e 's/StartServers.*[0-9]\+$/StartServers 1/g'       ${TARGET}/etc/apache2/apache2.conf
+  sed -i -e 's/MinSpareServers.*[0-9]\+$/MinSpareServers 1/g' ${TARGET}/etc/apache2/apache2.conf
+  sed -i -e 's/MaxSpareServers.*[0-9]\+$/MaxSpareServers 1/g' ${TARGET}/etc/apache2/apache2.conf
+  # mysql
+  sed -i -e 's/bufferpoolsize:.*$/bufferpoolsize: 64M/g'       ${TARGET}/etc/ngcp-config/config.yml
+  # nginx
+  sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-panel.tt2 || true
+  sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-www-csc.tt2 || true
 
   # record configuration file changes
   chroot "$TARGET" etckeeper commit "Snapshot after decreasing default resource usage [$(date)]" || true
