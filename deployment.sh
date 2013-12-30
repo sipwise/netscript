@@ -1816,7 +1816,8 @@ adjust_for_low_performance() {
   sed -i -e 's/tcp_children: [0-9]\+$/tcp_children: 1/g' 		${TARGET}/etc/ngcp-config/config.yml
   sed -i -e 's/udp_children: [0-9]\+$/udp_children: 1/g' 		${TARGET}/etc/ngcp-config/config.yml
   sed -i -e 's/natping_processes: [0-9]\+$/natping_processes: 1/g'	${TARGET}/etc/ngcp-config/config.yml
-  sed -i -e 's/tcp_children=[0-9]\+$/tcp_children=1/g'			${TARGET}/etc/ngcp-config/templates/etc/kamailio/proxy/kamailio.cfg.tt2
+  # need for NGCP <=3.1 (MT#5513)
+  sed -i -e 's/tcp_children=4$/tcp_children=1/g' ${TARGET}/etc/ngcp-config/templates/etc/kamailio/proxy/kamailio.cfg.tt2 || true
   # apache
   sed -i -e 's/StartServers.*[0-9]\+$/StartServers 1/g'       ${TARGET}/etc/apache2/apache2.conf
   sed -i -e 's/MinSpareServers.*[0-9]\+$/MinSpareServers 1/g' ${TARGET}/etc/apache2/apache2.conf
