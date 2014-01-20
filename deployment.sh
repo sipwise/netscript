@@ -281,7 +281,7 @@ if checkBootParam ngcpautobuildrelease ; then
 fi
 
 if checkBootParam ngcpmrrelease ; then
-  AUTOBUILD_RELEASE=$(getBootParam ngcpmrrelease)
+  MRBUILD_RELEASE=$(getBootParam ngcpmrrelease)
   export SKIP_SOURCES_LIST=true # make sure it's available within grml-chroot subshell
 fi
 
