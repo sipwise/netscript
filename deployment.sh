@@ -280,6 +280,11 @@ if checkBootParam ngcpautobuildrelease ; then
   export SKIP_SOURCES_LIST=true # make sure it's available within grml-chroot subshell
 fi
 
+if checkBootParam ngcpmrrelease ; then
+  AUTOBUILD_RELEASE=$(getBootParam ngcpmrrelease)
+  export SKIP_SOURCES_LIST=true # make sure it's available within grml-chroot subshell
+fi
+
 # existing ngcp releases (like 2.2) with according repository and installer
 if checkBootParam ngcpvers ; then
   SP_VERSION=$(getBootParam ngcpvers)
@@ -1082,7 +1087,7 @@ if "$NGCP_INSTALLER" ; then
   fi
 
   # ngcp-installer from trunk or a release build
-  if [ "$INSTALLER_VERSION" = "trunk" ] || $TRUNK_VERSION || [ -n "$AUTOBUILD_RELEASE" ] ; then
+  if [ "$INSTALLER_VERSION" = "trunk" ] || $TRUNK_VERSION || [ -n "$AUTOBUILD_RELEASE" ] || [ -n "$MRBUILD_RELEASE" ] ; then
     INSTALLER_PATH='http://deb.sipwise.com/autobuild/pool/main/n/ngcp-installer/'
 
     wget --directory-prefix=debs --no-directories -r --no-parent "$INSTALLER_PATH"
@@ -1142,7 +1147,43 @@ deb [arch=amd64] http://deb.sipwise.com/autobuild/release/release-${AUTOBUILD_RE
 deb [arch=amd64] http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
 
 EOF
-  fi
+  elif [ -n "$MRBUILD_RELEASE" ] ; then
+    echo "Running installer with sources.list for $DEBIAN_RELEASE + mr release-$MRBUILD_RELEASE"
+
+    cat > $TARGET/etc/apt/sources.list << EOF
+## custom sources.list, deployed via deployment.sh
+
+# Debian repositories
+deb http://ftp.de.debian.org/debian/ ${DEBIAN_RELEASE} main contrib non-free
+deb http://security.debian.org/ ${DEBIAN_RELEASE}/updates main contrib non-free
+deb http://ftp.debian.org/debian ${DEBIAN_RELEASE}-updates main contrib non-free
+
+EOF
+
+    if "$PRO_EDITION" ; then
+      cat >> $TARGET/etc/apt/sources.list << EOF
+# Sipwise repository
+deb [arch=amd64] http://deb.sipwise.com/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+#deb-src http://deb.sipwise.com/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+
+EOF
+    else # CE
+      cat >> $TARGET/etc/apt/sources.list << EOF
+# Sipwise repository
+deb [arch=amd64] http://deb.sipwise.com/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+#deb-src http://deb.sipwise.com/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+
+EOF
+    fi
+
+    cat >> $TARGET/etc/apt/sources.list << EOF
+# Sipwise $DEBIAN_RELEASE backports
+deb [arch=amd64] http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
+#deb-src http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
+
+EOF
+  fi # $MRBUILD_RELEASE
+
 
 set_deploy_status "ngcp-installer"
 
