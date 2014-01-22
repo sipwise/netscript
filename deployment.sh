@@ -45,7 +45,7 @@ VLAN=false
 RETRIEVE_MGMT_CONFIG=false
 LINUX_HA3=false
 TRUNK_VERSION=false
-DEBIAN_RELEASE=squeeze
+DEBIAN_RELEASE=wheezy
 HALT=false
 REBOOT=false
 STATUS_DIRECTORY=/srv/deployment/
@@ -135,7 +135,7 @@ Host IP(s): $(ip-screen) | Deployment version: $SCRIPT_VERSION
 $(lscpu | awk '/^CPU\(s\)/ {print $2}') CPU(s) | $(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)kB RAM | $CHASSIS
 
 Install ngcp: $NGCP_INSTALLER | Install pro: $PRO_EDITION [$ROLE] | Install ce: $CE_EDITION
-Installing $SP_VERSION_STR platform using installer version $INSTALLER_VERSION_STR | Debian: $DEBIAN_RELEASE
+Installing $SP_VERSION_STR platform | Debian: $DEBIAN_RELEASE
 Install IP: $INSTALL_IP | Started deployment at $(date)
 
 EOF
@@ -290,11 +290,6 @@ if checkBootParam ngcpvers ; then
   SP_VERSION=$(getBootParam ngcpvers)
 fi
 
-# specific ngcp-installer version
-if checkBootParam ngcpinstvers ; then
-  INSTALLER_VERSION=$(getBootParam ngcpinstvers)
-fi
-
 if checkBootParam nongcp ; then
   echo "Will not execute ngcp-installer as requested via bootoption nongcp."
   NGCP_INSTALLER=false
@@ -442,7 +437,6 @@ for param in $* ; do
     *nodebian*) DEBIAN_INSTALLER=false;; # TODO
     *noinstall*) NGCP_INSTALLER=false; DEBIAN_INSTALLER=false;;
     *ngcpinst*) NGCP_INSTALLER=true;;
-    *ngcpinstvers=*) INSTALLER_VERSION=$(echo $param | sed 's/ngcpinstvers=//');;
     *ngcphostname=*) TARGET_HOSTNAME=$(echo $param | sed 's/ngcphostname=//');;
     *ngcpeiface=*) EIFACE=$(echo $param | sed 's/ngcpeiface=//');;
     *ngcpeaddr=*) EADDR=$(echo $param | sed 's/ngcpeaddr=//');;
@@ -563,59 +557,27 @@ else
   export DHCP
 fi
 
-if "$PRO_EDITION" ; then
-  case "$SP_VERSION" in
-    2.2) INSTALLER_VERSION="0.4.7" ;;
-    2.3) INSTALLER_VERSION="0.5.3" ;;
-    2.4) INSTALLER_VERSION="0.6.3";;
-    2.5-rc1) INSTALLER_VERSION="0.6.4";;
-    2.5) INSTALLER_VERSION="0.7.3";;
-    2.6-rc1) INSTALLER_VERSION="0.8.1";;
-    2.6-rc2) INSTALLER_VERSION="0.8.2";;
-    2.6) INSTALLER_VERSION="0.8.3";;
-    2.7-rc2) INSTALLER_VERSION="0.9.0";;
-    2.7-rc3) INSTALLER_VERSION="0.9.1";;
-    2.7) INSTALLER_VERSION="0.9.2";;
-    2.8-rc2) INSTALLER_VERSION="0.10.0";;
-    2.8-rc3) INSTALLER_VERSION="0.10.1";;
-    2.8) INSTALLER_VERSION="0.10.3";;
-    3.0-rc1) INSTALLER_VERSION="0.11.0";;
-    3.0-rc2) INSTALLER_VERSION="0.11.3";;
-    3.0) INSTALLER_VERSION="0.11.8";;
-    3.1-rc1) INSTALLER_VERSION="0.12.5";;
-    3.1-rc2) INSTALLER_VERSION="0.12.7";;
-    3.1) INSTALLER_VERSION="0.12.10";;
-  esac
-elif "$CE_EDITION" ; then
+if "$CE_EDITION" ; then
   case "$SP_VERSION" in
     # we do not have a local mirror for lenny, so disable it
-    2.1)     INSTALLER_VERSION="0.3.2" ;  DEBIAN_RELEASE="lenny" ;;
-    2.2)     INSTALLER_VERSION="0.4.7" ;  DEBIAN_RELEASE="squeeze" ;;
-    2.4)     INSTALLER_VERSION="0.6.3" ;  DEBIAN_RELEASE="squeeze" ;;
-    2.5)     INSTALLER_VERSION="0.7.3" ;  DEBIAN_RELEASE="squeeze" ;;
-    2.6-rc1) INSTALLER_VERSION="0.8.1" ;  DEBIAN_RELEASE="squeeze" ;;
-    2.6-rc2) INSTALLER_VERSION="0.8.2" ;  DEBIAN_RELEASE="squeeze" ;;
-    2.6)     INSTALLER_VERSION="0.8.3" ;  DEBIAN_RELEASE="squeeze" ;;
-    2.7-rc2) INSTALLER_VERSION="0.9.0" ;  DEBIAN_RELEASE="squeeze" ;;
-    2.7-rc3) INSTALLER_VERSION="0.9.1" ;  DEBIAN_RELEASE="squeeze" ;;
-    2.7)     INSTALLER_VERSION="0.9.2" ;  DEBIAN_RELEASE="squeeze" ;;
-    2.8)     INSTALLER_VERSION="0.10.3" ; DEBIAN_RELEASE="squeeze" ;;
-    3.0-rc1) INSTALLER_VERSION="0.11.0" ; DEBIAN_RELEASE="wheezy" ;;
-    3.0-rc2) INSTALLER_VERSION="0.11.3" ; DEBIAN_RELEASE="wheezy" ;;
-    3.0)     INSTALLER_VERSION="0.11.8" ; DEBIAN_RELEASE="wheezy" ;;
-    3.1-rc1) INSTALLER_VERSION="0.12.5" ; DEBIAN_RELEASE="wheezy" ;;
-    3.1-rc2) INSTALLER_VERSION="0.12.7" ; DEBIAN_RELEASE="wheezy" ;;
-    3.1)     INSTALLER_VERSION="0.12.10" ; DEBIAN_RELEASE="wheezy" ;;
+    2.1)     DEBIAN_RELEASE="lenny" ;;
+    2.2)     DEBIAN_RELEASE="squeeze" ;;
+    2.4)     DEBIAN_RELEASE="squeeze" ;;
+    2.5)     DEBIAN_RELEASE="squeeze" ;;
+    2.6-rc1) DEBIAN_RELEASE="squeeze" ;;
+    2.6-rc2) DEBIAN_RELEASE="squeeze" ;;
+    2.6)     DEBIAN_RELEASE="squeeze" ;;
+    2.7-rc2) DEBIAN_RELEASE="squeeze" ;;
+    2.7-rc3) DEBIAN_RELEASE="squeeze" ;;
+    2.7)     DEBIAN_RELEASE="squeeze" ;;
+    2.8)     DEBIAN_RELEASE="squeeze" ;;
   esac
 fi
 
 set_deploy_status "settings"
 
 ### echo settings
-[ -n "$SP_VERSION" ] && SP_VERSION_STR=$SP_VERSION \
-    || SP_VERSION_STR="<latest>"
-[ -n "$INSTALLER_VERSION" ] && INSTALLER_VERSION_STR=$INSTALLER_VERSION \
-    || INSTALLER_VERSION_STR="<latest>"
+[ -n "$SP_VERSION" ] && SP_VERSION_STR=$SP_VERSION || SP_VERSION_STR="<latest>"
 
 echo "Deployment Settings:
 
@@ -623,7 +585,6 @@ echo "Deployment Settings:
   Installer - pro:   $PRO_EDITION
   Installer - ce:    $CE_EDITION
   Version:           $SP_VERSION_STR
-  Installer vers.:   $INSTALLER_VERSION_STR
   Install Hostname:  $HOSTNAME
   Install NW iface:  $INSTALL_DEV
   Install IP:        $INSTALL_IP
@@ -1061,71 +1022,53 @@ if "$NGCP_INSTALLER" ; then
   chroot $TARGET adduser sipwise --disabled-login --gecos "Sipwise"
   echo "sipwise:sipwise" | chroot $TARGET chpasswd
 
-  # default: use latest ngcp-installer
-  INSTALLER_PATH=
-  INSTALLER=ngcp-installer-latest.deb
-  if $LINUX_HA3 ; then
-    INSTALLER=ngcp-installer-ha-v3-latest.deb
+  # use pool directory according for ngcp release
+  if $PRO_EDITION ; then
+    INSTALLER_PATH="http://deb.sipwise.com/sppro/${SP_VERSION}/pool/main/n/ngcp-installer/"
+  else
+    INSTALLER_PATH="http://deb.sipwise.com/spce/${SP_VERSION}/pool/main/n/ngcp-installer/"
   fi
 
-  # use specific SP/CE version and installer version if specified
-  if [ -n "$SP_VERSION" ] && [ -n "$INSTALLER_VERSION" ] ; then
-    INSTALLER_PATH=$SP_VERSION/pool/main/n/ngcp-installer/
-    if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
-      INSTALLER=ngcp-installer-pro_${INSTALLER_VERSION}_all.deb
-    elif $PRO_EDITION && $LINUX_HA3 ; then # HA v3
-      INSTALLER=ngcp-installer-pro-ha-v3_${INSTALLER_VERSION}_all.deb
-    else # spce
-      INSTALLER=ngcp-installer-ce_${INSTALLER_VERSION}_all.deb
-    fi
+  # use a separate repos for trunk releases
+  if $TRUNK_VERSION ; then
+    INSTALLER_PATH='http://deb.sipwise.com/autobuild/pool/main/n/ngcp-installer/'
   fi
+
+  wget --directory-prefix=debs --no-directories -r --no-parent "$INSTALLER_PATH"
+
+  # Get rid of unused ngcp-installer-pro-ha-v3 packages to avoid version number problems
+  rm -f debs/ngcp-installer-pro-ha-v3*
+
+  # As soon as a *tagged* version against $DEBIAN_RELEASE enters the pool
+  # (e.g. during release time) the according package which includes the
+  # $DEBIAN_RELEASE string disappears, in such a situation instead choose the
+  # highest version number instead.
+  count_distri_package="$(find ./debs -type f -a -name \*\+${DEBIAN_RELEASE}\*.deb)"
+  if [ -z "$count_distri_package" ] ; then
+    echo  "Could not find any $DEBIAN_RELEASE specific packages, going for highest version number instead."
+    logit "Could not find any $DEBIAN_RELEASE specific packages, going for highest version number instead."
+  else
+    echo  "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
+    logit "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
+    # inside the pool there might be versions which have been released inside a
+    # maintenance branch but which don't cover recent changes in trunk,
+    # therefore get rid of every file without "gbp" in the filename, so e.g.
+    #   ngcp-installer-pro_0.10.2+0~1368529812.299+wheezy~1.gbp1691a0_all.deb (trunk version)
+    # is preferred over
+    #   ngcp-installer-pro_0.10.2_all.deb (release in 2.8 repository)
+    find ./debs -type f -a ! -name \*gbp\* -exec rm {} +
+    # same for files not matching the Debian relase we want to install
+    find ./debs -type f -a ! -name \*\+${DEBIAN_RELEASE}\* -exec rm {} +
+  fi
+
+  VERSION=$(dpkg-scanpackages debs /dev/null 2>/dev/null | awk '/Version/ {print $2}' | sort -ur)
+
+  [ -n "$VERSION" ] || die "Error: installer version could not be detected."
 
   if $PRO_EDITION ; then
-    INSTALLER_PATH="http://deb.sipwise.com/sppro/$INSTALLER_PATH"
+    INSTALLER="ngcp-installer-pro_${VERSION}_all.deb"
   else
-    INSTALLER_PATH="http://deb.sipwise.com/spce/$INSTALLER_PATH"
-  fi
-
-  # ngcp-installer from trunk or a release build
-  if [ "$INSTALLER_VERSION" = "trunk" ] || $TRUNK_VERSION || [ -n "$AUTOBUILD_RELEASE" ] || [ -n "$MRBUILD_RELEASE" ] ; then
-    INSTALLER_PATH='http://deb.sipwise.com/autobuild/pool/main/n/ngcp-installer/'
-
-    wget --directory-prefix=debs --no-directories -r --no-parent "$INSTALLER_PATH"
-
-    # Get rid of unused ngcp-installer-pro-ha-v3 packages to avoid version number problems
-    rm -f debs/ngcp-installer-pro-ha-v3*
-
-    # As soon as a *tagged* version against $DEBIAN_RELEASE enters the pool
-    # (e.g. during release time) the according package which includes the
-    # $DEBIAN_RELEASE string disappears, in such a situation instead choose the
-    # highest version number instead.
-    count_distri_package="$(find ./debs -type f -a -name \*\+${DEBIAN_RELEASE}\*.deb)"
-    if [ -z "$count_distri_package" ] ; then
-      echo  "Could not find any $DEBIAN_RELEASE specific packages, going for highest version number instead."
-      logit "Could not find any $DEBIAN_RELEASE specific packages, going for highest version number instead."
-    else
-      echo  "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
-      logit "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
-      # inside the pool there might be versions which have been released inside a
-      # maintenance branch but which don't cover recent changes in trunk,
-      # therefore get rid of every file without "gbp" in the filename, so e.g.
-      #   ngcp-installer-pro_0.10.2+0~1368529812.299+wheezy~1.gbp1691a0_all.deb (trunk version)
-      # is preferred over
-      #   ngcp-installer-pro_0.10.2_all.deb (release in 2.8 repository)
-      find ./debs -type f -a ! -name \*gbp\* -exec rm {} +
-      # same for files not matching the Debian relase we want to install
-      find ./debs -type f -a ! -name \*\+${DEBIAN_RELEASE}\* -exec rm {} +
-    fi
-
-    VERSION=$(dpkg-scanpackages debs /dev/null 2>/dev/null | awk '/Version/ {print $2}' | sort -ur)
-
-    [ -n "$VERSION" ] || die "Error: installer version could not be detected."
-
-    if $PRO_EDITION ; then
-      INSTALLER="ngcp-installer-pro_${VERSION}_all.deb"
-    else
-      INSTALLER="ngcp-installer-ce_${VERSION}_all.deb"
-    fi
+    INSTALLER="ngcp-installer-ce_${VERSION}_all.deb"
   fi
 
   # support testing rc releases without providing an according installer package ahead
