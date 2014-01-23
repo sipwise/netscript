@@ -1050,14 +1050,7 @@ if "$NGCP_INSTALLER" ; then
   else
     echo  "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
     logit "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
-    # inside the pool there might be versions which have been released inside a
-    # maintenance branch but which don't cover recent changes in trunk,
-    # therefore get rid of every file without "gbp" in the filename, so e.g.
-    #   ngcp-installer-pro_0.10.2+0~1368529812.299+wheezy~1.gbp1691a0_all.deb (trunk version)
-    # is preferred over
-    #   ngcp-installer-pro_0.10.2_all.deb (release in 2.8 repository)
-    find ./debs -type f -a ! -name \*gbp\* -exec rm {} +
-    # same for files not matching the Debian relase we want to install
+    # get rid of files not matching the Debian relase we want to install
     find ./debs -type f -a ! -name \*\+${DEBIAN_RELEASE}\* -exec rm {} +
   fi
 
