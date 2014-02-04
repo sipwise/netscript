@@ -1745,8 +1745,11 @@ vagrant_configuration() {
     echo "/usr/share/virtualbox/VBoxGuestAdditions.iso exists already"
   else
     echo "/usr/share/virtualbox/VBoxGuestAdditions.iso does not exist, installing virtualbox-guest-additions-iso"
+    # Add mirror ftp.at.sipwise.com, see MT#5869
+    echo "deb http://ftp.at.debian.org/debian/ testing main contrib non-free" > /etc/apt/sources.list.d/austrian-debian.list
     apt-get update
     apt-get -y --no-install-recommends install virtualbox-guest-additions-iso
+    rm -rf /etc/apt/sources.list.d/austrian-debian.list
   fi
 
   if [ ! -r "$isofile" ] ; then
