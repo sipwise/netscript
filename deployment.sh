@@ -53,6 +53,7 @@ STATUS_WAIT=0
 LVM=true
 VAGRANT=false
 ADJUST_FOR_LOW_PERFORMANCE=false
+ENABLE_VM_SERVICES=false
 
 if [ -L /sys/block/vda ] ; then
   export DISK=vda # will be configured as /dev/vda
@@ -372,6 +373,10 @@ fi
 if checkBootParam lowperformance ; then
   ADJUST_FOR_LOW_PERFORMANCE=true
 fi
+
+if checkBootParam enablevmservices ; then
+  ENABLE_VM_SERVICES=true
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -453,6 +458,7 @@ for param in $* ; do
     *ngcpreboot*) REBOOT=true;;
     *vagrant*) VAGRANT=true;;
     *lowperformance*) ADJUST_FOR_LOW_PERFORMANCE=true;;
+    *enablevmservices*) ENABLE_VM_SERVICES=true;;
   esac
   shift
 done
@@ -1783,6 +1789,43 @@ vagrant_configuration() {
   rm -f "${TARGET}/etc/udev/rules.d/70-persistent-net.rules"
 }
 
+enable_vm_services() {
+  cat > "${TARGET}/tmp/enable_vm_services_pro.pl" << EOF
+#!/usr/bin/perl -wCSD
+
+use strict;
+use warnings;
+use YAML::Tiny;
+
+my $yaml = YAML::Tiny->new;
+my $inputfile  = "/etc/ngcp-config/config.yml";
+my $outputfile = "/etc/ngcp-config/config.yml"
+
+$yaml = YAML::Tiny->read($inputfile) or die "File $inputfile could not be read";
+
+# Enable Presence (required for PRO, on CE already enabled)
+$yaml->[0]->{kamailio}->{proxy}->{presence}->{enable} = 'yes';
+
+# Enable Voice-sniff
+$yaml->[0]->{voisniff}->{admin_panel} = 'yes';
+$yaml->[0]->{voisniff}->{daemon}->{start} = 'yes';
+
+open(my $fh, '>', "$outputfile") or die "Could not open $outputfile for writing";
+print $fh $yaml->write_string() or die "Could not write YAML to $outputfile";
+EOF
+
+  if "$PRO_EDITION" ; then
+    chroot "$TARGET" etckeeper commit "Snapshot before enabling VM defaults [$(date)]" || true
+    chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot before enabling VM defaults [$(date)]\" || true"
+
+    chroot "$TARGET" bash -c "perl /tmp/enable_vm_services_pro.pl"
+
+    # record configuration file changes
+    chroot "$TARGET" etckeeper commit "Snapshot after enabling VM defaults [$(date)]" || true
+    chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot after enabling VM defaults [$(date)]\" || true"
+  fi
+}
+
 adjust_for_low_performance() {
   # record configuration file changes
   chroot "$TARGET" etckeeper commit "Snapshot before decreasing default resource usage [$(date)]" || true
@@ -1820,14 +1863,19 @@ else
   generate_etc_hosts
 fi
 
-if $VAGRANT ; then
+if "$VAGRANT" ; then
   echo "Bootoption vagrant present, executing vagrant_configuration."
   vagrant_configuration
 fi
 
-if $ADJUST_FOR_LOW_PERFORMANCE ; then
+if "$ADJUST_FOR_LOW_PERFORMANCE" ; then
   echo "Bootoption lowperformance present, executing adjust_for_low_performance"
   adjust_for_low_performance
+fi
+
+if "$ENABLE_VM_SERVICES" ; then
+  echo "Bootoption enablevmservices present, executing enable_vm_services"
+  enable_vm_services
 fi
 
 if [ -n "$PUPPET" ] ; then
