@@ -1790,40 +1790,36 @@ vagrant_configuration() {
 }
 
 enable_vm_services() {
-  cat > "${TARGET}/tmp/enable_vm_services_pro.pl" << EOF
-#!/usr/bin/perl -wCSD
+  chroot "$TARGET" etckeeper commit "Snapshot before enabling VM defaults [$(date)]" || true
+  chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot before enabling VM defaults [$(date)]\" || true"
 
+  if "$PRO_EDITION" ; then
+    chroot "$TARGET" perl -wCSD << "EOF"
 use strict;
 use warnings;
 use YAML::Tiny;
 
 my $yaml = YAML::Tiny->new;
 my $inputfile  = "/etc/ngcp-config/config.yml";
-my $outputfile = "/etc/ngcp-config/config.yml"
+my $outputfile = "/etc/ngcp-config/config.yml";
 
 $yaml = YAML::Tiny->read($inputfile) or die "File $inputfile could not be read";
 
 # Enable Presence (required for PRO, on CE already enabled)
-$yaml->[0]->{kamailio}->{proxy}->{presence}->{enable} = 'yes';
+$yaml->[0]->{kamailio}->{proxy}->{presence}->{enable} = "yes";
 
 # Enable Voice-sniff
-$yaml->[0]->{voisniff}->{admin_panel} = 'yes';
-$yaml->[0]->{voisniff}->{daemon}->{start} = 'yes';
+$yaml->[0]->{voisniff}->{admin_panel} = "yes";
+$yaml->[0]->{voisniff}->{daemon}->{start} = "yes";
 
-open(my $fh, '>', "$outputfile") or die "Could not open $outputfile for writing";
+open(my $fh, ">", "$outputfile") or die "Could not open $outputfile for writing";
 print $fh $yaml->write_string() or die "Could not write YAML to $outputfile";
 EOF
-
-  if "$PRO_EDITION" ; then
-    chroot "$TARGET" etckeeper commit "Snapshot before enabling VM defaults [$(date)]" || true
-    chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot before enabling VM defaults [$(date)]\" || true"
-
-    chroot "$TARGET" bash -c "perl /tmp/enable_vm_services_pro.pl"
-
-    # record configuration file changes
-    chroot "$TARGET" etckeeper commit "Snapshot after enabling VM defaults [$(date)]" || true
-    chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot after enabling VM defaults [$(date)]\" || true"
   fi
+
+  # record configuration file changes
+  chroot "$TARGET" etckeeper commit "Snapshot after enabling VM defaults [$(date)]" || true
+  chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot after enabling VM defaults [$(date)]\" || true"
 }
 
 adjust_for_low_performance() {
