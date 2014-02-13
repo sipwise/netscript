@@ -1811,7 +1811,9 @@ $yaml->[0]->{kamailio}->{proxy}->{presence}->{enable} = "yes";
 # Enable Voice-sniff
 $yaml->[0]->{voisniff}->{admin_panel} = "yes";
 $yaml->[0]->{voisniff}->{daemon}->{start} = "yes";
-$yaml->[0]->{voisniff}->{daemon}->{external_interfaces} = "eth0 eth1 eth2";
+$yaml->[0]->{voisniff}->{daemon}->{external_interfaces} = "eth0 eth2";
+$yaml->[0]->{voisniff}->{daemon}->{mysql_dump_threads} = 2;
+$yaml->[0]->{voisniff}->{daemon}->{threads_per_interface} = 2;
 
 open(my $fh, ">", "$outputfile") or die "Could not open $outputfile for writing";
 print $fh $yaml->write_string() or die "Could not write YAML to $outputfile";
