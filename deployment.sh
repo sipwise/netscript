@@ -996,6 +996,16 @@ if "$RETRIEVE_MGMT_CONFIG" ; then
   fi # toram
 fi
 
+SIPWISE_HOME="/var/sipwise"
+adduser_sipwise() {
+  if "$NGCP_INSTALLER" ; then
+    adduser_options="--disabled-password"	# NGCP
+  else
+    adduser_options=""				# Debian plain
+  fi
+
+  chroot $TARGET adduser sipwise --gecos "Sipwise" --home ${SIPWISE_HOME} --shell /bin/bash $adduser_options
+}
 
 if "$NGCP_INSTALLER" ; then
 
@@ -1025,7 +1035,7 @@ if "$NGCP_INSTALLER" ; then
   fi
 
   # add sipwise user
-  chroot $TARGET adduser sipwise --gecos "Sipwise" --home /var/sipwise --shell /bin/bash --disabled-password
+  adduser_sipwise
 
   # use pool directory according for ngcp release
   if $PRO_EDITION ; then
@@ -1711,26 +1721,21 @@ vagrant_configuration() {
     echo "User sipwise exists already, nothing to do"
   else
     echo "Adding user sipwise"
-    chroot $TARGET adduser sipwise --disabled-login --gecos "Sipwise"
+    adduser_sipwise
   fi
 
-  if grep -q '^# Added for Vagrant' "${TARGET}/home/sipwise/.profile" 2>/dev/null ; then
+  if grep -q '^# Added for Vagrant' "${TARGET}/${SIPWISE_HOME}/.profile" 2>/dev/null ; then
     echo "PATH configuration for user Sipwise is already adjusted"
   else
     echo "Adjusting PATH configuration for user Sipwise"
-    chroot $TARGET bash -c 'echo "# Added for Vagrant" >> /home/sipwise/.profile'
-    chroot $TARGET bash -c 'echo PATH=\$PATH:/sbin:/usr/sbin >> /home/sipwise/.profile'
+    echo "# Added for Vagrant" >> "${TARGET}/${SIPWISE_HOME}/.profile"
+    echo "PATH=\$PATH:/sbin:/usr/sbin" >> "${TARGET}/${SIPWISE_HOME}/.profile"
   fi
 
   echo "Adjusting ssh configuration for user sipwise"
-  if [ -L "$TARGET/home" ] ; then
-    local homedir="$(readlink $TARGET/home)" # PRO
-  else
-    local homedir='/home' # CE/plain Debian
-  fi
-  mkdir -p "${TARGET}/${homedir}/sipwise/.ssh/"
-  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/${homedir}/sipwise/.ssh/authorized_keys"
-  chroot "${TARGET}" chown sipwise:sipwise ${homedir}/sipwise/.ssh ${homedir}/sipwise/.ssh/authorized_keys
+  mkdir -p "${TARGET}/${SIPWISE_HOME}/.ssh/"
+  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/${SIPWISE_HOME}/.ssh/authorized_keys"
+  chroot "${TARGET}" chown sipwise:sipwise ${SIPWISE_HOME}/.ssh ${SIPWISE_HOME}/.ssh/authorized_keys
 
   echo "Adjusting ssh configuration for user root"
   mkdir -p "${TARGET}/root/.ssh/"
