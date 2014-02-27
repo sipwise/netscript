@@ -1025,7 +1025,7 @@ if "$NGCP_INSTALLER" ; then
   fi
 
   # add sipwise user
-  chroot $TARGET adduser sipwise --gecos "Sipwise" --home /var/sipwise --shell /bin/bash --disable-password
+  chroot $TARGET adduser sipwise --gecos "Sipwise" --home /var/sipwise --shell /bin/bash --disabled-password
 
   # use pool directory according for ngcp release
   if $PRO_EDITION ; then
