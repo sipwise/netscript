@@ -1383,7 +1383,7 @@ if "$PRO_EDITION" ; then
     ngcp-network --host=$PEER --set-interface=$INTERNAL_DEV --ip=$IP2 --netmask=$DEFAULT_INTERNAL_NETMASK --type=ha_int
 
     ngcp-network --host=$PEER --role=proxy --role=lb --role=mgmt
-    ngcp-network --host=$PEER --set-interface=lo --type=sip_int --type=web_int
+    ngcp-network --host=$PEER --set-interface=lo --type=sip_int --type=web_int --type=aux_ext
 
     cp /etc/ngcp-config/network.yml /mnt/glusterfs/shared_config/network.yml
 
