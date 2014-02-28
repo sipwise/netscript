@@ -1001,7 +1001,7 @@ adduser_sipwise() {
   if "$NGCP_INSTALLER" ; then
     adduser_options="--disabled-password"	# NGCP
   else
-    adduser_options=""				# Debian plain
+    adduser_options="--disabled-login"		# Debian plain
   fi
 
   chroot $TARGET adduser sipwise --gecos "Sipwise" --home ${SIPWISE_HOME} --shell /bin/bash $adduser_options
