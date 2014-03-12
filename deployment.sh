@@ -42,7 +42,7 @@ DHCP=false
 LOGO=true
 BONDING=false
 VLAN=false
-VLANID=0
+VLANID=''
 RETRIEVE_MGMT_CONFIG=false
 LINUX_HA3=false
 TRUNK_VERSION=false
@@ -1474,8 +1474,8 @@ else
 auto lo
 iface lo inet loopback
 
-auto vlan$(VLANID)
-iface vlan$(VLANID) inet static
+auto vlan${VLANID}
+iface vlan${VLANID} inet static
         address $(ifdata -pa $EXTERNAL_DEV)
         netmask $(ifdata -pn $EXTERNAL_DEV)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
