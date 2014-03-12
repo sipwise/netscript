@@ -42,6 +42,7 @@ DHCP=false
 LOGO=true
 BONDING=false
 VLAN=false
+VLANID=0
 RETRIEVE_MGMT_CONFIG=false
 LINUX_HA3=false
 TRUNK_VERSION=false
@@ -217,6 +218,7 @@ fi
 
 if checkBootParam ngcpvlan ; then
   VLAN=true
+  VLANID=$(getBootParam ngcpvlan)
 fi
 
 if checkBootParam ngcpmgmt ; then
@@ -1472,22 +1474,18 @@ else
 auto lo
 iface lo inet loopback
 
-auto b0
-iface b0 inet static
+auto vlan$(VLANID)
+iface vlan$(VLANID) inet static
         address $(ifdata -pa $EXTERNAL_DEV)
         netmask $(ifdata -pn $EXTERNAL_DEV)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
         dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
-        bond-slaves $EXTERNAL_DEV $INTERNAL_DEV
-        bond_mode 802.3ad
-        bond_miimon 100
-        bond_lacp_rate 1
-
-auto vlan3
-iface vlan3 inet static
-        address $(ifdata -pa $INTERNAL_DEV)
-        netmask $(ifdata -pn $INTERNAL_DEV)
         vlan-raw-device $EXTERNAL_DEV
+
+auto $INTERNAL_DEV
+iface $INTERNAL_DEV inet static
+        address $INTERNAL_IP
+        netmask $INTERNAL_NETMASK
 
 # Example:
 # allow-hotplug eth0
@@ -1509,21 +1507,23 @@ EOF
 auto lo
 iface lo inet loopback
 
-auto $EXTERNAL_DEV
-iface $EXTERNAL_DEV inet static
-        address $(ifdata -pa $EXTERNAL_DEV)
-        netmask $(ifdata -pn $EXTERNAL_DEV)
-        gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
-        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
+auto b0
+iface b0 inet static
         bond-slaves $EXTERNAL_DEV $INTERNAL_DEV
         bond_mode 802.3ad
         bond_miimon 100
         bond_lacp_rate 1
+        address $(ifdata -pa $EXTERNAL_DEV)
+        netmask $(ifdata -pn $EXTERNAL_DEV)
+        gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
+        dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
-auto $INTERNAL_DEV
-iface $INTERNAL_DEV inet static
-        address $INTERNAL_IP
-        netmask $INTERNAL_NETMASK
+# additional possible bonding mode
+# auto b0
+# iface b0 inet manual
+#         bond-slaves eth0 eth1
+#         bond_mode active-backup
+#         bond_miimon 100
 
 # Example:
 # allow-hotplug eth0
