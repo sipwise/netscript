@@ -1009,6 +1009,62 @@ adduser_sipwise() {
   chroot $TARGET adduser sipwise --gecos "Sipwise" --home ${SIPWISE_HOME} --shell /bin/bash $adduser_options
 }
 
+get_installer_path() {
+  if [ -z "$SP_VERSION" ] && ! $TRUNK_VERSION ; then
+    INSTALLER=ngcp-installer-latest.deb
+
+    if $PRO_EDITION ; then
+      INSTALLER_PATH="http://deb.sipwise.com/sppro/"
+    else
+      INSTALLER_PATH="http://deb.sipwise.com/spce/"
+    fi
+
+    return # we don't want to run any further code from this function
+  fi
+
+  # use pool directory according for ngcp release
+  if $PRO_EDITION ; then
+    INSTALLER_PATH="http://deb.sipwise.com/sppro/${SP_VERSION}/pool/main/n/ngcp-installer/"
+  else
+    INSTALLER_PATH="http://deb.sipwise.com/spce/${SP_VERSION}/pool/main/n/ngcp-installer/"
+  fi
+
+  # use a separate repos for trunk releases
+  if $TRUNK_VERSION ; then
+    INSTALLER_PATH='http://deb.sipwise.com/autobuild/pool/main/n/ngcp-installer/'
+  fi
+
+  wget --directory-prefix=debs --no-directories -r --no-parent "$INSTALLER_PATH"
+
+  # Get rid of unused ngcp-installer-pro-ha-v3 packages to avoid version number problems
+  rm -f debs/ngcp-installer-pro-ha-v3*
+
+  # As soon as a *tagged* version against $DEBIAN_RELEASE enters the pool
+  # (e.g. during release time) the according package which includes the
+  # $DEBIAN_RELEASE string disappears, in such a situation instead choose the
+  # highest version number instead.
+  local count_distri_package="$(find ./debs -type f -a -name \*\+${DEBIAN_RELEASE}\*.deb)"
+  if [ -z "$count_distri_package" ] ; then
+    echo  "Could not find any $DEBIAN_RELEASE specific packages, going for highest version number instead."
+    logit "Could not find any $DEBIAN_RELEASE specific packages, going for highest version number instead."
+  else
+    echo  "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
+    logit "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
+    # get rid of files not matching the Debian relase we want to install
+    find ./debs -type f -a ! -name \*\+${DEBIAN_RELEASE}\* -exec rm {} +
+  fi
+
+  local version=$(dpkg-scanpackages debs /dev/null 2>/dev/null | awk '/Version/ {print $2}' | sort -ur)
+
+  [ -n "$version" ] || die "Error: installer version could not be detected."
+
+  if $PRO_EDITION ; then
+    INSTALLER="ngcp-installer-pro_${VERSION}_all.deb"
+  else
+    INSTALLER="ngcp-installer-ce_${VERSION}_all.deb"
+  fi
+}
+
 if "$NGCP_INSTALLER" ; then
 
   if "$RETRIEVE_MGMT_CONFIG" ; then
@@ -1039,47 +1095,8 @@ if "$NGCP_INSTALLER" ; then
   # add sipwise user
   adduser_sipwise
 
-  # use pool directory according for ngcp release
-  if $PRO_EDITION ; then
-    INSTALLER_PATH="http://deb.sipwise.com/sppro/${SP_VERSION}/pool/main/n/ngcp-installer/"
-  else
-    INSTALLER_PATH="http://deb.sipwise.com/spce/${SP_VERSION}/pool/main/n/ngcp-installer/"
-  fi
-
-  # use a separate repos for trunk releases
-  if $TRUNK_VERSION ; then
-    INSTALLER_PATH='http://deb.sipwise.com/autobuild/pool/main/n/ngcp-installer/'
-  fi
-
-  wget --directory-prefix=debs --no-directories -r --no-parent "$INSTALLER_PATH"
-
-  # Get rid of unused ngcp-installer-pro-ha-v3 packages to avoid version number problems
-  rm -f debs/ngcp-installer-pro-ha-v3*
-
-  # As soon as a *tagged* version against $DEBIAN_RELEASE enters the pool
-  # (e.g. during release time) the according package which includes the
-  # $DEBIAN_RELEASE string disappears, in such a situation instead choose the
-  # highest version number instead.
-  count_distri_package="$(find ./debs -type f -a -name \*\+${DEBIAN_RELEASE}\*.deb)"
-  if [ -z "$count_distri_package" ] ; then
-    echo  "Could not find any $DEBIAN_RELEASE specific packages, going for highest version number instead."
-    logit "Could not find any $DEBIAN_RELEASE specific packages, going for highest version number instead."
-  else
-    echo  "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
-    logit "Found $DEBIAN_RELEASE specific packages, getting rid of all packages without gbp and $DEBIAN_RELEASE in their name."
-    # get rid of files not matching the Debian relase we want to install
-    find ./debs -type f -a ! -name \*\+${DEBIAN_RELEASE}\* -exec rm {} +
-  fi
-
-  VERSION=$(dpkg-scanpackages debs /dev/null 2>/dev/null | awk '/Version/ {print $2}' | sort -ur)
-
-  [ -n "$VERSION" ] || die "Error: installer version could not be detected."
-
-  if $PRO_EDITION ; then
-    INSTALLER="ngcp-installer-pro_${VERSION}_all.deb"
-  else
-    INSTALLER="ngcp-installer-ce_${VERSION}_all.deb"
-  fi
+  # set INSTALLER_PATH and INSTALLER depending on release/version
+  get_installer_path
 
   # support testing rc releases without providing an according installer package ahead
   if [ -n "$AUTOBUILD_RELEASE" ] ; then
@@ -1138,7 +1155,7 @@ EOF
   fi # $MRBUILD_RELEASE
 
 
-set_deploy_status "ngcp-installer"
+  set_deploy_status "ngcp-installer"
 
   # install and execute ngcp-installer
   logit "ngcp-installer: $INSTALLER"
