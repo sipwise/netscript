@@ -806,6 +806,10 @@ fi
 # otherwise e2fsck fails with "need terminal for interactive repairs"
 echo FSCK=no >>/etc/debootstrap/config
 
+# otherwise we can't use packages with missing key http://deb.sipwise.com/autobuild/680FBA8A.asc
+# from our own $MIRROR - note: switch to --keyring=KEYRING
+echo "DPKG_OPTIONS='-o APT::Get::AllowUnauthenticated=true -o aptitude::Cmdline::ignore-trust-violations=yes'" >> /etc/debootstrap/config
+
 # package selection
 cat > /etc/debootstrap/packages << EOF
 # addons: packages which d-i installs but debootstrap doesn't
@@ -856,13 +860,15 @@ puppet
 EOF
 fi
 
-# lenny is no longer available on default Debian mirrors
+# NOTE: we use the debian.sipwise.com CNAME by intention here
+# to avoid conflicts with apt-pinning, preferring deb.sipwise.com
+# over official Debian
 case "$DEBIAN_RELEASE" in
   lenny)
-    MIRROR='http://archive.debian.org/debian/'
+    MIRROR='http://debian.sipwise.com/debian-lenny/'
     ;;
   *)
-    MIRROR='http://debian.inode.at/debian/'
+    MIRROR='http://debian.sipwise.com/debian/'
     ;;
 esac
 
