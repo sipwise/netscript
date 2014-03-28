@@ -871,6 +871,7 @@ case "$DEBIAN_RELEASE" in
     MIRROR='http://debian.sipwise.com/debian/'
     ;;
 esac
+SEC_MIRROR='http://debian.sipwise.com/debian-security/'
 
 set_deploy_status "debootstrap"
 
@@ -1112,9 +1113,9 @@ if "$NGCP_INSTALLER" ; then
 ## custom sources.list, deployed via deployment.sh
 
 # Debian repositories
-deb http://ftp.de.debian.org/debian/ ${DEBIAN_RELEASE} main contrib non-free
-deb http://security.debian.org/ ${DEBIAN_RELEASE}/updates main contrib non-free
-deb http://ftp.debian.org/debian ${DEBIAN_RELEASE}-updates main contrib non-free
+deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
+deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
+deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 
 # Sipwise repositories
 deb [arch=amd64] http://deb.sipwise.com/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
@@ -1130,9 +1131,9 @@ EOF
 ## custom sources.list, deployed via deployment.sh
 
 # Debian repositories
-deb http://ftp.de.debian.org/debian/ ${DEBIAN_RELEASE} main contrib non-free
-deb http://security.debian.org/ ${DEBIAN_RELEASE}/updates main contrib non-free
-deb http://ftp.debian.org/debian ${DEBIAN_RELEASE}-updates main contrib non-free
+deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
+deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
+deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 
 EOF
 
@@ -1791,6 +1792,7 @@ vagrant_configuration() {
   fi
 
   # required for fake_uname and VBoxLinuxAdditions.run
+  grml-chroot $TARGET apt-get update
   grml-chroot $TARGET apt-get -y install libc6-dev gcc
   fake_uname
 
