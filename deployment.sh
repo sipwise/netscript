@@ -863,14 +863,7 @@ fi
 # NOTE: we use the debian.sipwise.com CNAME by intention here
 # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
 # over official Debian
-case "$DEBIAN_RELEASE" in
-  lenny)
-    MIRROR='http://debian.sipwise.com/debian-lenny/'
-    ;;
-  *)
-    MIRROR='http://debian.sipwise.com/debian/'
-    ;;
-esac
+MIRROR='http://debian.sipwise.com/debian/'
 SEC_MIRROR='http://debian.sipwise.com/debian-security/'
 
 set_deploy_status "debootstrap"
