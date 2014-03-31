@@ -1784,6 +1784,17 @@ vagrant_configuration() {
     echo "TIP:   Make sure to have virtualbox-guest-additions-iso installed."
   fi
 
+  # if ngcp-keyring isn't present (e.g. on plain Debian systems) then we have
+  # to install our key for usage of our own Debian mirror
+  if apt-key list | grep -q 680FBA8A ; then
+    echo "Sipwise Debian mirror key is already present."
+  else
+    echo "Installing Sipwise Debian mirror key (680FBA8A)."
+    wget -O /etc/apt/680FBA8A.asc http://deb.sipwise.com/autobuild/680FBA8A.asc
+    apt-key add /etc/apt/680FBA8A.asc
+    apt-get update
+  fi
+
   # required for fake_uname and VBoxLinuxAdditions.run
   grml-chroot $TARGET apt-get update
   grml-chroot $TARGET apt-get -y install libc6-dev gcc
