@@ -1711,6 +1711,17 @@ EOF
 }
 
 vagrant_configuration() {
+  # if ngcp-keyring isn't present (e.g. on plain Debian systems) then we have
+  # to install our key for usage of our own Debian mirror
+  if grml-chroot "${TARGET}" apt-key list | grep -q 680FBA8A ; then
+    echo "Sipwise Debian mirror key is already present."
+  else
+    echo "Installing Sipwise Debian mirror key (680FBA8A)."
+    grml-chroot "${TARGET}" wget -O /etc/apt/680FBA8A.asc http://deb.sipwise.com/autobuild/680FBA8A.asc
+    grml-chroot "${TARGET}" apt-key add /etc/apt/680FBA8A.asc
+    grml-chroot "${TARGET}" apt-get update
+  fi
+
   # bzip2, linux-headers-amd64 and make are required for VirtualBox Guest Additions installer
   # less + sudo are required for Vagrant itself
   echo "Installing software for VirtualBox Guest Additions installer"
@@ -1720,6 +1731,9 @@ vagrant_configuration() {
           *) local linux_headers_package="linux-headers-amd64"     ;;
   esac
   chroot "$TARGET" apt-get -y install bzip2 less ${linux_headers_package} make sudo
+  if [ $? -ne 0 ] ; then
+    die "Error: failed to install 'bzip2 less ${linux_headers_package} make sudo' packages."
+  fi
 
   ngcp_vmbuilder='/tmp/ngcp-vmbuilder/'
   if [ -d "${ngcp_vmbuilder}" ] ; then
@@ -1779,17 +1793,6 @@ vagrant_configuration() {
   if [ ! -r "$isofile" ] ; then
     die "Error: could not find $isofile" >&2
     echo "TIP:   Make sure to have virtualbox-guest-additions-iso installed."
-  fi
-
-  # if ngcp-keyring isn't present (e.g. on plain Debian systems) then we have
-  # to install our key for usage of our own Debian mirror
-  if grml-chroot $TARGET apt-key list | grep -q 680FBA8A ; then
-    echo "Sipwise Debian mirror key is already present."
-  else
-    echo "Installing Sipwise Debian mirror key (680FBA8A)."
-    grml-chroot $TARGET wget -O /etc/apt/680FBA8A.asc http://deb.sipwise.com/autobuild/680FBA8A.asc
-    grml-chroot $TARGET apt-key add /etc/apt/680FBA8A.asc
-    grml-chroot $TARGET apt-get update
   fi
 
   # required for fake_uname and VBoxLinuxAdditions.run
