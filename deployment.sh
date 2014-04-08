@@ -142,6 +142,28 @@ Install IP: $INSTALL_IP | Started deployment at $(date)
 
 EOF
 }
+
+grml_debootstrap_upgrade() {
+  local required_version=0.62
+  local present_version=$(dpkg-query --show --showformat='${Version}' grml-debootstrap)
+
+  if dpkg --compare-versions $present_version lt $required_version ; then
+    echo "grml-deboostrap version $present_version is older than minimum required version $required_version - upgrading."
+
+    # use temporary apt database for speed reasons
+    local TMPDIR=$(mktemp -d)
+    mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
+    local debsrcfile=$(mktemp)
+    echo "deb http://deb.grml.org/ grml-testing main" >> "$debsrcfile"
+
+    DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+      -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
+      -o Dir::Etc::sourceparts=/dev/null update
+
+    DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+      -o dir::state="${TMPDIR}/statedir" -y install grml-debootstrap
+  fi
+}
 ### }}}
 
 # logging {{{
@@ -470,6 +492,9 @@ if ! "$NGCP_INSTALLER" ; then
   CE_EDITION=false
   unset ROLE
 fi
+
+set_deploy_status "grml_debootstrap_upgrade"
+grml_debootstrap_upgrade
 
 set_deploy_status "getconfig"
 
