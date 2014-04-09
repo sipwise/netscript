@@ -1237,23 +1237,28 @@ EOT
 
   # we require those packages for dkms, so do NOT remove them:
   # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
-  if ! grml-chroot $TARGET dkms status | grep -q ngcp-mediaproxy-ng ; then
+  if grml-chroot $TARGET dkms status | grep -q ngcp-rtpengine ; then
+    rtpengine_name="ngcp-rtpengine"
+  else
+    rtpengine_name="ngcp-mediaproxy-ng"
+  fi
+  if ! grml-chroot $TARGET dkms status | grep -q $rtpengine_name ; then
     echo "dkms status failed:" | tee -a /tmp/dkms.log
     grml-chroot $TARGET dkms status 2>&1| tee -a /tmp/dkms.log
   else
-    if grml-chroot $TARGET dkms status | grep -v -- '-rt-amd64' | grep -q '^ngcp-mediaproxy-ng.*: installed' ; then
-      echo "ngcp-mediaproxy-ng. kernel package already installed, skipping" | tee -a /tmp/dkms.log
+    if grml-chroot $TARGET dkms status | grep -v -- '-rt-amd64' | grep -q "^$rtpengine_name.*: installed" ; then
+      echo "$rtpengine_name kernel package already installed, skipping" | tee -a /tmp/dkms.log
     else
       # brrrr, don't tell this anyone or i'll commit with http://whatthecommit.com/ as commit msg!
       KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r | head -1))
       if [ -z "$KERNELHEADERS" ] ; then
-        die "Error: no kernel headers found for building the ngcp-mediaproxy-ng kernel module."
+        die "Error: no kernel headers found for building $rtpengine_name the kernel module."
       fi
       KERNELVERSION=${KERNELHEADERS##linux-headers-}
-      NGCPVERSION=$(grml-chroot $TARGET dkms status | grep ngcp-mediaproxy-ng | awk -F, '{print $2}' | sed 's/:.*//')
+      NGCPVERSION=$(grml-chroot $TARGET dkms status | grep $rtpengine_name | awk -F, '{print $2}' | sed 's/:.*//')
       grml-chroot $TARGET dkms build -k $KERNELVERSION --kernelsourcedir /usr/src/$KERNELHEADERS \
-             -m ngcp-mediaproxy-ng -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
-      grml-chroot $TARGET dkms install -k $KERNELVERSION -m ngcp-mediaproxy-ng -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
+             -m $rtpengine_name -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
+      grml-chroot $TARGET dkms install -k $KERNELVERSION -m $rtpengine_name -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
     fi
   fi
 
@@ -1322,6 +1327,7 @@ EOF
     mysql \
     nfs-kernel-server \
     ngcp-mediaproxy-ng-daemon \
+    ngcp-rtpengine-daemon \
     ngcp-rate-o-mat \
     ntp \
     rsyslog \
