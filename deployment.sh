@@ -1242,20 +1242,22 @@ EOT
   else
     rtpengine_name="ngcp-mediaproxy-ng"
   fi
-  if ! grml-chroot $TARGET dkms status | grep -q $rtpengine_name ; then
-    echo "dkms status failed:" | tee -a /tmp/dkms.log
+  echo "Identified dkms package ${rtpengine_name}"
+
+  if ! grml-chroot $TARGET dkms status | grep -q "${rtpengine_name}" ; then
+    echo "dkms status failed [checking for ${rtpengine_name}]:" | tee -a /tmp/dkms.log
     grml-chroot $TARGET dkms status 2>&1| tee -a /tmp/dkms.log
   else
-    if grml-chroot $TARGET dkms status | grep -v -- '-rt-amd64' | grep -q "^$rtpengine_name.*: installed" ; then
-      echo "$rtpengine_name kernel package already installed, skipping" | tee -a /tmp/dkms.log
+    if grml-chroot $TARGET dkms status | grep -v -- '-rt-amd64' | grep -q "^${rtpengine_name}.*: installed" ; then
+      echo "${rtpengine_name} kernel package already installed, skipping" | tee -a /tmp/dkms.log
     else
-      # brrrr, don't tell this anyone or i'll commit with http://whatthecommit.com/ as commit msg!
       KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r | head -1))
       if [ -z "$KERNELHEADERS" ] ; then
-        die "Error: no kernel headers found for building $rtpengine_name the kernel module."
+        die "Error: no kernel headers found for building ${rtpengine_name} the kernel module."
       fi
+
       KERNELVERSION=${KERNELHEADERS##linux-headers-}
-      NGCPVERSION=$(grml-chroot $TARGET dkms status | grep $rtpengine_name | awk -F, '{print $2}' | sed 's/:.*//')
+      NGCPVERSION=$(grml-chroot $TARGET dkms status | grep ${rtpengine_name} | awk -F, '{print $2}' | sed 's/:.*//')
       grml-chroot $TARGET dkms build -k $KERNELVERSION --kernelsourcedir /usr/src/$KERNELHEADERS \
              -m $rtpengine_name -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
       grml-chroot $TARGET dkms install -k $KERNELVERSION -m $rtpengine_name -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
