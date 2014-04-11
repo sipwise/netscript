@@ -1251,7 +1251,7 @@ EOT
     if grml-chroot $TARGET dkms status | grep -v -- '-rt-amd64' | grep -q "^${rtpengine_name}.*: installed" ; then
       echo "${rtpengine_name} kernel package already installed, skipping" | tee -a /tmp/dkms.log
     else
-      KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r | head -1))
+      KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r -V | head -1))
       if [ -z "$KERNELHEADERS" ] ; then
         die "Error: no kernel headers found for building ${rtpengine_name} the kernel module."
       fi
@@ -1835,7 +1835,7 @@ vagrant_configuration() {
   grml-chroot $TARGET apt-get -y install libc6-dev gcc
   fake_uname
 
-  KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r | head -1))
+  KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r -V | head -1))
   if [ -z "$KERNELHEADERS" ] ; then
     die "Error: no kernel headers found for building the VirtualBox Guest Additions kernel module."
   fi
