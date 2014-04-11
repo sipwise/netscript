@@ -1752,8 +1752,10 @@ vagrant_configuration() {
     echo "Installing Sipwise Debian mirror key (680FBA8A)."
     grml-chroot "${TARGET}" wget -O /etc/apt/680FBA8A.asc http://deb.sipwise.com/autobuild/680FBA8A.asc
     grml-chroot "${TARGET}" apt-key add /etc/apt/680FBA8A.asc
-    grml-chroot "${TARGET}" apt-get update
   fi
+
+  # make sure we use the most recent package versions, including apt-key setup
+  grml-chroot "${TARGET}" apt-get update
 
   # bzip2, linux-headers-amd64 and make are required for VirtualBox Guest Additions installer
   # less + sudo are required for Vagrant itself
