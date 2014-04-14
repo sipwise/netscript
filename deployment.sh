@@ -831,10 +831,6 @@ fi
 # otherwise e2fsck fails with "need terminal for interactive repairs"
 echo FSCK=no >>/etc/debootstrap/config
 
-# otherwise we can't use packages with missing key http://deb.sipwise.com/autobuild/680FBA8A.asc
-# from our own $MIRROR - note: switch to --keyring=KEYRING
-echo "DPKG_OPTIONS='-o APT::Get::AllowUnauthenticated=true -o aptitude::Cmdline::ignore-trust-violations=yes'" >> /etc/debootstrap/config
-
 # package selection
 cat > /etc/debootstrap/packages << EOF
 # addons: packages which d-i installs but debootstrap doesn't
@@ -885,6 +881,24 @@ puppet
 EOF
 fi
 
+# sipwise key setup
+wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://deb.sipwise.com/autobuild/sipwise.gpg
+
+md5sum_sipwise_key_expected=32a4907a7d7aabe325395ca07c531234
+md5sum_sipwise_key_calculated=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
+
+if [ "$md5sum_sipwise_key_calculated" != "$md5sum_sipwise_key_expected" ] ; then
+  die "Error validating sipwise keyring for apt usage (expected: [$md5sum_sipwise_key_expected] - got: [$md5sum_sipwise_key_calculated])"
+fi
+
+mkdir -p /etc/debootstrap/pre-scripts/
+cat > /etc/debootstrap/pre-scripts/install-sipwise-key.sh << EOF
+#!/bin/bash
+# installed via deployment.sh
+cp /etc/apt/trusted.gpg.d/sipwise.gpg "\${MNTPOINT}"/etc/apt/trusted.gpg.d/
+EOF
+chmod 775 /etc/debootstrap/pre-scripts/install-sipwise-key.sh
+
 # NOTE: we use the debian.sipwise.com CNAME by intention here
 # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
 # over official Debian
@@ -899,7 +913,7 @@ echo y | grml-debootstrap \
   --grub /dev/${DISK} \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
-  --debopt '--no-check-gpg' $EXTRA_DEBOOTSTRAP_OPTS \
+  --debopt '--keyring=/etc/apt/trusted.gpg.d/sipwise.gpg' $EXTRA_DEBOOTSTRAP_OPTS \
   -r "$DEBIAN_RELEASE" \
   -t "$ROOT_FS" \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
