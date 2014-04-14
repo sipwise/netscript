@@ -1864,6 +1864,11 @@ vagrant_configuration() {
   tail -10 "${TARGET}/var/log/VBoxGuestAdditions.log"
   umount "${TARGET}/media/cdrom/"
 
+  # work around regression in virtualbox-guest-additions-iso 4.3.10
+  if [ -d ${TARGET}/opt/VBoxGuestAdditions-4.3.10 ] ; then
+    ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions ${TARGET}/usr/lib/VBoxGuestAdditions
+  fi
+
   # MACs are different on buildbox and on local VirtualBox
   # see http://ablecoder.com/b/2012/04/09/vagrant-broken-networking-when-packaging-ubuntu-boxes/
   echo "Removing /etc/udev/rules.d/70-persistent-net.rules"
