@@ -1123,17 +1123,26 @@ if "$NGCP_INSTALLER" ; then
   # set INSTALLER_PATH and INSTALLER depending on release/version
   get_installer_path
 
-  # support testing rc releases without providing an according installer package ahead
-  if [ -n "$AUTOBUILD_RELEASE" ] ; then
-    echo "Running installer with sources.list for $DEBIAN_RELEASE + autobuild release-$AUTOBUILD_RELEASE"
+  cat > $TARGET/etc/apt/sources.list << EOF
+# Please visit /etc/apt/sources.list.d/ instead.
+EOF
 
-    cat > $TARGET/etc/apt/sources.list << EOF
+  cat > $TARGET/etc/apt/sources.list.d/debian.list << EOF
 ## custom sources.list, deployed via deployment.sh
 
 # Debian repositories
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
 deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
 deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
+
+EOF
+
+  # support testing rc releases without providing an according installer package ahead
+  if [ -n "$AUTOBUILD_RELEASE" ] ; then
+    echo "Running installer with sources.list for $DEBIAN_RELEASE + autobuild release-$AUTOBUILD_RELEASE"
+
+    cat > $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
+## custom sources.list, deployed via deployment.sh
 
 # Sipwise repositories
 deb [arch=amd64] http://deb.sipwise.com/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
@@ -1145,25 +1154,15 @@ EOF
   elif [ -n "$MRBUILD_RELEASE" ] ; then
     echo "Running installer with sources.list for $DEBIAN_RELEASE + mr release-$MRBUILD_RELEASE"
 
-    cat > $TARGET/etc/apt/sources.list << EOF
-## custom sources.list, deployed via deployment.sh
-
-# Debian repositories
-deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
-deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
-deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
-
-EOF
-
     if "$PRO_EDITION" ; then
-      cat >> $TARGET/etc/apt/sources.list << EOF
+      cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
 # Sipwise repository
 deb [arch=amd64] http://deb.sipwise.com/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
 #deb-src http://deb.sipwise.com/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
 
 EOF
     else # CE
-      cat >> $TARGET/etc/apt/sources.list << EOF
+      cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
 # Sipwise repository
 deb [arch=amd64] http://deb.sipwise.com/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
 #deb-src http://deb.sipwise.com/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
@@ -1171,7 +1170,7 @@ deb [arch=amd64] http://deb.sipwise.com/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEAS
 EOF
     fi
 
-    cat >> $TARGET/etc/apt/sources.list << EOF
+    cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
 # Sipwise $DEBIAN_RELEASE backports
 deb [arch=amd64] http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
 #deb-src http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
