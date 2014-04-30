@@ -1866,7 +1866,13 @@ vagrant_configuration() {
 
   # work around regression in virtualbox-guest-additions-iso 4.3.10
   if [ -d ${TARGET}/opt/VBoxGuestAdditions-4.3.10 ] ; then
+    echo "Installing VBoxGuestAddition symlink to work around vbox 4.3.10 issue"
     ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions ${TARGET}/usr/lib/VBoxGuestAdditions
+  fi
+
+  if ! [ -e ${TARGET}/sbin/mount.vboxsf ] && [ -e ${TARGET}/usr/lib/x86_64-linux-gnu/VBoxGuestAdditions/mount.vboxsf ] ; then
+    echo "Installing mount.vboxsf symlink to work around vbox issue"
+    ln -s /usr/lib/x86_64-linux-gnu/VBoxGuestAdditions/mount.vboxsf ${TARGET}/sbin/mount.vboxsf
   fi
 
   # MACs are different on buildbox and on local VirtualBox
