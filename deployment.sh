@@ -1870,9 +1870,13 @@ vagrant_configuration() {
     ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions ${TARGET}/usr/lib/VBoxGuestAdditions
   fi
 
-  if ! [ -e ${TARGET}/sbin/mount.vboxsf ] && [ -e ${TARGET}/usr/lib/x86_64-linux-gnu/VBoxGuestAdditions/mount.vboxsf ] ; then
-    echo "Installing mount.vboxsf symlink to work around vbox issue"
-    ln -s /usr/lib/x86_64-linux-gnu/VBoxGuestAdditions/mount.vboxsf ${TARGET}/sbin/mount.vboxsf
+  # VBoxLinuxAdditions.run chooses /usr/lib64 as soon as this directory exists, which
+  # is the case for our PRO systems shipping the heartbeat-2 package; then the
+  # symlink /sbin/mount.vboxsf points to the non-existing /usr/lib64/VBoxGuestAdditions/mount.vboxsf
+  # file instead of pointing to /usr/lib/x86_64-linux-gnu/VBoxGuestAdditions/mount.vboxsf
+  if ! chroot "$TARGET" readlink -f /sbin/mount.vboxsf ; then
+    echo "Installing mount.vboxsf symlink to work around /usr/lib64 issue"
+    ln -sf /usr/lib/x86_64-linux-gnu/VBoxGuestAdditions/mount.vboxsf ${TARGET}/sbin/mount.vboxsf
   fi
 
   # MACs are different on buildbox and on local VirtualBox
