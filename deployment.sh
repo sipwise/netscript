@@ -725,6 +725,7 @@ check_for_supported_disk() {
   # proxmox on blade, internal system
   if grep -q 'COMSTAR' /sys/block/${DISK}/device/model && \
     grep -q "OI" /sys/block/${DISK}/device/vendor ; then
+    FIRMWARE_PACKAGES="$FIRMWARE_PACKAGES firmware-qlogic"
     return 0
   fi
 
@@ -884,6 +885,13 @@ if [ -n "$PUPPET" ] ; then
 # for interal use at sipwise
 openssh-server
 puppet
+EOF
+fi
+
+if [ -n "$FIRMWARE_PACKAGES" ] ; then
+  cat >> /etc/debootstrap/packages << EOF
+# firmware packages for hardware specific needs
+$FIRMWARE_PACKAGES
 EOF
 fi
 
