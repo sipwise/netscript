@@ -722,6 +722,12 @@ check_for_supported_disk() {
     return 0
   fi
 
+  # proxmox on blade, internal system
+  if grep -q 'COMSTAR' /sys/block/${DISK}/device/model && \
+    grep -q "OI" /sys/block/${DISK}/device/vendor ; then
+    return 0
+  fi
+
   # no match so far?
   return 1
 }
