@@ -255,13 +255,14 @@ fi
 export TRUNK_VERSION # make sure it's available within grml-chroot subshell
 
 ## detect environment {{{
+CHASSIS="No physical chassis found"
 if dmidecode| grep -q 'Rack Mount Chassis' ; then
   CHASSIS="Running in Rack Mounted Chassis."
+elif dmidecode| grep -q 'Location In Chassis: Not Specified'; then
+  :
 elif dmidecode| grep -q 'Location In Chassis'; then
- CHASSIS="Running in blade chassis $(dmidecode| awk '/Location In Chassis/ {print $4}')"
- PRO_EDITION=true
-else
- CHASSIS="No physical chassis found"
+  CHASSIS="Running in blade chassis $(dmidecode| awk '/Location In Chassis/ {print $4}')"
+  PRO_EDITION=true
 fi
 
 if checkBootParam ngcpinst || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 || \
