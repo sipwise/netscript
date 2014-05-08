@@ -55,6 +55,7 @@ LVM=true
 VAGRANT=false
 ADJUST_FOR_LOW_PERFORMANCE=false
 ENABLE_VM_SERVICES=false
+FILESYSTEM="ext4"
 
 if [ -L /sys/block/vda ] ; then
   export DISK=vda # will be configured as /dev/vda
@@ -373,6 +374,13 @@ case "$SP_VERSION" in
   2.*)
     logit "Disabling LVM due to SP_VERSION [$SP_VERSION] matching 2.*"
     LVM=false
+    ;;
+esac
+
+case "$SP_VERSION" in
+  2.*|3.0|3.1|mr3.2*)
+    FILESYSTEM="ext3"
+    logit "Using filesystem $FILESYSTEM for sip:provider release ${SP_VERSION}"
     ;;
 esac
 
@@ -925,6 +933,7 @@ set_deploy_status "debootstrap"
 echo y | grml-debootstrap \
   --arch "${ARCH}" \
   --grub /dev/${DISK} \
+  --filesystem "${FILESYSTEM}" \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
   --debopt '--keyring=/etc/apt/trusted.gpg.d/sipwise.gpg' $EXTRA_DEBOOTSTRAP_OPTS \
