@@ -945,6 +945,12 @@ chroot $TARGET apt-get update
 echo "systemd.sh: installing systemd"
 echo 'Yes, do as I say!' | chroot $TARGET apt-get -t ${DEBIAN_RELEASE}-backports --force-yes -y install systemd-sysv sysvinit-
 
+echo "systemd.sh: verifying that acpid is enabled"
+if ! chroot $TARGET systemctl is-enabled acpid.service ; then
+  echo "acpid service is disabled, enabling"
+  chroot $TARGET systemctl enable acpid.service
+fi
+
 echo "systemd.sh: unmounting $TARGET again"
 umount "$TARGET"
 EOF
