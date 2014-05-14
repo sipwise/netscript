@@ -939,15 +939,11 @@ echo "systemd.sh: mounting rootfs $ROOT_FS to $TARGET"
 mount "$ROOT_FS" "$TARGET"
 
 echo "systemd.sh: enabling ${DEBIAN_RELEASE} backports"
-echo deb http://debian.sipwise.com/debian/ ${DEBIAN_RELEASE}-backports main contrib non-free >> ${TARGET}/etc/apt/sources.list.d/tmp_systemd.list
+echo deb http://debian.sipwise.com/debian/ ${DEBIAN_RELEASE}-backports main contrib non-free >> ${TARGET}/etc/apt/sources.list.d/systemd.list
 chroot $TARGET apt-get update
 
 echo "systemd.sh: installing systemd"
 echo 'Yes, do as I say!' | chroot $TARGET apt-get -t ${DEBIAN_RELEASE}-backports --force-yes -y install systemd-sysv sysvinit-
-
-echo "systemd.sh: getting rid of ${DEBIAN_RELEASE} backports again"
-rm ${TARGET}/etc/apt/sources.list.d/tmp_systemd.list
-chroot $TARGET apt-get update
 
 echo "systemd.sh: unmounting $TARGET again"
 umount "$TARGET"
