@@ -965,6 +965,15 @@ SEC_MIRROR='http://debian.sipwise.com/debian-security/'
 
 set_deploy_status "debootstrap"
 
+mkdir -p /etc/debootstrap/etc/apt/
+logit "Setting up /etc/debootstrap/etc/apt/sources.list"
+cat > /etc/debootstrap/etc/apt/sources.list << EOF
+# Set up via deployment.sh for grml-debootstrap usage
+deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
+deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
+deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
+EOF
+
 # install Debian
 echo y | grml-debootstrap \
   --arch "${ARCH}" \
@@ -973,6 +982,7 @@ echo y | grml-debootstrap \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
   --debopt '--keyring=/etc/apt/trusted.gpg.d/sipwise.gpg' $EXTRA_DEBOOTSTRAP_OPTS \
+  --keep_src_list \
   -r "$DEBIAN_RELEASE" \
   -t "$ROOT_FS" \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
