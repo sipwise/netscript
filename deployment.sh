@@ -808,7 +808,7 @@ primary -       4096-   -       -
 disk_config lvm
 vg ngcp       ${DISK}1
 ngcp-root     /       -95%      ext3 rw
-ngcp-swap     swap    RAM:50%   swap sw
+ngcp-swap     swap    RAM:50%   swap sw lvcreateopts="--yes"
 EOF
 
   # make sure setup-storage doesn't fail if LVM is already present
