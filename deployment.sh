@@ -801,6 +801,16 @@ else
 fi
 
 if "$LVM" ; then
+  # make sure lvcreate understands the --yes option
+  lv_create_opts=''
+  lvm_version=$(dpkg-query -W -f='${Version}\n' lvm2)
+  if dpkg --compare-versions "$lvm_version" lt 2.02.106 ; then
+    logit "Installed lvm2 version ${lvm_version} doesn't need the '--yes' workaround."
+  else
+    logit "Enabling '--yes' workaround for lvm2 version ${lvm_version}."
+    lv_create_opts='lvcreateopts="--yes"'
+  fi
+
   cat > /tmp/partition_setup.txt << EOF
 disk_config ${DISK} disklabel:${TABLE} bootable:1
 primary -       4096-   -       -
@@ -808,7 +818,7 @@ primary -       4096-   -       -
 disk_config lvm
 vg ngcp       ${DISK}1
 ngcp-root     /       -95%      ext3 rw
-ngcp-swap     swap    RAM:50%   swap sw lvcreateopts="--yes"
+ngcp-swap     swap    RAM:50%   swap sw $lv_create_opts
 EOF
 
   # make sure setup-storage doesn't fail if LVM is already present
