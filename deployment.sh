@@ -2013,8 +2013,10 @@ adjust_for_low_performance() {
   sed -i -e 's/tcp_children: [0-9]\+$/tcp_children: 1/g' 		${TARGET}/etc/ngcp-config/config.yml
   sed -i -e 's/udp_children: [0-9]\+$/udp_children: 1/g' 		${TARGET}/etc/ngcp-config/config.yml
   sed -i -e 's/natping_processes: [0-9]\+$/natping_processes: 1/g'	${TARGET}/etc/ngcp-config/config.yml
-  # need for NGCP <=3.1 (MT#5513)
-  sed -i -e 's/tcp_children=4$/tcp_children=1/g' ${TARGET}/etc/ngcp-config/templates/etc/kamailio/proxy/kamailio.cfg.tt2 || true
+  if expr $SP_VERSION \<= 3.1 >/dev/null 2>&1 ; then
+    # need for NGCP <=3.1 (MT#5513)
+    sed -i -e 's/tcp_children=4$/tcp_children=1/g' ${TARGET}/etc/ngcp-config/templates/etc/kamailio/proxy/kamailio.cfg.tt2 || true
+  fi
   # apache
   sed -i -e 's/StartServers.*[0-9]\+$/StartServers 1/g'       ${TARGET}/etc/apache2/apache2.conf
   sed -i -e 's/MinSpareServers.*[0-9]\+$/MinSpareServers 1/g' ${TARGET}/etc/apache2/apache2.conf
@@ -2023,9 +2025,11 @@ adjust_for_low_performance() {
   sed -i -e 's/bufferpoolsize:.*$/bufferpoolsize: 64M/g'       ${TARGET}/etc/ngcp-config/config.yml
   # nginx
   sed -i -e 's/fastcgi_workers: [0-9]\+$/fastcgi_workers: 2/g'       ${TARGET}/etc/ngcp-config/config.yml
-  # need for NGCP <=3.2 (MT#7275)
-  sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-panel.tt2 || true
-  sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-www-csc.tt2 || true
+  if expr $SP_VERSION \<= mr3.2.999 >/dev/null 2>&1 ; then
+    # need for NGCP <=mr3.2 (MT#7275)
+    sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-panel.tt2 || true
+    sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-www-csc.tt2 || true
+  fi
 
   # record configuration file changes
   chroot "$TARGET" etckeeper commit "Snapshot after decreasing default resource usage [$(date)]" || true
