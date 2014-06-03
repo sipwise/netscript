@@ -2022,6 +2022,8 @@ adjust_for_low_performance() {
   # mysql
   sed -i -e 's/bufferpoolsize:.*$/bufferpoolsize: 64M/g'       ${TARGET}/etc/ngcp-config/config.yml
   # nginx
+  sed -i -e 's/fastcgi_workers: [0-9]\+$/fastcgi_workers: 2/g'       ${TARGET}/etc/ngcp-config/config.yml
+  # need for NGCP <=3.2 (MT#7275)
   sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-panel.tt2 || true
   sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-www-csc.tt2 || true
 
