@@ -130,21 +130,6 @@ loadNfsIpArray() {
   [ "$n" == "7" ] && return 0 || return 1
 }
 
-logo() {
-    cat <<-EOF
-+++ Grml-Sipwise Deployment +++
-
-$(cat /etc/grml_version)
-Host IP(s): $(ip-screen) | Deployment version: $SCRIPT_VERSION
-$(lscpu | awk '/^CPU\(s\)/ {print $2}') CPU(s) | $(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)kB RAM | $CHASSIS
-
-Install ngcp: $NGCP_INSTALLER | Install pro: $PRO_EDITION [$ROLE] | Install ce: $CE_EDITION
-Installing $SP_VERSION_STR platform | Debian: $DEBIAN_RELEASE
-Install IP: $INSTALL_IP | Started deployment at $(date)
-
-EOF
-}
-
 grml_debootstrap_upgrade() {
   local required_version=0.62
   local present_version=$(dpkg-query --show --showformat='${Version}' grml-debootstrap)
@@ -677,24 +662,30 @@ set_deploy_status "start"
 start_seconds=$(cut -d . -f 1 /proc/uptime)
 
 if "$LOGO" ; then
-  # reset terminal, see MT#4697
-  if checkBootParam debugmode ; then
-    clear
-  else
-    reset
-  fi
+  disable_trace
+  GRML_INFO=$(cat /etc/grml_version)
+  IP_INFO=$(ip-screen)
+  CPU_INFO=$(lscpu | awk '/^CPU\(s\)/ {print $2}')
+  RAM_INFO=$(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)
+  DATE_INFO=$(date)
   # color
   echo -ne "\ec\e[1;32m"
-  # temporary disable trace, see MT#4697
-  disable_trace
+  clear
   #print logo
-  logo
-  # restore trace if necessary, see MT#4697
-  enable_trace
+  echo "+++ Grml-Sipwise Deployment +++"
+  echo ""
+  echo "$GRML_INFO"
+  echo "Host IP(s): $IP_INFO | Deployment version: $SCRIPT_VERSION"
+  echo "$CPU_INFO CPU(s) | ${RAM_INFO}kB RAM | $CHASSIS"
+  echo ""
+  echo "Install ngcp: $NGCP_INSTALLER | Install pro: $PRO_EDITION [$ROLE] | Install ce: $CE_EDITION"
+  echo "Installing $SP_VERSION_STR platform | Debian: $DEBIAN_RELEASE"
+  echo "Install IP: $INSTALL_IP | Started deployment at $DATE_INFO"
   # number of lines
   echo -ne "\e[10;0r"
   # reset color
   echo -ne "\e[9B\e[1;m"
+  enable_trace
 fi
 
 if "$PRO_EDITION" ; then
