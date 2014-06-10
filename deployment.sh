@@ -1412,8 +1412,9 @@ EOF
     mysql \
     nfs-kernel-server \
     ngcp-mediaproxy-ng-daemon \
-    ngcp-rtpengine-daemon \
     ngcp-rate-o-mat \
+    ngcp-rtpengine-daemon \
+    ngcp-sems \
     ntp \
     rsyslog \
     sems ; \
