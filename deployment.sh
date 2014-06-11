@@ -43,6 +43,7 @@ LOGO=true
 BONDING=false
 VLAN=false
 VLANID=''
+VLANIF=''
 RETRIEVE_MGMT_CONFIG=false
 LINUX_HA3=false
 TRUNK_VERSION=false
@@ -225,9 +226,13 @@ if checkBootParam ngcpbonding ; then
   BONDING=true
 fi
 
-if checkBootParam ngcpvlan ; then
-  VLAN=true
-  VLANID=$(getBootParam ngcpvlan)
+if checkBootParam vlan ; then
+  VLANPARAMS=($(getBootParam vlan | tr ":" "\n"))
+  if [ ${#VLANPARAMS[@]} -eq 2 ] ; then
+    VLAN=true
+    VLANID=${VLANPARAMS[0]}
+    VLANIF=${VLANPARAMS[1]}
+  fi
 fi
 
 if checkBootParam ngcpmgmt ; then
@@ -1614,7 +1619,7 @@ iface vlan${VLANID} inet static
         netmask $(ifdata -pn $EXTERNAL_DEV)
         gateway $(route -n | awk '/^0\.0\.0\.0/{print $2; exit}')
         dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
-        vlan-raw-device $EXTERNAL_DEV
+        vlan-raw-device $VLANIF
 
 auto $INTERNAL_DEV
 iface $INTERNAL_DEV inet static
