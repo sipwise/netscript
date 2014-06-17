@@ -1283,12 +1283,13 @@ EOF
 
   # install and execute ngcp-installer
   logit "ngcp-installer: $INSTALLER"
+  INSTALLER_OPTS="TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ADJUST_FOR_LOW_PERFORMANCE=$ADJUST_FOR_LOW_PERFORMANCE"
   if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
-    echo "TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE" > /tmp/ngcp-installer-cmdline.log
+    echo "$INSTALLER_OPTS ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE" > /tmp/ngcp-installer-cmdline.log
     cat << EOT | grml-chroot $TARGET /bin/bash
 wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
-TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+$INSTALLER_OPTS ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
@@ -1298,11 +1299,11 @@ fi
 EOT
 
   elif $PRO_EDITION && $LINUX_HA3 ; then # HA v3
-    echo "TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $MCASTADDR" > /tmp/ngcp-installer-cmdline.log
+    echo "$INSTALLER_OPTS ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $MCASTADDR" > /tmp/ngcp-installer-cmdline.log
     cat << EOT | grml-chroot $TARGET /bin/bash
 wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
-TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+$INSTALLER_OPTS ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer (HA v3):" >&2
@@ -1312,11 +1313,11 @@ fi
 EOT
 
   else # spce
-    echo "TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer" > /tmp/ngcp-installer-cmdline.log
+    echo "$INSTALLER_OPTS ngcp-installer" > /tmp/ngcp-installer-cmdline.log
     cat << EOT | grml-chroot $TARGET /bin/bash
 wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
-echo y | TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+echo y | $INSTALLER_OPTS ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[1]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
@@ -2014,25 +2015,14 @@ adjust_for_low_performance() {
   chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot before decreasing default resource usage [$(date)]\" || true"
 
   echo "Decreasing default resource usage"
-  # sems
+  # sems (should be moved to installer.git in MT#7407)
   sed -i -e 's/media_processor_threads=[0-9]\+$/media_processor_threads=1/g' ${TARGET}/etc/ngcp-config/templates/etc/sems/sems.conf.tt2
   # kamailio
-  sed -i -e 's/children: [0-9]\+$/children: 1/g'			${TARGET}/etc/ngcp-config/config.yml
-  sed -i -e 's/tcp_children: [0-9]\+$/tcp_children: 1/g' 		${TARGET}/etc/ngcp-config/config.yml
-  sed -i -e 's/udp_children: [0-9]\+$/udp_children: 1/g' 		${TARGET}/etc/ngcp-config/config.yml
-  sed -i -e 's/natping_processes: [0-9]\+$/natping_processes: 1/g'	${TARGET}/etc/ngcp-config/config.yml
   if expr $SP_VERSION \<= 3.1 >/dev/null 2>&1 ; then
     # need for NGCP <=3.1 (MT#5513)
     sed -i -e 's/tcp_children=4$/tcp_children=1/g' ${TARGET}/etc/ngcp-config/templates/etc/kamailio/proxy/kamailio.cfg.tt2 || true
   fi
-  # apache
-  sed -i -e 's/StartServers.*[0-9]\+$/StartServers 1/g'       ${TARGET}/etc/apache2/apache2.conf
-  sed -i -e 's/MinSpareServers.*[0-9]\+$/MinSpareServers 1/g' ${TARGET}/etc/apache2/apache2.conf
-  sed -i -e 's/MaxSpareServers.*[0-9]\+$/MaxSpareServers 1/g' ${TARGET}/etc/apache2/apache2.conf
-  # mysql
-  sed -i -e 's/bufferpoolsize:.*$/bufferpoolsize: 64M/g'       ${TARGET}/etc/ngcp-config/config.yml
   # nginx
-  sed -i -e 's/fastcgi_workers: [0-9]\+$/fastcgi_workers: 2/g'       ${TARGET}/etc/ngcp-config/config.yml
   if expr $SP_VERSION \<= mr3.2.999 >/dev/null 2>&1 ; then
     # need for NGCP <=mr3.2 (MT#7275)
     sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-panel.tt2 || true
