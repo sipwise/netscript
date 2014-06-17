@@ -2015,16 +2015,18 @@ adjust_for_low_performance() {
   chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot before decreasing default resource usage [$(date)]\" || true"
 
   echo "Decreasing default resource usage"
-  # sems (should be moved to installer.git in MT#7407)
-  sed -i -e 's/media_processor_threads=[0-9]\+$/media_processor_threads=1/g' ${TARGET}/etc/ngcp-config/templates/etc/sems/sems.conf.tt2
-  # kamailio
+  if expr $SP_VERSION \<= mr3.2.999 >/dev/null 2>&1 ; then
+    # sems: need for NGCP <=mr3.2 (MT#7407)
+    sed -i -e 's/media_processor_threads=[0-9]\+$/media_processor_threads=1/g' ${TARGET}/etc/ngcp-config/templates/etc/sems/sems.conf.tt2
+  fi
+
   if expr $SP_VERSION \<= 3.1 >/dev/null 2>&1 ; then
-    # need for NGCP <=3.1 (MT#5513)
+    # kamailio: need for NGCP <=3.1 (MT#5513)
     sed -i -e 's/tcp_children=4$/tcp_children=1/g' ${TARGET}/etc/ngcp-config/templates/etc/kamailio/proxy/kamailio.cfg.tt2 || true
   fi
-  # nginx
+
   if expr $SP_VERSION \<= mr3.2.999 >/dev/null 2>&1 ; then
-    # need for NGCP <=mr3.2 (MT#7275)
+    # nginx: need for NGCP <=mr3.2 (MT#7275)
     sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-panel.tt2 || true
     sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-www-csc.tt2 || true
   fi
