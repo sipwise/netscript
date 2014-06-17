@@ -1985,7 +1985,7 @@ use YAML::Tiny;
 
 my $yaml = YAML::Tiny->new;
 my $inputfile  = "/etc/ngcp-config/config.yml";
-my $outputfile = "/etc/ngcp-config/config.yml";
+my $outputfile = $inputfile;
 
 $yaml = YAML::Tiny->read($inputfile) or die "File $inputfile could not be read";
 
@@ -2003,6 +2003,25 @@ open(my $fh, ">", "$outputfile") or die "Could not open $outputfile for writing"
 print $fh $yaml->write_string() or die "Could not write YAML to $outputfile";
 EOF
   fi
+
+  # CE
+  chroot "$TARGET" perl -wCSD << "EOF"
+use strict;
+use warnings;
+use YAML::Tiny;
+
+my $yaml = YAML::Tiny->new;
+my $inputfile  = "/etc/ngcp-config/config.yml";
+my $outputfile = $inputfile;
+
+$yaml = YAML::Tiny->read($inputfile) or die "File $inputfile could not be read";
+
+# Enable SSH on all IPs/interfaces (0.0.0.0)
+push @{$yaml->[0]->{sshd}->{listen_addresses}}, '0.0.0.0';
+
+open(my $fh, ">", "$outputfile") or die "Could not open $outputfile for writing";
+print $fh $yaml->write_string() or die "Could not write YAML to $outputfile";
+EOF
 
   # record configuration file changes
   chroot "$TARGET" etckeeper commit "Snapshot after enabling VM defaults [$(date)]" || true
