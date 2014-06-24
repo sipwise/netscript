@@ -2036,18 +2036,25 @@ adjust_for_low_performance() {
   echo "Decreasing default resource usage"
   if expr $SP_VERSION \<= mr3.2.999 >/dev/null 2>&1 ; then
     # sems: need for NGCP <=mr3.2 (MT#7407)
-    sed -i -e 's/media_processor_threads=[0-9]\+$/media_processor_threads=1/g' ${TARGET}/etc/ngcp-config/templates/etc/sems/sems.conf.tt2
+    sed -e 's/media_processor_threads=[0-9]\+$/media_processor_threads=1/g' \
+        -i ${TARGET}/etc/ngcp-config/templates/etc/sems/sems.conf.tt2 \
+        -i ${TARGET}/etc/sems/sems.conf || true
   fi
 
   if expr $SP_VERSION \<= 3.1 >/dev/null 2>&1 ; then
     # kamailio: need for NGCP <=3.1 (MT#5513)
-    sed -i -e 's/tcp_children=4$/tcp_children=1/g' ${TARGET}/etc/ngcp-config/templates/etc/kamailio/proxy/kamailio.cfg.tt2 || true
+    sed -e 's/tcp_children=4$/tcp_children=1/g' \
+        -i ${TARGET}/etc/ngcp-config/templates/etc/kamailio/proxy/kamailio.cfg.tt2 \
+        -i ${TARGET}/etc/kamailio/proxy/kamailio.cfg || true
   fi
 
   if expr $SP_VERSION \<= mr3.2.999 >/dev/null 2>&1 ; then
     # nginx: need for NGCP <=mr3.2 (MT#7275)
-    sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-panel.tt2 || true
-    sed -i -e 's/NPROC=[0-9]\+$/NPROC=2/g'       ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-www-csc.tt2 || true
+    sed -e 's/NPROC=[0-9]\+$/NPROC=2/g' \
+        -i ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-panel.tt2 \
+        -i ${TARGET}/etc/init.d/ngcp-panel \
+        -i ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-www-csc.tt2 \
+        -i ${TARGET}/etc/init.d/ngcp-www-csc || true
   fi
 
   # record configuration file changes
