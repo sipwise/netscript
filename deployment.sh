@@ -123,9 +123,7 @@ loadNfsIpArray() {
   local IFS=":"
   local ind=(client-ip server-ip gw-ip netmask hostname device autoconf)
   local i
-  for i in $2 ;
-  do
-    #  eval echo ${ind[$n]} - $i
+  for i in $2 ; do
     eval $1[${ind[n++]}]=$i
   done
   [ "$n" == "7" ] && return 0 || return 1
