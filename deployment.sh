@@ -1497,6 +1497,17 @@ if "$PRO_EDITION" ; then
       ;;
   esac
 
+  # get list of available network devices (excl. some known-to-be-irrelevant ones)
+  net_devices=$(tail -n +3 /proc/net/dev | awk -F: '{print $1}'| sed "s/\s*//" | grep -ve '^vmnet' -ve '^vboxnet' -ve '^docker' | sort -u)
+
+  NETWORK_DEVICES=""
+  for network_device in $net_devices $DEFAULT_INSTALL_DEV $INTERNAL_DEV $EXTERNAL_DEV ; do
+    # avoid duplicates
+    echo "$NETWORK_DEVICES" | grep -wq "$network_device" || NETWORK_DEVICES="$NETWORK_DEVICES $network_device"
+  done
+  export NETWORK_DEVICES
+  unset net_devices
+
   cat << EOT | grml-chroot $TARGET /bin/bash
   if ! [ -r /etc/ngcp-config/network.yml ] ; then
     echo '/etc/ngcp-config/network.yml does not exist'
@@ -1524,17 +1535,25 @@ if "$PRO_EDITION" ; then
     ngcp-network --host=$THIS_HOST --move-from=lo --move-to=$INTERNAL_DEV --type=ha_int
     # set *_ext types accordingly for PRO setup
     ngcp-network --host=$THIS_HOST --move-from=lo --move-to=$EXTERNAL_DEV --type=web_ext \
-                                   --type=sip_ext --type=rtp_ext --type=ssh_ext --type=mon_ext
+                                   --type=sip_ext --type=rtp_ext --type=mon_ext
 
     ngcp-network --host=$PEER --peer=$THIS_HOST
     ngcp-network --host=$PEER --set-interface=$EXTERNAL_DEV --shared-ip=none --shared-ipv6=none
     ngcp-network --host=$PEER --set-interface=lo --ipv6='::1' --ip=auto --netmask=auto --hwaddr=auto
 
+    # add ssh_ext to all the interfaces of sp1 on sp1
+    for interface in \$NETWORK_DEVICES ; do
+      ngcp-network --host=$THIS_HOST --set-interface=\$interface --type=ssh_ext
+    done
+
+    # add ssh_ext to lo and $INTERNAL_DEV interfaces of sp2 on sp1 so we can reach the ssh server at any time
+    ngcp-network --host=$PEER --set-interface=lo --type=ssh_ext
+    ngcp-network --host=$PEER --set-interface=$INTERNAL_DEV --type=ssh_ext
+
     # needed to make sure MySQL setup is OK for first node until second node is set up
     ngcp-network --host=$PEER --set-interface=$INTERNAL_DEV --ip=$IP2 --netmask=$DEFAULT_INTERNAL_NETMASK --type=ha_int
-
     ngcp-network --host=$PEER --role=proxy --role=lb --role=mgmt
-    ngcp-network --host=$PEER --set-interface=lo --type=sip_int --type=web_int --type=aux_ext --type=ssh_ext
+    ngcp-network --host=$PEER --set-interface=lo --type=sip_int --type=web_int --type=aux_ext
 
     cp /etc/ngcp-config/network.yml /mnt/glusterfs/shared_config/network.yml
 
@@ -1555,7 +1574,12 @@ if "$PRO_EDITION" ; then
     ngcp-network --host=$THIS_HOST --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto --type=ha_int
     # set *_ext types accordingly for PRO setup
     ngcp-network --host=$THIS_HOST --set-interface=$EXTERNAL_DEV --type=web_ext --type=sip_ext \
-                              --type=rtp_ext --type=ssh_ext --type=mon_ext
+                              --type=rtp_ext --type=mon_ext
+
+    # add ssh_ext to all the interfaces of sp2 on sp2
+    for interface in \$NETWORK_DEVICES ; do
+      ngcp-network --host=$THIS_HOST --set-interface=\$interface --type=ssh_ext
+    done
 
     # use --no-db-sync only if supported by ngcp[cfg] version
     if grep -q -- --no-db-sync /usr/sbin/ngcpcfg ; then
