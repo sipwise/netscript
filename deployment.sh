@@ -1627,7 +1627,9 @@ EOT
 fi
 
 if "$RETRIEVE_MGMT_CONFIG" ; then
-  echo "Nothing to do, /etc/network/interfaces was already set up."
+  echo "Nothing to do (RETRIEVE_MGMT_CONFIG is set), /etc/network/interfaces was already set up."
+elif ! "$NGCP_INSTALLER" ; then
+  echo "Not modifying /etc/network/interfaces as installing plain Debian."
 elif "$DHCP" ; then
   cat > $TARGET/etc/network/interfaces << EOF
 # This file describes the network interfaces available on your system
