@@ -916,6 +916,15 @@ lvm2
 EOF
 fi
 
+if "$VLAN" ; then
+  cat >> /etc/debootstrap/packages << EOF
+# support bridge / bonding / vlan
+bridge-utils
+ifenslave-2.6
+vlan
+EOF
+fi
+
 if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/packages << EOF
 # for interal use at sipwise
