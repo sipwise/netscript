@@ -1086,6 +1086,9 @@ if "$PRO_EDITION" ; then
   fi
 fi
 
+echo "Writing $HOSTNAME to /etc/ngcp_hostname"
+echo $HOSTNAME > $TARGET/etc/ngcp_hostname
+
 if "$PRO_EDITION" && [[ $(imvirt) != "Physical" ]] ; then
   echo "Generating udev persistent net rules."
   INT_MAC=$(udevadm info -a -p /sys/class/net/${INTERNAL_DEV} | awk -F== '/ATTR{address}/ {print $2}')
