@@ -816,14 +816,20 @@ if "$LVM" ; then
     lv_create_opts='lvcreateopts="--yes"'
   fi
 
+  if "$NGCP_INSTALLER" ; then
+    VG_NAME="ngcp"
+  else
+    VG_NAME="vg0"
+  fi
+
   cat > /tmp/partition_setup.txt << EOF
 disk_config ${DISK} disklabel:${TABLE} bootable:1
 primary -       4096-   -       -
 
 disk_config lvm
-vg ngcp       ${DISK}1
-ngcp-root     /       -95%      ext3 rw
-ngcp-swap     swap    RAM:50%   swap sw $lv_create_opts
+vg ${VG_NAME}       ${DISK}1
+${VG_NAME}-root     /       -95%      ext3 rw
+${VG_NAME}-swap     swap    RAM:50%   swap sw $lv_create_opts
 EOF
 
   # make sure setup-storage doesn't fail if LVM is already present
@@ -844,8 +850,8 @@ EOF
   PATH=/usr/lib/fai:${PATH} setup-storage -f /tmp/partition_setup.txt -X || die "Failure during execution of setup-storage"
 
   # used later by installer
-  ROOT_FS="/dev/mapper/ngcp-root"
-  SWAP_PARTITION="/dev/mapper/ngcp-swap"
+  ROOT_FS="/dev/mapper/${VG_NAME}-root"
+  SWAP_PARTITION="/dev/mapper/${VG_NAME}-swap"
 
 else # no LVM (default)
   parted -s /dev/${DISK} mktable "$TABLE" || die "Failed to set up partition table"
