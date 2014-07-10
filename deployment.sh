@@ -1818,8 +1818,8 @@ EOF
   # in the HA setup
   if "$PRO_EDITION" ; then
     cat >> $TARGET/etc/hosts << EOF
-$IP1 sp1
-$IP2 sp2
+$IP1 sp1 $HOSTNAME
+$IP2 sp2 $HOSTNAME
 EOF
   else
     # otherwise 'hostname --fqdn' does not work and causes delays with exim4 startup
