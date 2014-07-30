@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baf0414d_a0195a7b",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1436,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2014-07-30T14:15:14Z",
+      "side": 1,
+      "message": "I\u0027d prefer:\n\nif ! \"$PRO_EDITION\" ; then\n  return 0\nfi\n\nand then you continue without a long if ... fi clause then.\nNOTE: the lines inside the function should be indented",
+      "revId": "a4d1c5e2acd7e5bde2e87e79f9e0a7578e10f58c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
