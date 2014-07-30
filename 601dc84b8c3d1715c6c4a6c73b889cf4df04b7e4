@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baf0414d_c0333ef5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2014-07-30T14:25:40Z",
+      "side": 1,
+      "message": "Please drop the trailing \".\" and instead mention why this change is actually required.",
+      "revId": "601dc84b8c3d1715c6c4a6c73b889cf4df04b7e4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
