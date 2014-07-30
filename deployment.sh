@@ -1432,6 +1432,41 @@ EOT
     fi
   fi
 
+get_node_info() {
+if ! "$PRO_EDITION" ; then
+  return 0
+fi
+
+case $ROLE in
+  sp1)
+    logit "Role matching sp1"
+    if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *a ]] ; then # usually carrier env
+      logit "Target hostname is set and ends with 'a'"
+      THIS_HOST="$TARGET_HOSTNAME"
+      PEER="${TARGET_HOSTNAME%a}b"
+    else # usually PRO env
+      logit "Target hostname is not set or does not end with 'a'"
+      THIS_HOST="$ROLE"
+      PEER=sp2
+    fi
+    ;;
+  sp2)
+    logit "Role matching sp2"
+    if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *b ]] ; then # usually carrier env
+      THIS_HOST="$TARGET_HOSTNAME"
+      PEER="${TARGET_HOSTNAME%b}a"
+    else # usually PRO env
+      logit "Target hostname is not set or does not end with 'b'"
+      THIS_HOST="$ROLE"
+      PEER=sp1
+    fi
+    ;;
+  *)
+    logit "Using unsupported role: $ROLE"
+    ;;
+esac
+}
+
 adjust_hb_device() {
   local hb_device
 
@@ -1538,35 +1573,7 @@ fi
 # adjust network.yml
 if "$PRO_EDITION" ; then
   # set variable to have the *other* node from the PRO setup available for ngcp-network
-  case $ROLE in
-    sp1)
-      logit "Role matching sp1"
-      if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *a ]] ; then # usually carrier env
-	logit "Target hostname is set and ends with 'a'"
-	THIS_HOST="$TARGET_HOSTNAME"
-	PEER="${TARGET_HOSTNAME%a}b"
-      else # usually PRO env
-	logit "Target hostname is not set or does not end with 'a'"
-	THIS_HOST="$ROLE"
-	PEER=sp2
-      fi
-      ;;
-    sp2)
-      logit "Role matching sp2"
-      if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *b ]] ; then # usually carrier env
-	THIS_HOST="$TARGET_HOSTNAME"
-	PEER="${TARGET_HOSTNAME%b}a"
-      else # usually PRO env
-	logit "Target hostname is not set or does not end with 'b'"
-	THIS_HOST="$ROLE"
-	PEER=sp1
-      fi
-      ;;
-    *)
-      logit "Using unsupported role: $ROLE"
-      ;;
-  esac
-
+  get_node_info
   # get list of available network devices (excl. some known-to-be-irrelevant ones, also see MT#8297)
   net_devices=$(tail -n +3 /proc/net/dev | awk -F: '{print $1}'| sed "s/\s*//" | grep -ve '^vmnet' -ve '^vboxnet' -ve '^docker' -ve '^usb' | sort -u)
 
@@ -1869,10 +1876,26 @@ EOF
   # append hostnames of sp1/sp2 so they can talk to each other
   # in the HA setup
   if "$PRO_EDITION" ; then
-    cat >> $TARGET/etc/hosts << EOF
-$IP1 sp1
-$IP2 sp2
+    get_node_info
+    case $ROLE in
+      sp1)
+        logit "Role matching sp1"
+            cat >> $TARGET/etc/hosts << EOF
+$IP1 sp1 $THIS_HOST
+$IP2 sp2 $PEER
 EOF
+        ;;
+      sp2)
+        logit "Role matching sp2"
+    cat >> $TARGET/etc/hosts << EOF
+$IP1 sp1 $PEER
+$IP2 sp2 $THIS_HOST
+EOF
+        ;;
+      *)
+        logit "Using unsupported role: $ROLE"
+        ;;
+    esac
   else
     # otherwise 'hostname --fqdn' does not work and causes delays with exim4 startup
     cat >> $TARGET/etc/hosts << EOF
