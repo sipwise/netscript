@@ -1042,11 +1042,16 @@ EOF
   chmod 775 /etc/debootstrap/scripts/systemd.sh
 fi
 
-# NOTE: we use the debian.sipwise.com CNAME by intention here
-# to avoid conflicts with apt-pinning, preferring deb.sipwise.com
-# over official Debian
-MIRROR='http://debian.sipwise.com/debian/'
-SEC_MIRROR='http://debian.sipwise.com/debian-security/'
+# drop this once we mirror Debian/jessie
+if [ "$DEBIAN_RELEASE" = "jessie" ] ; then
+  MIRROR='http://debian.inode.at/debian/'
+else
+  # NOTE: we use the debian.sipwise.com CNAME by intention here
+  # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
+  # over official Debian
+  MIRROR='http://debian.sipwise.com/debian/'
+  SEC_MIRROR='http://debian.sipwise.com/debian-security/'
+fi
 
 set_deploy_status "debootstrap"
 
@@ -1055,9 +1060,17 @@ logit "Setting up /etc/debootstrap/etc/apt/sources.list"
 cat > /etc/debootstrap/etc/apt/sources.list << EOF
 # Set up via deployment.sh for grml-debootstrap usage
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
-deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
-deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 EOF
+
+# drop this once Debian/jessie has security support
+if [ -n "$SEC_MIRROR" ] ; then
+  echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
+else
+  echo  "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
+  logit "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
+fi
+
+echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
 
 # install Debian
 echo y | grml-debootstrap \
@@ -1300,7 +1313,17 @@ EOF
 
 # Debian repositories
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
-deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
+EOF
+
+# drop this once Debian/jessie has security support
+if [ -n "$SEC_MIRROR" ] ; then
+  echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> $TARGET/etc/apt/sources.list.d/debian.list
+else
+  echo  "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
+  logit "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
+fi
+
+cat >> $TARGET/etc/apt/sources.list.d/debian.list << EOF
 deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 
 EOF
