@@ -1045,12 +1045,14 @@ fi
 # drop this once we mirror Debian/jessie
 if [ "$DEBIAN_RELEASE" = "jessie" ] ; then
   MIRROR='http://debian.inode.at/debian/'
+  KEYRING='/usr/share/keyrings/debian-archive-keyring.gpg'
 else
   # NOTE: we use the debian.sipwise.com CNAME by intention here
   # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
   # over official Debian
   MIRROR='http://debian.sipwise.com/debian/'
   SEC_MIRROR='http://debian.sipwise.com/debian-security/'
+  KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
 fi
 
 set_deploy_status "debootstrap"
@@ -1072,6 +1074,8 @@ fi
 
 echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
 
+
+
 # install Debian
 echo y | grml-debootstrap \
   --arch "${ARCH}" \
@@ -1079,7 +1083,7 @@ echo y | grml-debootstrap \
   --filesystem "${FILESYSTEM}" \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
-  --debopt '--keyring=/etc/apt/trusted.gpg.d/sipwise.gpg' $EXTRA_DEBOOTSTRAP_OPTS \
+  --debopt "--keyring=${KEYRING}" $EXTRA_DEBOOTSTRAP_OPTS \
   --keep_src_list \
   -r "$DEBIAN_RELEASE" \
   -t "$ROOT_FS" \
