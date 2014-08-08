@@ -198,6 +198,17 @@ grml_debootstrap_upgrade() {
       -o dir::state="${TMPDIR}/statedir" -y install grml-debootstrap
   fi
 }
+
+ensure_augtool_present() {
+  if [ -x /usr/bin/augtool ] ; then
+    echo "/usr/bin/augtool is present, nothing to do"
+  else
+    echo "augtool isn't present, installing augeas-tools package:"
+
+    apt-get update
+    DEBIAN_FRONTEND='noninteractive' apt-get -y install augeas-tools
+  fi
+}
 ### }}}
 
 # logging {{{
@@ -549,6 +560,11 @@ grml_debootstrap_upgrade
 
 set_deploy_status "fai_upgrade"
 fai_upgrade
+
+if "$NGCP_INSTALLER" ; then
+  set_deploy_status "ensure_augtool_present"
+  ensure_augtool_present
+fi
 
 set_deploy_status "getconfig"
 
@@ -1095,6 +1111,15 @@ fi
 
 sync
 mount "$ROOT_FS" "$TARGET"
+
+# MT#7805
+if "$NGCP_INSTALLER" ; then
+  cat << EOT | augtool --root="$TARGET"
+insert opt after /files/etc/fstab/*[file="/"]/opt[last()]
+set /files/etc/fstab/*[file="/"]/opt[last()] noatime
+save
+EOT
+fi
 
 # provide useable swap partition
 echo "Enabling swap partition $SWAP_PARTITION via /etc/fstab"
