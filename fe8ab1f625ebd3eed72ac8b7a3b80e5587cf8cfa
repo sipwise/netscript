@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a045101_fcdca976",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1416,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2014-08-11T14:55:16Z",
+      "side": 1,
+      "message": "AFAICS this breaks installer\u0027s install/check.inc option handling.",
+      "revId": "fe8ab1f625ebd3eed72ac8b7a3b80e5587cf8cfa",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
