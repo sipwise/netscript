@@ -34,6 +34,24 @@
       "revId": "fe8ab1f625ebd3eed72ac8b7a3b80e5587cf8cfa",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a045101_5c0a7dd3",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1416,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2014-08-11T19:42:47Z",
+      "side": 1,
+      "message": "Ah, I see - LGTM then :)",
+      "parentUuid": "3a045101_3c58d1f9",
+      "revId": "fe8ab1f625ebd3eed72ac8b7a3b80e5587cf8cfa",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
