@@ -1294,7 +1294,11 @@ get_installer_path() {
   [ -n "$version" ] || die "Error: installer version could not be detected."
 
   if $PRO_EDITION ; then
-    INSTALLER="ngcp-installer-pro_${version}_all.deb"
+    if [ -n $CROLE ]; then
+      INSTALLER="ngcp-installer-carrier_${version}_all.deb"
+    else
+      INSTALLER="ngcp-installer-pro_${version}_all.deb"
+    fi
   else
     INSTALLER="ngcp-installer-ce_${version}_all.deb"
   fi
@@ -1405,11 +1409,11 @@ EOF
   logit "ngcp-installer: $INSTALLER"
   INSTALLER_OPTS="TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ADJUST_FOR_LOW_PERFORMANCE=$ADJUST_FOR_LOW_PERFORMANCE"
   if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
-    echo "$INSTALLER_OPTS ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE" > /tmp/ngcp-installer-cmdline.log
+    echo "$INSTALLER_OPTS ngcp-installer $ROLE $CROLE $IP1 $IP2 $EADDR $EIFACE" > /tmp/ngcp-installer-cmdline.log
     cat << EOT | grml-chroot $TARGET /bin/bash
 wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
-$INSTALLER_OPTS ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+$INSTALLER_OPTS ngcp-installer \$ROLE \$CROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
@@ -1517,21 +1521,6 @@ EOF
   if "$PRO_EDITION" ; then
     echo "Deploying PRO edition (sp1) - adjusting heartbeat device (hb_device)."
     adjust_hb_device
-  fi
-
-  if [ -n "$CROLE" ] ; then
-    case $CROLE in
-      mgmt)
-	echo  "Carrier role mgmt identified, installing ngcp-bootenv-carrier"
-	logit "Carrier role mgmt identified, installing ngcp-bootenv-carrier"
-	chroot $TARGET apt-get -y install ngcp-bootenv-carrier
-	;;
-      *)
-	echo  "Carrier role identified, installing ngcp-ngcpcfg-carrier"
-	logit "Carrier role identified, installing ngcp-ngcpcfg-carrier"
-	chroot $TARGET apt-get -y install ngcp-ngcpcfg-carrier
-	;;
-    esac
   fi
 
   # make sure all services are stopped
