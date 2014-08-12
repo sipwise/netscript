@@ -648,6 +648,7 @@ fi
 
 # needed as environment vars for ngcp-installer
 if "$PRO_EDITION" ; then
+  export CROLE
   export ROLE
   export IP1
   export IP2
