@@ -1295,7 +1295,7 @@ get_installer_path() {
   [ -n "$version" ] || die "Error: installer version could not be detected."
 
   if $PRO_EDITION ; then
-    if [ -n $CROLE ]; then
+    if [ -n "$CROLE" ]; then
       INSTALLER="ngcp-installer-carrier_${version}_all.deb"
     else
       INSTALLER="ngcp-installer-pro_${version}_all.deb"
