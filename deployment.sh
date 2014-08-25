@@ -1407,6 +1407,12 @@ EOF
 
   set_deploy_status "ngcp-installer"
 
+  if "$RETRIEVE_MGMT_CONFIG" ; then
+    logit "Retrieving network.yml from management server"
+    chroot $TARGET mkdir -p /etc/ngcp-config
+    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/network.yml "${MANAGEMENT_IP}:3000/yml/network/$(cat ${TARGET}/etc/hostname)"
+  fi
+
   # install and execute ngcp-installer
   logit "ngcp-installer: $INSTALLER"
   INSTALLER_OPTS="TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ADJUST_FOR_LOW_PERFORMANCE=$ADJUST_FOR_LOW_PERFORMANCE"
