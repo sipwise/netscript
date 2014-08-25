@@ -1462,11 +1462,11 @@ EOT
   fi
 
   if "$RETRIEVE_MGMT_CONFIG" ; then
-    echo "Retrieving config.yml from management server"
-
+    logit "Retrieving config.yml from management server"
     wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/config.yml "${MANAGEMENT_IP}:3000/yml/config/$(cat ${TARGET}/etc/hostname)"
     wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/constants.yml "${MANAGEMENT_IP}:3000/yml/constants/$(cat ${TARGET}/etc/hostname)"
-
+    logit "Retrieving network.yml from management server"
+    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/network.yml "${MANAGEMENT_IP}:3000/yml/network/$(cat ${TARGET}/etc/hostname)"
     chroot $TARGET ngcpcfg commit 'get config.yml/constants.yml [via deployment process]'
     chroot $TARGET ngcpcfg build
     chroot $TARGET ngcpcfg push --shared-only
