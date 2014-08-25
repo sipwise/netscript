@@ -622,6 +622,15 @@ fi
 [ -n "$EXTERNAL_DEV" ] || EXTERNAL_DEV=$INSTALL_DEV
 [ -n "$EXTERNAL_IP" ] || EXTERNAL_IP=$INSTALL_IP
 
+# needed for carrier
+if "$RETRIEVE_MGMT_CONFIG" ; then
+  echo "Retrieving ha_int IPs configuration from management server"
+  wget --timeout=30 -O "/tmp/hosts" "${MANAGEMENT_IP}:3000/hostconfig/${TARGET_HOSTNAME}"
+  IP1=$(grep sp1 /tmp/hosts | awk '{ print $1 }') || IP1=$DEFAULT_IP1
+  IP2=$(grep sp2 /tmp/hosts | awk '{ print $1 }') || IP2=$DEFAULT_IP2
+  echo "ha_int sp1: $IP1 sp2: $IP2"
+fi
+
 # hopefully set via bootoption/cmdline,
 # otherwise fall back to hopefully-safe-defaults
 # make sure the internal device (configured later) is not statically assigned,
