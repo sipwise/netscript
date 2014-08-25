@@ -1461,6 +1461,34 @@ EOT
     die "Error during installation of ngcp. Find details at: $TARGET/tmp/ngcp-installer.log $TARGET/tmp/ngcp-installer-debug.log"
   fi
 
+  if "$RETRIEVE_MGMT_CONFIG" && [ "$ROLE" = "sp1" ] ; then
+    password=sipwise
+
+    logit "Retrieving config.yml from management server"
+    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/config.yml "${MANAGEMENT_IP}:3000/yml/config/$(cat ${TARGET}/etc/hostname)"
+    logit "Copying config.yml to /mnt/glusterfs/shared_config"
+    chroot $TARGET cp /etc/ngcp-config/config.yml /mnt/glusterfs/shared_config/config.yml
+
+    logit "Retrieving constants.yml from management server"
+    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/constants.yml "${MANAGEMENT_IP}:3000/yml/constants/$(cat ${TARGET}/etc/hostname)"
+    logit "Copying constants.yml to /mnt/glusterfs/shared_config"
+    chroot $TARGET cp /etc/ngcp-config/constants.yml /mnt/glusterfs/shared_config/constants.yml
+
+    logit "Retrieving network.yml from management server"
+    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/network.yml "${MANAGEMENT_IP}:3000/yml/network/$(cat ${TARGET}/etc/hostname)"
+
+    logit "Retrieving sipwise.cnf from management server (using password ${password})"
+    wget --timeout=30 -O "${TARGET}"/etc/mysql/sipwise.cnf "${MANAGEMENT_IP}:3000/dbconfig/sipwise_cnf?password=${password}"
+    logit "Copying sipwise.cnf to /mnt/glusterfs/shared_config"
+    chroot $TARGET cp /etc/mysql/sipwise.cnf /mnt/glusterfs/shared_config/sipwise.cnf
+
+    chroot $TARGET ngcpcfg commit 'get network|config|constants yaml [via deployment process]'
+    chroot $TARGET ngcpcfg build
+    chroot $TARGET ngcpcfg push --shared-only
+
+    chroot $TARGET ngcp-sync-constants -r
+  fi
+
   # we require those packages for dkms, so do NOT remove them:
   # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
   if grml-chroot $TARGET dkms status | grep -q ngcp-rtpengine ; then
