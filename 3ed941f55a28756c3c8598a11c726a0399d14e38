@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a014df3_9ef8f94a",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 629,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2014-08-25T17:24:12Z",
+      "side": 1,
+      "message": "You can also \"awk \u0027/sp1/ {print $1}\u0027\" instead of using grep *and* awk",
+      "revId": "3ed941f55a28756c3c8598a11c726a0399d14e38",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
