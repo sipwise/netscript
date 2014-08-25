@@ -1452,6 +1452,18 @@ EOT
     die "Error during installation of ngcp. Find details at: $TARGET/tmp/ngcp-installer.log $TARGET/tmp/ngcp-installer-debug.log"
   fi
 
+   if "$RETRIEVE_MGMT_CONFIG" ; then
+    echo "Retrieving config.yml from management server"
+
+    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/config.yml "${MANAGEMENT_IP}:3000/yml/config/$(cat ${TARGET}/etc/hostname)"
+    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/constants.yml "${MANAGEMENT_IP}:3000/yml/constants/$(cat ${TARGET}/etc/hostname)"
+
+    chroot $TARGET ngcpcfg commit 'get config.yml/constants.yml [via deployment process]'
+    chroot $TARGET ngcpcfg build
+    # TODO: get sipwise.cnf
+    chroot $TARGET ngcpc-sync-constants -r
+  fi
+
   # we require those packages for dkms, so do NOT remove them:
   # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
   if grml-chroot $TARGET dkms status | grep -q ngcp-rtpengine ; then
