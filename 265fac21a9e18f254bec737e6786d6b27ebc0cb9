@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a014df3_215c2a25",
+        "filename": "deployment.sh",
+        "patchSetId": 8
+      },
+      "lineNbr": 1469,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2014-08-26T17:13:25Z",
+      "side": 1,
+      "message": "please use \"Copying\" instead,s ame for the lines below :)\nOtherwise LGTM!",
+      "range": {
+        "startLine": 1469,
+        "startChar": 11,
+        "endLine": 1469,
+        "endChar": 17
+      },
+      "revId": "265fac21a9e18f254bec737e6786d6b27ebc0cb9",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
