@@ -37,6 +37,7 @@ PRO_EDITION=false
 CE_EDITION=false
 NGCP_INSTALLER=false
 PUPPET=''
+RESTART_NETWORK=true
 INTERACTIVE=false
 DHCP=false
 LOGO=true
@@ -462,6 +463,11 @@ fi
 if checkBootParam ngcpsystemd ; then
   logit "Enabling systemd support as requested via boot option ngcpsystemd"
   SYSTEMD=true
+fi
+
+if checkBootParam ngcpnonwrecfg ; then
+  logit "Disabling reconfig network as requested via boot option ngcpnonwrecfg"
+  RESTART_NETWORK=false
 fi
 ## }}}
 
@@ -1207,7 +1213,9 @@ if "$RETRIEVE_MGMT_CONFIG" ; then
   wget --timeout=30 -O /etc/network/interfaces "${MANAGEMENT_IP}:3000/nwconfig/$(cat ${TARGET}/etc/hostname)"
 
   cp /etc/network/interfaces "${TARGET}/etc/network/interfaces"
+fi
 
+if "$RETRIEVE_MGMT_CONFIG" && "$RESTART_NETWORK" ; then
   # restart networking for the time being only when running either in toram mode
   # or not booting from NFS, once we've finished the carrier setup procedure we
   # should be able to make this as our only supported default mode and drop
