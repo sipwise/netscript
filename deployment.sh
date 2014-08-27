@@ -1497,6 +1497,17 @@ EOT
     chroot $TARGET ngcp-sync-constants -r
   fi
 
+  case "$CROLE" in
+     proxy|mgmt)
+        if chroot $TARGET service mysql start 2 ; then
+          logit "Configuring MySQL second instance"
+          chroot $TARGET ngcp-sync-constants -r -s
+        else
+          logit "Can't start MySQL second instance"
+        fi
+        ;;
+  esac
+
   # we require those packages for dkms, so do NOT remove them:
   # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
   if grml-chroot $TARGET dkms status | grep -q ngcp-rtpengine ; then
