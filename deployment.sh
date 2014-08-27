@@ -395,6 +395,10 @@ if checkBootParam ngcpip2 ; then
   IP2=$(getBootParam ngcpip2)
 fi
 
+if checkBootParam ngcpnetmask ; then
+  INTERNAL_NETMASK=$(getBootParam ngcpnetmask)
+fi
+
 if checkBootParam ngcpeaddr ; then
   EADDR=$(getBootParam ngcpeaddr)
 fi
@@ -505,6 +509,7 @@ Control target system:
   ngcpeiface=...   - external interface device (defaults to eth0)
   ngcpip1=...      - IP address of first node
   ngcpip2=...      - IP address of second node
+  ngcpnetmask=...  - netmask of ha_int interface
   ngcpeaddr=...    - Cluster IP address
 
 The command line options correspond with the available bootoptions.
@@ -539,6 +544,7 @@ for param in $* ; do
     *ngcpeaddr=*) EADDR=$(echo $param | sed 's/ngcpeaddr=//');;
     *ngcpip1=*) IP1=$(echo $param | sed 's/ngcpip1=//');;
     *ngcpip2=*) IP2=$(echo $param | sed 's/ngcpip2=//');;
+    *ngcpnetmask=*) INTERNAL_NETMASK=$(echo $param | sed 's/ngcpnetmask=//');;
     *ngcpmcast=*) MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
     *ngcpcrole=*) CROLE=$(echo $param | sed 's/ngcpcrole=//');;
     *ngcpcmaster=*) CMASTER=$(echo $param | sed 's/ngcpcmaster=//');;
