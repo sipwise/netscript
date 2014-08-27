@@ -1525,6 +1525,17 @@ EOT
     chroot $TARGET ngcpcfg push --shared-only
   fi
 
+  case "$CROLE" in
+     proxy)
+        if chroot $TARGET service mysql start 2 ; then
+          logit "Configuring MySQL second instance"
+          chroot $TARGET ngcp-sync-constants -r -s
+        else
+          logit "Can't start MySQL second instance"
+        fi
+        ;;
+  esac
+
   if [ -n "$CROLE" ] && [ "$CROLE" != "proxy" ] ; then
     logit "crole:$CROLE detected, skip dkms stuff"
   else
