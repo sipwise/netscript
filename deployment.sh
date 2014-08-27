@@ -1496,11 +1496,12 @@ EOT
     logit "Copying sipwise.cnf to /mnt/glusterfs/shared_config"
     chroot $TARGET cp /etc/mysql/sipwise.cnf /mnt/glusterfs/shared_config/sipwise.cnf
 
+    logit "Sync constants"
+    chroot $TARGET ngcp-sync-constants -r
+
     chroot $TARGET ngcpcfg commit 'get network|config|constants yaml [via deployment process]'
     chroot $TARGET ngcpcfg build
     chroot $TARGET ngcpcfg push --shared-only
-
-    chroot $TARGET ngcp-sync-constants -r
   fi
 
   # we require those packages for dkms, so do NOT remove them:
