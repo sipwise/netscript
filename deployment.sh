@@ -634,15 +634,6 @@ fi
 [ -n "$EXTERNAL_DEV" ] || EXTERNAL_DEV=$INSTALL_DEV
 [ -n "$EXTERNAL_IP" ] || EXTERNAL_IP=$INSTALL_IP
 
-# needed for carrier
-if "$RETRIEVE_MGMT_CONFIG" ; then
-  logit "Retrieving ha_int IPs configuration from management server"
-  wget --timeout=30 -O "/tmp/hosts" "${MANAGEMENT_IP}:3000/hostconfig/${TARGET_HOSTNAME}"
-  IP1=$(awk '/sp1/ { print $1 }' /tmp/hosts) || IP1=$DEFAULT_IP1
-  IP2=$(awk '/sp2/ { print $1 }' /tmp/hosts) || IP2=$DEFAULT_IP2
-  logit "ha_int sp1: $IP1 sp2: $IP2"
-fi
-
 # hopefully set via bootoption/cmdline,
 # otherwise fall back to hopefully-safe-defaults
 # make sure the internal device (configured later) is not statically assigned,
@@ -654,6 +645,19 @@ if "$PRO_EDITION" ; then
       INTERNAL_DEV='eth0'
     fi
   fi
+
+  # needed for carrier
+  if "$RETRIEVE_MGMT_CONFIG" ; then
+    logit "Retrieving ha_int IPs configuration from management server"
+    wget --timeout=30 -O "/tmp/hosts" "${MANAGEMENT_IP}:3000/hostconfig/${TARGET_HOSTNAME}"
+    IP1=$(awk '/sp1/ { print $1 }' /tmp/hosts) || IP1=$DEFAULT_IP1
+    IP2=$(awk '/sp2/ { print $1 }' /tmp/hosts) || IP2=$DEFAULT_IP2
+    wget --timeout=30 -O "/tmp/interfaces" "${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
+    INTERNAL_NETMASK=$(grep "$INTERNAL_DEV inet" -A2 /tmp/interfaces | awk '/netmask/ { print $2 }') \
+      || INTERNAL_NETMASK=$DEFAULT_INTERNAL_NETMASK
+    logit "ha_int sp1: $IP1 sp2: $IP2 netmask: $INTERNAL_NETMASK"
+  fi
+
   [ -n "$IP1" ] || IP1=$DEFAULT_IP1
   [ -n "$IP2" ] || IP2=$DEFAULT_IP2
   case "$ROLE" in
