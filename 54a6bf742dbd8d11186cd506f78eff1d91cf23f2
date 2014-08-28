@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a014df3_c1ac668f",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 656,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2014-08-28T18:39:39Z",
+      "side": 1,
+      "message": "Hm, is this \"grep ...-A2\" going to be future proof?",
+      "revId": "54a6bf742dbd8d11186cd506f78eff1d91cf23f2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
