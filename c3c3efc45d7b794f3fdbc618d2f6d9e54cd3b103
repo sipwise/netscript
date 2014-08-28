@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a014df3_01a36e9f",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 1513,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2014-08-28T18:37:00Z",
+      "side": 1,
+      "message": "We don\u0027t fail by intention here? If so then LGTM",
+      "revId": "c3c3efc45d7b794f3fdbc618d2f6d9e54cd3b103",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
