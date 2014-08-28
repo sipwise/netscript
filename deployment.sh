@@ -984,9 +984,6 @@ locales-all
 firmware-bnx2
 firmware-bnx2x
 
-# required for dkms
-linux-headers-2.6-amd64
-
 # support acpi (d-i installs them as well)
 acpi acpid acpi-support-base
 
@@ -1001,6 +998,26 @@ openssh-server
 #laptop-detect
 #os-prober
 EOF
+
+# MT#8813 The linux-headers-2.6-amd64 package doesn't exist in jessie and newer
+case "$DEBIAN_RELEASE" in
+  lenny|squeeze|wheezy)
+    echo  "Adding linux-headers-2.6-amd64 package (because we're installing ${DEBIAN_RELEASE})"
+    logit "Adding linux-headers-2.6-amd64 package (because we're installing ${DEBIAN_RELEASE})"
+    cat >> /etc/debootstrap/packages << EOF
+# required for dkms
+linux-headers-2.6-amd64
+EOF
+    ;;
+  *)
+    echo  "Adding linux-headers-amd64 package (because we're installing ${DEBIAN_RELEASE})"
+    logit "Adding linux-headers-amd64 package (because we're installing ${DEBIAN_RELEASE})"
+    cat >> /etc/debootstrap/packages << EOF
+# required for dkms
+linux-headers-amd64
+EOF
+    ;;
+esac
 
 if "$LVM" ; then
   cat >> /etc/debootstrap/packages << EOF
