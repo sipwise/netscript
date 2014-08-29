@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a014df3_41b056dd",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1002,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2014-08-29T07:39:32Z",
+      "side": 1,
+      "message": "\"doesn\u0027t exist in jessie and newer\"",
+      "revId": "0234c6a1dbd5b55efad99937cd556b9dd4b0afc3",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
