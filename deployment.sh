@@ -1503,9 +1503,23 @@ EOT
     logit "Sync constants"
     chroot $TARGET ngcp-sync-constants -r
 
-    chroot $TARGET ngcpcfg commit 'get network|config|constants yaml [via deployment process]'
+    # use --no-db-sync only if supported by ngcp[cfg] version
+    if grep -q -- --no-db-sync /usr/sbin/ngcpcfg ; then
+      ngcpcfg --no-db-sync commit 'get network|config|constants yaml [via deployment process]'
+    else
+      ngcpcfg commit 'get network|config|constants yaml [via deployment process]'
+    fi
     chroot $TARGET ngcpcfg build
     chroot $TARGET ngcpcfg push --shared-only
+  elif "$RETRIEVE_MGMT_CONFIG" && [ "$ROLE" = "sp2" ] ; then
+    # make sure login from second node to first node works
+    ssh-keyscan $PEER >> ~/.ssh/known_hosts
+
+    # live system uses a different SSH host key than the finally installed
+    # system, so do NOT use ssh-keyscan here
+    tail -1 ~/.ssh/known_hosts | sed "s/\w* /$THIS_HOST /" >> ~/.ssh/known_hosts
+    tail -1 ~/.ssh/known_hosts | sed "s/\w* /$MANAGEMENT_IP /" >> ~/.ssh/known_hosts
+    scp ~/.ssh/known_hosts $PEER:~/.ssh/known_hosts
   fi
 
   case "$CROLE" in
@@ -1637,7 +1651,9 @@ EOF
 fi
 
 # adjust network.yml
-if "$PRO_EDITION" ; then
+if "$RETRIEVE_MGMT_CONFIG" ; then
+  echo "Nothing to do (RETRIEVE_MGMT_CONFIG is set), network.yml was already set up."
+elif "$PRO_EDITION" ; then
   # set variable to have the *other* node from the PRO setup available for ngcp-network
   case $ROLE in
     sp1)
