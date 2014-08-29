@@ -16,6 +16,24 @@
       "revId": "54a6bf742dbd8d11186cd506f78eff1d91cf23f2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a014df3_81b65edb",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 656,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2014-08-29T07:36:17Z",
+      "side": 1,
+      "message": "This is coming from the ngcpcfg-api network template. So, We control the content thus Is up to us to keep in sync this.\n\nI didn\u0027t find other way to get this easily. :-(",
+      "parentUuid": "1a014df3_c1ac668f",
+      "revId": "54a6bf742dbd8d11186cd506f78eff1d91cf23f2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
