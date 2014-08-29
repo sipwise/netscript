@@ -1479,46 +1479,6 @@ EOT
     die "Error during installation of ngcp. Find details at: $TARGET/tmp/ngcp-installer.log $TARGET/tmp/ngcp-installer-debug.log"
   fi
 
-  if "$RETRIEVE_MGMT_CONFIG" && [ "$ROLE" = "sp1" ] ; then
-    password=sipwise
-
-    logit "Retrieving config.yml from management server"
-    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/config.yml "${MANAGEMENT_IP}:3000/yml/config/$(cat ${TARGET}/etc/hostname)"
-    logit "Copying config.yml to /mnt/glusterfs/shared_config"
-    chroot $TARGET cp /etc/ngcp-config/config.yml /mnt/glusterfs/shared_config/config.yml
-
-    logit "Retrieving constants.yml from management server"
-    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/constants.yml "${MANAGEMENT_IP}:3000/yml/constants/$(cat ${TARGET}/etc/hostname)"
-    logit "Copying constants.yml to /mnt/glusterfs/shared_config"
-    chroot $TARGET cp /etc/ngcp-config/constants.yml /mnt/glusterfs/shared_config/constants.yml
-
-    logit "Retrieving network.yml from management server"
-    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/network.yml "${MANAGEMENT_IP}:3000/yml/network/$(cat ${TARGET}/etc/hostname)"
-
-    logit "Retrieving sipwise.cnf from management server (using password ${password})"
-    wget --timeout=30 -O "${TARGET}"/etc/mysql/sipwise.cnf "${MANAGEMENT_IP}:3000/dbconfig/sipwise_cnf?password=${password}"
-    logit "Copying sipwise.cnf to /mnt/glusterfs/shared_config"
-    chroot $TARGET cp /etc/mysql/sipwise.cnf /mnt/glusterfs/shared_config/sipwise.cnf
-
-    logit "Sync constants"
-    chroot $TARGET ngcp-sync-constants -r
-
-    chroot $TARGET ngcpcfg commit 'get network|config|constants yaml [via deployment process]'
-    chroot $TARGET ngcpcfg build
-    chroot $TARGET ngcpcfg push --shared-only
-  fi
-
-  case "$CROLE" in
-     proxy)
-        if chroot $TARGET service mysql start 2 ; then
-          logit "Configuring MySQL second instance"
-          chroot $TARGET ngcp-sync-constants -r -s
-        else
-          logit "Can't start MySQL second instance"
-        fi
-        ;;
-  esac
-
   # we require those packages for dkms, so do NOT remove them:
   # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
   if grml-chroot $TARGET dkms status | grep -q ngcp-rtpengine ; then
@@ -1685,7 +1645,61 @@ if "$PRO_EDITION" ; then
     exit 0
   fi
 
-  if [ "$ROLE" = "sp1" ] ; then
+  if "$RETRIEVE_MGMT_CONFIG" && [ "$ROLE" = "sp1" ] ; then
+    password=sipwise
+
+    logit "Retrieving config.yml from management server"
+    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/config.yml "${MANAGEMENT_IP}:3000/yml/config/$(cat ${TARGET}/etc/hostname)"
+    logit "Copying config.yml to /mnt/glusterfs/shared_config"
+    chroot $TARGET cp /etc/ngcp-config/config.yml /mnt/glusterfs/shared_config/config.yml
+
+    logit "Retrieving constants.yml from management server"
+    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/constants.yml "${MANAGEMENT_IP}:3000/yml/constants/$(cat ${TARGET}/etc/hostname)"
+    logit "Copying constants.yml to /mnt/glusterfs/shared_config"
+    chroot $TARGET cp /etc/ngcp-config/constants.yml /mnt/glusterfs/shared_config/constants.yml
+
+    logit "Retrieving network.yml from management server"
+    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/network.yml "${MANAGEMENT_IP}:3000/yml/network/$(cat ${TARGET}/etc/hostname)"
+
+    logit "Retrieving sipwise.cnf from management server (using password ${password})"
+    wget --timeout=30 -O "${TARGET}"/etc/mysql/sipwise.cnf "${MANAGEMENT_IP}:3000/dbconfig/sipwise_cnf?password=${password}"
+    logit "Copying sipwise.cnf to /mnt/glusterfs/shared_config"
+    chroot $TARGET cp /etc/mysql/sipwise.cnf /mnt/glusterfs/shared_config/sipwise.cnf
+
+    logit "Sync constants"
+    chroot $TARGET ngcp-sync-constants -r
+
+    # use --no-db-sync only if supported by ngcp[cfg] version
+    if grep -q -- --no-db-sync /usr/sbin/ngcpcfg ; then
+      ngcpcfg --no-db-sync commit 'get network|config|constants yaml [via deployment process]'
+    else
+      ngcpcfg commit 'get network|config|constants yaml [via deployment process]'
+    fi
+    chroot $TARGET ngcpcfg build
+    chroot $TARGET ngcpcfg push --shared-only
+  elif "$RETRIEVE_MGMT_CONFIG" && [ "$ROLE" = "sp2" ] ; then
+    # make sure login from second node to first node works
+    ssh-keyscan $PEER >> ~/.ssh/known_hosts
+
+    # live system uses a different SSH host key than the finally installed
+    # system, so do NOT use ssh-keyscan here
+    tail -1 ~/.ssh/known_hosts | sed "s/\w* /$THIS_HOST /" >> ~/.ssh/known_hosts
+    tail -1 ~/.ssh/known_hosts | sed "s/\w* /$MANAGEMENT_IP /" >> ~/.ssh/known_hosts
+    scp ~/.ssh/known_hosts $PEER:~/.ssh/known_hosts
+  fi
+
+  case "$CROLE" in
+     proxy)
+        if chroot $TARGET service mysql start 2 ; then
+          logit "Configuring MySQL second instance"
+          chroot $TARGET ngcp-sync-constants -r -s
+        else
+          logit "Can't start MySQL second instance"
+        fi
+        ;;
+  esac
+
+  if [ ! "$RETRIEVE_MGMT_CONFIG" ] && [ "$ROLE" = "sp1" ] ; then
     cp /etc/ngcp-config/network.yml /etc/ngcp-config/network.yml.factory_default
 
     ngcp-network --host=$THIS_HOST --set-interface=lo --ip=auto --netmask=auto --hwaddr=auto --ipv6='::1' --type=web_int
@@ -1737,7 +1751,7 @@ if "$PRO_EDITION" ; then
 
     ngcpcfg build
     ngcpcfg push --shared-only
-  else # ROLE = sp2
+  elif [ ! "$RETRIEVE_MGMT_CONFIG" ] && [ "$ROLE" = "sp2" ] ; then
     ngcpcfg pull
     ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
 
