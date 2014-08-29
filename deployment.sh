@@ -1657,11 +1657,15 @@ EOF
     rsyslog \
     sems ; \
   do
-    chroot $TARGET /etc/init.d/$service stop || true
+    if [ -f $TARGET/etc/init.d/$service ] ; then
+      chroot $TARGET /etc/init.d/$service stop || true
+    fi
   done
 
-  # prosody's init script requires mounted /proc
-  grml-chroot $TARGET /etc/init.d/prosody stop || true
+  if [ -f $TARGET/etc/init.d/prosody ] ; then
+    # prosody's init script requires mounted /proc
+    grml-chroot $TARGET ; then /etc/init.d/prosody stop || true
+  fi
 
   # nuke files
   for i in $(find "$TARGET/var/log" -type f -size +0 -not -name \*.ini 2>/dev/null); do
