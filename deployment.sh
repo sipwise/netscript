@@ -1643,7 +1643,9 @@ EOF
 fi
 
 # adjust network.yml
-if "$PRO_EDITION" ; then
+if "$RETRIEVE_MGMT_CONFIG" ; then
+  echo "Nothing to do (RETRIEVE_MGMT_CONFIG is set), network.yml was already set up."
+elif "$PRO_EDITION" ; then
   # set variable to have the *other* node from the PRO setup available for ngcp-network
   case $ROLE in
     sp1)
