@@ -1479,33 +1479,81 @@ EOT
     die "Error during installation of ngcp. Find details at: $TARGET/tmp/ngcp-installer.log $TARGET/tmp/ngcp-installer-debug.log"
   fi
 
-  if "$RETRIEVE_MGMT_CONFIG" && [ "$ROLE" = "sp1" ] ; then
-    password=sipwise
+  if "$PRO_EDITION" ; then
+    # set variable to have the *other* node from the PRO setup available for ngcp-network
+    case $ROLE in
+      sp1)
+        logit "Role matching sp1"
+        if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *a ]] ; then # usually carrier env
+          logit "Target hostname is set and ends with 'a'"
+          THIS_HOST="$TARGET_HOSTNAME"
+          PEER="${TARGET_HOSTNAME%a}b"
+        else # usually PRO env
+          logit "Target hostname is not set or does not end with 'a'"
+          THIS_HOST="$ROLE"
+          PEER=sp2
+        fi
+        ;;
+      sp2)
+        logit "Role matching sp2"
+        if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *b ]] ; then # usually carrier env
+          THIS_HOST="$TARGET_HOSTNAME"
+          PEER="${TARGET_HOSTNAME%b}a"
+        else # usually PRO env
+          logit "Target hostname is not set or does not end with 'b'"
+          THIS_HOST="$ROLE"
+          PEER=sp1
+        fi
+        ;;
+      *)
+        logit "Using unsupported role: $ROLE"
+        ;;
+    esac
+  fi
 
-    logit "Retrieving config.yml from management server"
-    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/config.yml "${MANAGEMENT_IP}:3000/yml/config/$(cat ${TARGET}/etc/hostname)"
-    logit "Copying config.yml to /mnt/glusterfs/shared_config"
-    chroot $TARGET cp /etc/ngcp-config/config.yml /mnt/glusterfs/shared_config/config.yml
+  if "$RETRIEVE_MGMT_CONFIG" ; then
+    if [ "$ROLE" = "sp1" ] ; then
+      password=sipwise
 
-    logit "Retrieving constants.yml from management server"
-    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/constants.yml "${MANAGEMENT_IP}:3000/yml/constants/$(cat ${TARGET}/etc/hostname)"
-    logit "Copying constants.yml to /mnt/glusterfs/shared_config"
-    chroot $TARGET cp /etc/ngcp-config/constants.yml /mnt/glusterfs/shared_config/constants.yml
+      logit "Retrieving config.yml from management server"
+      wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/config.yml "${MANAGEMENT_IP}:3000/yml/config/$(cat ${TARGET}/etc/hostname)"
+      logit "Copying config.yml to /mnt/glusterfs/shared_config"
+      chroot $TARGET cp /etc/ngcp-config/config.yml /mnt/glusterfs/shared_config/config.yml
 
-    logit "Retrieving network.yml from management server"
-    wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/network.yml "${MANAGEMENT_IP}:3000/yml/network/$(cat ${TARGET}/etc/hostname)"
+      logit "Retrieving constants.yml from management server"
+      wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/constants.yml "${MANAGEMENT_IP}:3000/yml/constants/$(cat ${TARGET}/etc/hostname)"
+      logit "Copying constants.yml to /mnt/glusterfs/shared_config"
+      chroot $TARGET cp /etc/ngcp-config/constants.yml /mnt/glusterfs/shared_config/constants.yml
 
-    logit "Retrieving sipwise.cnf from management server (using password ${password})"
-    wget --timeout=30 -O "${TARGET}"/etc/mysql/sipwise.cnf "${MANAGEMENT_IP}:3000/dbconfig/sipwise_cnf?password=${password}"
-    logit "Copying sipwise.cnf to /mnt/glusterfs/shared_config"
-    chroot $TARGET cp /etc/mysql/sipwise.cnf /mnt/glusterfs/shared_config/sipwise.cnf
+      logit "Retrieving network.yml from management server"
+      wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/network.yml "${MANAGEMENT_IP}:3000/yml/network/$(cat ${TARGET}/etc/hostname)"
 
-    logit "Sync constants"
-    chroot $TARGET ngcp-sync-constants -r
+      logit "Retrieving sipwise.cnf from management server (using password ${password})"
+      wget --timeout=30 -O "${TARGET}"/etc/mysql/sipwise.cnf "${MANAGEMENT_IP}:3000/dbconfig/sipwise_cnf?password=${password}"
+      logit "Copying sipwise.cnf to /mnt/glusterfs/shared_config"
+      chroot $TARGET cp /etc/mysql/sipwise.cnf /mnt/glusterfs/shared_config/sipwise.cnf
 
-    chroot $TARGET ngcpcfg commit 'get network|config|constants yaml [via deployment process]'
-    chroot $TARGET ngcpcfg build
-    chroot $TARGET ngcpcfg push --shared-only
+      logit "Sync constants"
+      chroot $TARGET ngcp-sync-constants -r
+
+      # use --no-db-sync only if supported by ngcp[cfg] version
+      if grep -q -- --no-db-sync /usr/sbin/ngcpcfg ; then
+        chroot $TARGET ngcpcfg --no-db-sync commit 'get network|config|constants yaml [via deployment process]'
+      else
+        chroot $TARGET  ngcpcfg commit 'get network|config|constants yaml [via deployment process]'
+      fi
+      chroot $TARGET ngcpcfg build
+      chroot $TARGET ngcpcfg push --shared-only
+    else # ROLE = sp2
+      # make sure login from second node to first node works
+      chroot $TARGET ssh-keyscan $PEER >> ~/.ssh/known_hosts
+
+      # live system uses a different SSH host key than the finally installed
+      # system, so do NOT use ssh-keyscan here
+      chroot $TARGET tail -1 ~/.ssh/known_hosts | sed "s/\w* /$THIS_HOST /" >> ~/.ssh/known_hosts
+      chroot $TARGET tail -1 ~/.ssh/known_hosts | sed "s/\w* /$MANAGEMENT_IP /" >> ~/.ssh/known_hosts
+      chroot $TARGET scp ~/.ssh/known_hosts $PEER:~/.ssh/known_hosts
+    fi
   fi
 
   case "$CROLE" in
@@ -1644,36 +1692,6 @@ fi
 if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Nothing to do (RETRIEVE_MGMT_CONFIG is set), network.yml was already set up."
 elif "$PRO_EDITION" ; then
-  # set variable to have the *other* node from the PRO setup available for ngcp-network
-  case $ROLE in
-    sp1)
-      logit "Role matching sp1"
-      if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *a ]] ; then # usually carrier env
-	logit "Target hostname is set and ends with 'a'"
-	THIS_HOST="$TARGET_HOSTNAME"
-	PEER="${TARGET_HOSTNAME%a}b"
-      else # usually PRO env
-	logit "Target hostname is not set or does not end with 'a'"
-	THIS_HOST="$ROLE"
-	PEER=sp2
-      fi
-      ;;
-    sp2)
-      logit "Role matching sp2"
-      if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *b ]] ; then # usually carrier env
-	THIS_HOST="$TARGET_HOSTNAME"
-	PEER="${TARGET_HOSTNAME%b}a"
-      else # usually PRO env
-	logit "Target hostname is not set or does not end with 'b'"
-	THIS_HOST="$ROLE"
-	PEER=sp1
-      fi
-      ;;
-    *)
-      logit "Using unsupported role: $ROLE"
-      ;;
-  esac
-
   # get list of available network devices (excl. some known-to-be-irrelevant ones, also see MT#8297)
   net_devices=$(tail -n +3 /proc/net/dev | awk -F: '{print $1}'| sed "s/\s*//" | grep -ve '^vmnet' -ve '^vboxnet' -ve '^docker' -ve '^usb' | sort -u)
 
