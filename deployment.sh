@@ -1525,32 +1525,36 @@ EOT
     chroot $TARGET ngcpcfg push --shared-only
   fi
 
-  # we require those packages for dkms, so do NOT remove them:
-  # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
-  if grml-chroot $TARGET dkms status | grep -q ngcp-rtpengine ; then
-    rtpengine_name="ngcp-rtpengine"
+  if [ -n "$CROLE" ] && [ "$CROLE" != "proxy" ] ; then
+    logit "crole:$CROLE detected, skip dkms stuff"
   else
-    rtpengine_name="ngcp-mediaproxy-ng"
-  fi
-  echo "Identified dkms package ${rtpengine_name}"
-
-  if ! grml-chroot $TARGET dkms status | grep -q "${rtpengine_name}" ; then
-    echo "dkms status failed [checking for ${rtpengine_name}]:" | tee -a /tmp/dkms.log
-    grml-chroot $TARGET dkms status 2>&1| tee -a /tmp/dkms.log
-  else
-    if grml-chroot $TARGET dkms status | grep -v -- '-rt-amd64' | grep -q "^${rtpengine_name}.*: installed" ; then
-      echo "${rtpengine_name} kernel package already installed, skipping" | tee -a /tmp/dkms.log
+    # we require those packages for dkms, so do NOT remove them:
+    # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
+    if grml-chroot $TARGET dkms status | grep -q ngcp-rtpengine ; then
+      rtpengine_name="ngcp-rtpengine"
     else
-      KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r -V | head -1))
-      if [ -z "$KERNELHEADERS" ] ; then
-        die "Error: no kernel headers found for building ${rtpengine_name} the kernel module."
-      fi
+      rtpengine_name="ngcp-mediaproxy-ng"
+    fi
+    echo "Identified dkms package ${rtpengine_name}"
 
-      KERNELVERSION=${KERNELHEADERS##linux-headers-}
-      NGCPVERSION=$(grml-chroot $TARGET dkms status | grep ${rtpengine_name} | awk -F, '{print $2}' | sed 's/:.*//')
-      grml-chroot $TARGET dkms build -k $KERNELVERSION --kernelsourcedir /usr/src/$KERNELHEADERS \
-             -m $rtpengine_name -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
-      grml-chroot $TARGET dkms install -k $KERNELVERSION -m $rtpengine_name -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
+    if ! grml-chroot $TARGET dkms status | grep -q "${rtpengine_name}" ; then
+      echo "dkms status failed [checking for ${rtpengine_name}]:" | tee -a /tmp/dkms.log
+      grml-chroot $TARGET dkms status 2>&1| tee -a /tmp/dkms.log
+    else
+      if grml-chroot $TARGET dkms status | grep -v -- '-rt-amd64' | grep -q "^${rtpengine_name}.*: installed" ; then
+        echo "${rtpengine_name} kernel package already installed, skipping" | tee -a /tmp/dkms.log
+      else
+        KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r -V | head -1))
+        if [ -z "$KERNELHEADERS" ] ; then
+          die "Error: no kernel headers found for building ${rtpengine_name} the kernel module."
+        fi
+
+        KERNELVERSION=${KERNELHEADERS##linux-headers-}
+        NGCPVERSION=$(grml-chroot $TARGET dkms status | grep ${rtpengine_name} | awk -F, '{print $2}' | sed 's/:.*//')
+        grml-chroot $TARGET dkms build -k $KERNELVERSION --kernelsourcedir /usr/src/$KERNELHEADERS \
+               -m $rtpengine_name -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
+        grml-chroot $TARGET dkms install -k $KERNELVERSION -m $rtpengine_name -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
+      fi
     fi
   fi
 
