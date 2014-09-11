@@ -139,7 +139,7 @@ loadNfsIpArray() {
 fai_upgrade() {
   upgrade=false # upgrade only if needed
 
-  local required_version=4.2
+  local required_version=4.2.4+0
   local present_version=$(dpkg-query --show --showformat='${Version}' fai-setup-storage)
 
   if dpkg --compare-versions $present_version lt $required_version ; then
