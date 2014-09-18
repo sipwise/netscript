@@ -160,8 +160,15 @@ fai_upgrade() {
     return 0
   fi
 
-  wget -O /tmp/680FBA8A.asc http://deb.sipwise.com/autobuild/680FBA8A.asc
-  apt-key add /tmp/680FBA8A.asc
+  # sipwise key setup
+  wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://deb.sipwise.com/spce/sipwise.gpg
+
+  md5sum_sipwise_key_expected=32a4907a7d7aabe325395ca07c531234
+  md5sum_sipwise_key_calculated=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
+
+  if [ "$md5sum_sipwise_key_calculated" != "$md5sum_sipwise_key_expected" ] ; then
+    die "Error validating sipwise keyring for apt usage (expected: [$md5sum_sipwise_key_expected] - got: [$md5sum_sipwise_key_calculated])"
+  fi
 
   # use temporary apt database for speed reasons
   local TMPDIR=$(mktemp -d)
@@ -1055,7 +1062,7 @@ EOF
 fi
 
 # sipwise key setup
-wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://deb.sipwise.com/autobuild/sipwise.gpg
+wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://deb.sipwise.com/spce/sipwise.gpg
 
 md5sum_sipwise_key_expected=32a4907a7d7aabe325395ca07c531234
 md5sum_sipwise_key_calculated=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
