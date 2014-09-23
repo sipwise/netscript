@@ -1558,7 +1558,7 @@ EOT
       # use --no-db-sync only if supported by ngcp[cfg] version
       if chroot $TARGET grep -q -- --no-db-sync /usr/sbin/ngcpcfg ; then
         chroot $TARGET ngcpcfg --no-db-sync commit 'get network|config|constants yaml [via deployment process]'
-        chroot $TARGET ngcpcfg build --no-db-sync
+        chroot $TARGET ngcpcfg build
         chroot $TARGET ngcpcfg push --shared-only
       else
         chroot $TARGET ngcpcfg commit 'get network|config|constants yaml [via deployment process]'
