@@ -1267,7 +1267,7 @@ if "$RETRIEVE_MGMT_CONFIG" && "$RESTART_NETWORK" ; then
     # through a specific VLAN only
     ip link set dev "$INTERNAL_DEV" down # avoid conflicts with VLAN device(s)
 
-    # vlan-raw-device b0 doesn't exist in the live environment, if we don't
+    # vlan-raw-device bond0 doesn't exist in the live environment, if we don't
     # adjust it accordingly for our environment the vlan device(s) can't be
     # brought up
     # note: we do NOT modify the /e/n/i file from $TARGET here by intention
@@ -1898,8 +1898,8 @@ EOF
 auto lo
 iface lo inet loopback
 
-auto b0
-iface b0 inet static
+auto bond0
+iface bond0 inet static
         bond-slaves $EXTERNAL_DEV $INTERNAL_DEV
         bond_mode 802.3ad
         bond_miimon 100
@@ -1910,8 +1910,8 @@ iface b0 inet static
         dns-nameservers $(awk '/^nameserver/ {print $2}' /etc/resolv.conf | xargs echo -n)
 
 # additional possible bonding mode
-# auto b0
-# iface b0 inet manual
+# auto bond0
+# iface bond0 inet manual
 #         bond-slaves eth0 eth1
 #         bond_mode active-backup
 #         bond_miimon 100
