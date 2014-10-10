@@ -1791,6 +1791,8 @@ elif "$PRO_EDITION" ; then
     # set *_ext types accordingly for PRO setup
     ngcp-network --host=$THIS_HOST --set-interface=$EXTERNAL_DEV --type=web_ext --type=sip_ext \
                               --type=rtp_ext --type=mon_ext
+    # version >= mr3.5, previous versions has no dbnode option
+    ngcp-network --host=$THIS_HOST --dbnode || true
 
     # add ssh_ext to all the interfaces of sp2 on sp2
     for interface in \$NETWORK_DEVICES ; do
