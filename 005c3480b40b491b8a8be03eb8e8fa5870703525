@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba092121_419f2804",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1775,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2014-10-10T10:38:36Z",
+      "side": 1,
+      "message": "This is not necessary, as this executes after installer, so cfg_schema already inserted dbnode1 for sp1.",
+      "revId": "005c3480b40b491b8a8be03eb8e8fa5870703525",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
