@@ -1771,6 +1771,9 @@ elif "$PRO_EDITION" ; then
     ngcp-network --host=$PEER --role=proxy --role=lb --role=mgmt --role=rtp --role=db
     ngcp-network --host=$PEER --set-interface=lo --type=sip_int --type=web_int --type=aux_ext
 
+    # version >= mr3.5, previous versions has no dbnode option
+    ngcp-network --host=$PEER --dbnode=2 || true
+
     cp /etc/ngcp-config/network.yml /mnt/glusterfs/shared_config/network.yml
 
     # use --no-db-sync only if supported by ngcp[cfg] version
