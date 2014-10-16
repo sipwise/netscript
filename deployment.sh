@@ -801,7 +801,7 @@ if "$LOGO" ; then
   echo "Host IP(s): $IP_INFO | Deployment version: $SCRIPT_VERSION"
   echo "$CPU_INFO CPU(s) | ${RAM_INFO}kB RAM | $CHASSIS"
   echo ""
-  echo "Install ngcp: $NGCP_INSTALLER | Install pro: $PRO_EDITION [$ROLE] | Install ce: $CE_EDITION"
+  echo "Install ngcp: $NGCP_INSTALLER | Install pro: $PRO_EDITION [$ROLE|$CROLE] | Install ce: $CE_EDITION"
   echo "Installing $SP_VERSION_STR platform | Debian: $DEBIAN_RELEASE"
   echo "Install IP: $INSTALL_IP | Started deployment at $DATE_INFO"
   # number of lines
