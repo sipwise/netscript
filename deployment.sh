@@ -662,6 +662,12 @@ if "$PRO_EDITION" ; then
     wget --timeout=30 -O "/tmp/hosts" "${MANAGEMENT_IP}:3000/hostconfig/${TARGET_HOSTNAME}"
     IP1=$(awk '/sp1/ { print $1 }' /tmp/hosts) || IP1=$DEFAULT_IP1
     IP2=$(awk '/sp2/ { print $1 }' /tmp/hosts) || IP2=$DEFAULT_IP2
+
+    # required for bootstrapping remote origin in ngcpcfg carrier setup
+    MGMT_NAME=$(awk "/^$MANAGEMENT_IP/ {print \$2}" /tmp/hosts)
+    echo "$MGMT_NAME" > "${TARGET}/etc/ngcp_mgmt_node"
+    logit "MGMT_NAME = $MGMT_NAME"
+
     wget --timeout=30 -O "/tmp/interfaces" "${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
     INTERNAL_NETMASK=$(grep "$INTERNAL_DEV inet" -A2 /tmp/interfaces | awk '/netmask/ { print $2 }') \
       || INTERNAL_NETMASK=$DEFAULT_INTERNAL_NETMASK
