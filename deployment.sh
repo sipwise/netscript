@@ -2272,6 +2272,16 @@ open(my $fh, ">", "$outputfile") or die "Could not open $outputfile for writing"
 print $fh $yaml->write_string() or die "Could not write YAML to $outputfile";
 EOF
 
+  # MT#9567 Enable web_ext and web_int on all Vagrant interfaces
+  cat << EOF | grml-chroot $TARGET /bin/bash
+  if "$PRO_EDITION" ; then
+    ngcp-network --host=sp1  --set-interface=eth0 --set-interface=eth2 --type=web_ext --type=web_int
+    ngcp-network --host=sp2  --set-interface=eth0 --set-interface=eth2 --type=web_ext --type=web_int
+  else
+    ngcp-network --host=self --set-interface=eth0 --set-interface=eth1 --type=web_ext --type=web_int
+  fi
+EOF
+
   # record configuration file changes
   chroot "$TARGET" etckeeper commit "Snapshot after enabling VM defaults [$(date)]" || true
   chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot after enabling VM defaults [$(date)]\" || true"
