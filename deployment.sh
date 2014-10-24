@@ -189,7 +189,7 @@ fai_upgrade() {
 }
 
 grml_debootstrap_upgrade() {
-  local required_version=0.62
+  local required_version=0.67
   local present_version=$(dpkg-query --show --showformat='${Version}' grml-debootstrap)
 
   if dpkg --compare-versions $present_version lt $required_version ; then
@@ -1152,6 +1152,7 @@ echo y | grml-debootstrap \
   --mirror "$MIRROR" \
   --debopt "--keyring=${KEYRING}" $EXTRA_DEBOOTSTRAP_OPTS \
   --keep_src_list \
+  --defaultinterfaces \
   -r "$DEBIAN_RELEASE" \
   -t "$ROOT_FS" \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
