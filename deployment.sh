@@ -1452,7 +1452,8 @@ EOF
 
   # install and execute ngcp-installer
   logit "ngcp-installer: $INSTALLER"
-  INSTALLER_OPTS="TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ADJUST_FOR_LOW_PERFORMANCE=$ADJUST_FOR_LOW_PERFORMANCE"
+  INSTALLER_OPTS="TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ADJUST_FOR_LOW_PERFORMANCE=$ADJUST_FOR_LOW_PERFORMANCE "
+  INSTALLER_OPTS+="ENABLE_VM_SERVICES=$ENABLE_VM_SERVICES "
   if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
     echo "$INSTALLER_OPTS ngcp-installer $ROLE $CROLE $IP1 $IP2 $EADDR $EIFACE" > /tmp/ngcp-installer-cmdline.log
     cat << EOT | grml-chroot $TARGET /bin/bash
@@ -2223,6 +2224,11 @@ vagrant_configuration() {
 }
 
 enable_vm_services() {
+  if expr $SP_VERSION \>= mr3.6 >/dev/null 2>&1 ; then
+    echo "enable_vm_services has been moved to ngcp-installer for mr3.6+, nothing to do here"
+    return
+  fi
+
   chroot "$TARGET" etckeeper commit "Snapshot before enabling VM defaults [$(date)]" || true
   chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot before enabling VM defaults [$(date)]\" || true"
 
@@ -2270,16 +2276,6 @@ push @{$yaml->[0]->{sshd}->{listen_addresses}}, '0.0.0.0';
 
 open(my $fh, ">", "$outputfile") or die "Could not open $outputfile for writing";
 print $fh $yaml->write_string() or die "Could not write YAML to $outputfile";
-EOF
-
-  # MT#9567 Enable web_ext and web_int on all Vagrant interfaces
-  cat << EOF | grml-chroot $TARGET /bin/bash
-  if "$PRO_EDITION" ; then
-    ngcp-network --host=sp1  --set-interface=eth0 --type=web_ext --type=web_int
-    ngcp-network --host=sp2  --set-interface=eth0 --type=web_ext --type=web_int
-  else
-    ngcp-network --host=self --set-interface=eth0 --type=web_ext --type=web_int
-  fi
 EOF
 
   # record configuration file changes
