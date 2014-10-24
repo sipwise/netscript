@@ -2224,8 +2224,8 @@ vagrant_configuration() {
 }
 
 enable_vm_services() {
-  if expr $SP_VERSION \>= mr3.6 >/dev/null 2>&1 ; then
-    echo "enable_vm_services has been moved to ngcp-installer for mr3.6+, nothing to do here"
+  if [ "$SP_VERSION" = "" ] || expr $SP_VERSION \>= mr3.6 >/dev/null 2>&1 ; then
+    echo "enable_vm_services has been moved to ngcp-installer for mr3.6+, nothing to do here for $SP_VERSION"
     return
   fi
 
