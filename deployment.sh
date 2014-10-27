@@ -1800,7 +1800,7 @@ elif "$PRO_EDITION" ; then
     # finalize the --ip=$IP2 from previous run on first node
     ngcp-network --host=$THIS_HOST --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto --type=ha_int
     # set *_ext types accordingly for PRO setup
-    ngcp-network --host=$THIS_HOST --set-interface=$EXTERNAL_DEV --type=web_ext --type=sip_ext \
+    ngcp-network --host=$THIS_HOST --set-interface=$EXTERNAL_DEV --type=web_int --type=web_ext --type=sip_ext \
                               --type=rtp_ext --type=mon_ext
 
     # add ssh_ext to all the interfaces of sp2 on sp2
