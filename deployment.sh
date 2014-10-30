@@ -1360,10 +1360,12 @@ if "$NGCP_INSTALLER" ; then
     wget --timeout=30 -O "${TARGET}"/root/.ssh/authorized_keys "${MANAGEMENT_IP}:3000/ssh/authorized_keys"
     wget --timeout=30 -O "${TARGET}"/root/.ssh/id_rsa          "${MANAGEMENT_IP}:3000/ssh/id_rsa?password=${password}"
     wget --timeout=30 -O "${TARGET}"/root/.ssh/id_rsa.pub      "${MANAGEMENT_IP}:3000/ssh/id_rsa_pub"
+    wget --timeout=30 -O "${TARGET}"/root/.ssh/known_hosts     "${MANAGEMENT_IP}:3000/ssh/known_hosts"
 
     chmod 600 "${TARGET}"/root/.ssh/authorized_keys
     chmod 600 "${TARGET}"/root/.ssh/id_rsa
     chmod 644 "${TARGET}"/root/.ssh/id_rsa.pub
+    chmod 600 "${TARGET}"/root/.ssh/known_hosts
 
     wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_dsa_key     "${MANAGEMENT_IP}:3000/ssh/host_dsa_key?password=${password}"
     wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_dsa_key.pub "${MANAGEMENT_IP}:3000/ssh/host_dsa_key_pub"
@@ -1535,53 +1537,6 @@ EOT
         logit "Using unsupported role: $ROLE"
         ;;
     esac
-  fi
-
-  if "$RETRIEVE_MGMT_CONFIG" ; then
-    if [ "$ROLE" = "sp1" ] ; then
-      password=sipwise
-
-      logit "Retrieving config.yml from management server"
-      wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/config.yml "${MANAGEMENT_IP}:3000/yml/config/$(cat ${TARGET}/etc/hostname)"
-      logit "Copying config.yml to /mnt/glusterfs/shared_config"
-      chroot $TARGET cp /etc/ngcp-config/config.yml /mnt/glusterfs/shared_config/config.yml
-
-      logit "Retrieving constants.yml from management server"
-      wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/constants.yml "${MANAGEMENT_IP}:3000/yml/constants/$(cat ${TARGET}/etc/hostname)"
-      logit "Copying constants.yml to /mnt/glusterfs/shared_config"
-      chroot $TARGET cp /etc/ngcp-config/constants.yml /mnt/glusterfs/shared_config/constants.yml
-
-      logit "Retrieving network.yml from management server"
-      wget --timeout=30 -O "${TARGET}"/etc/ngcp-config/network.yml "${MANAGEMENT_IP}:3000/yml/network/$(cat ${TARGET}/etc/hostname)"
-
-      logit "Retrieving sipwise.cnf from management server (using password ${password})"
-      wget --timeout=30 -O "${TARGET}"/etc/mysql/sipwise.cnf "${MANAGEMENT_IP}:3000/dbconfig/sipwise_cnf?password=${password}"
-      logit "Copying sipwise.cnf to /mnt/glusterfs/shared_config"
-      chroot $TARGET cp /etc/mysql/sipwise.cnf /mnt/glusterfs/shared_config/sipwise.cnf
-
-      logit "Sync constants"
-      chroot $TARGET ngcp-sync-constants -r
-
-      # use --no-db-sync only if supported by ngcp[cfg] version
-      if chroot $TARGET grep -q -- --no-db-sync /usr/sbin/ngcpcfg ; then
-        chroot $TARGET ngcpcfg --no-db-sync commit 'get network|config|constants yaml [via deployment process]'
-        chroot $TARGET ngcpcfg build
-        chroot $TARGET ngcpcfg push --shared-only
-      else
-        chroot $TARGET ngcpcfg commit 'get network|config|constants yaml [via deployment process]'
-        chroot $TARGET ngcpcfg build
-        chroot $TARGET ngcpcfg push --shared-only
-      fi
-    else # ROLE = sp2
-      # make sure login from second node to first node works
-      chroot $TARGET ssh-keyscan $PEER >> ~/.ssh/known_hosts
-
-      # live system uses a different SSH host key than the finally installed
-      # system, so do NOT use ssh-keyscan here
-      chroot $TARGET tail -1 ~/.ssh/known_hosts | sed "s/\w* /$THIS_HOST /" >> ~/.ssh/known_hosts
-      chroot $TARGET tail -1 ~/.ssh/known_hosts | sed "s/\w* /$MANAGEMENT_IP /" >> ~/.ssh/known_hosts
-      chroot $TARGET scp ~/.ssh/known_hosts $PEER:~/.ssh/known_hosts
-    fi
   fi
 
   case "$CROLE" in
