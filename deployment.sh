@@ -1213,9 +1213,8 @@ if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Retrieving /etc/hosts configuration from management server"
   wget --timeout=30 -O "$TARGET/etc/hosts" "${MANAGEMENT_IP}:3000/hostconfig/$(cat ${TARGET}/etc/hostname)"
   # required for bootstrapping remote origin in ngcpcfg carrier setup
-  MGMT_NAME=$(awk "/^$MANAGEMENT_IP/ {print \$2}" ${TARGET}/etc/hosts)
-  echo "Generating /etc/ngcp_mgmt_node file [${MGMT_NAME}]"
-  echo "${MGMT_NAME}" | sed 's/a$// ; s/b$//' > "${TARGET}/etc/ngcp_mgmt_node"
+  echo "Retrieving /etc/ngcp_mgmt_node file from management server"
+  wget --timeout=30 -O "$TARGET/etc/ngcp_mgmt_node" "${MANAGEMENT_IP}:3000/mgmt"
 fi
 
 if "$PRO_EDITION" ; then
