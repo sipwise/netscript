@@ -210,6 +210,24 @@ grml_debootstrap_upgrade() {
   fi
 }
 
+# we need version >=4.3.14-1~bpo70+1 for usage with recent kernel versions
+install_vbox_package() {
+  echo "Installing virtualbox-guest-additions-iso"
+
+  # use temporary apt database for speed reasons
+  local TMPDIR=$(mktemp -d)
+  mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
+  local debsrcfile=$(mktemp)
+  echo "deb http://deb.sipwise.com/debian/ wheezy-backports non-free" > "$debsrcfile"
+
+  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+    -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
+    -o Dir::Etc::sourceparts=/dev/null update
+
+  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+    -o dir::state="${TMPDIR}/statedir" -y --no-install-recommends install virtualbox-guest-additions-iso
+}
+
 ensure_augtool_present() {
   if [ -x /usr/bin/augtool ] ; then
     echo "/usr/bin/augtool is present, nothing to do"
@@ -2137,19 +2155,7 @@ vagrant_configuration() {
     sed -ri -e "s/mesg\s+n/# adjusted for Vagrant\ntty -s \&\& mesg n/" "${TARGET}/root/.profile"
   fi
 
-  isofile="/usr/share/virtualbox/VBoxGuestAdditions.iso"
-  if [ -r "$isofile" ] ; then
-    echo "/usr/share/virtualbox/VBoxGuestAdditions.iso exists already"
-  else
-    echo "/usr/share/virtualbox/VBoxGuestAdditions.iso does not exist, installing virtualbox-guest-additions-iso"
-    apt-get update
-    apt-get -y --no-install-recommends install virtualbox-guest-additions-iso
-  fi
-
-  if [ ! -r "$isofile" ] ; then
-    die "Error: could not find $isofile" >&2
-    echo "TIP:   Make sure to have virtualbox-guest-additions-iso installed."
-  fi
+  install_vbox_package
 
   # required for fake_uname and VBoxLinuxAdditions.run
   grml-chroot $TARGET apt-get update
@@ -2165,9 +2171,14 @@ vagrant_configuration() {
     die "Error: no kernel version could be identified."
   fi
 
+  vbox_isofile="/usr/share/virtualbox/VBoxGuestAdditions.iso"
+  if [ ! -r "$vbox_isofile" ] ; then
+    die "Error: could not find $vbox_isofile"
+  fi
+
   mkdir -p "${TARGET}/media/cdrom"
   mountpoint "${TARGET}/media/cdrom" >/dev/null && umount "${TARGET}/media/cdrom"
-  mount -t iso9660 $isofile "${TARGET}/media/cdrom/"
+  mount -t iso9660 "${vbox_isofile}" "${TARGET}/media/cdrom/"
   UTS_RELEASE=$KERNELVERSION LD_PRELOAD=/tmp/fake-uname.so grml-chroot "$TARGET" /media/cdrom/VBoxLinuxAdditions.run --nox11
   tail -10 "${TARGET}/var/log/VBoxGuestAdditions.log"
   umount "${TARGET}/media/cdrom/"
