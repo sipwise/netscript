@@ -216,16 +216,19 @@ install_vbox_package() {
 
   # use temporary apt database for speed reasons
   local TMPDIR=$(mktemp -d)
-  mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
-  local debsrcfile=$(mktemp)
-  echo "deb http://deb.sipwise.com/debian/ wheezy-backports non-free" > "$debsrcfile"
+  mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
+    "${TMPDIR}/cachedir/archives/partial"
+  echo "deb http://debian.sipwise.com/debian/ wheezy-backports non-free" > \
+    "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
-    -o Dir::Etc::sourceparts=/dev/null update
+    -o dir::state="${TMPDIR}/statedir" -o dir::etc="${TMPDIR}/etc" \
+    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" update
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::state="${TMPDIR}/statedir" -y --no-install-recommends install virtualbox-guest-additions-iso
+    -o dir::etc="${TMPDIR}/etc" -o dir::state="${TMPDIR}/statedir" \
+    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" \
+    -y --no-install-recommends install virtualbox-guest-additions-iso
 }
 
 ensure_augtool_present() {
