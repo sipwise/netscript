@@ -199,7 +199,11 @@ grml_debootstrap_upgrade() {
     local TMPDIR=$(mktemp -d)
     mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
     local debsrcfile=$(mktemp)
-    echo "deb http://deb.grml.org/ grml-testing main" >> "$debsrcfile"
+    echo "deb http://deb.sipwise.com/grml.org grml-testing main" >> "$debsrcfile"
+
+    # the Sipwise deb.grml.org mirror is signed with 0xA42C4F2A (= 680FBA8A)
+    wget -O /etc/apt/680FBA8A.asc http://deb.sipwise.com/autobuild/680FBA8A.asc
+    apt-key add /etc/apt/680FBA8A.asc
 
     DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
       -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
