@@ -210,7 +210,8 @@ grml_debootstrap_upgrade() {
       -o Dir::Etc::sourceparts=/dev/null update
 
     DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-      -o dir::state="${TMPDIR}/statedir" -y install grml-debootstrap
+      -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
+      -o Dir::Etc::sourceparts=/dev/null -y install grml-debootstrap
   fi
 }
 
