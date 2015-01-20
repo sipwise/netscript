@@ -59,6 +59,12 @@ ADJUST_FOR_LOW_PERFORMANCE=false
 ENABLE_VM_SERVICES=false
 FILESYSTEM="ext4"
 SYSTEMD=false
+DEBIAN_REPO_HOST="debian.sipwise.com"
+DEBIAN_REPO_PORT=80
+DEBIAN_REPO_URL=''
+SIPWISE_REPO_HOST="deb.sipwise.com"
+SIPWISE_REPO_PORT=80
+SIPWISE_REPO_URL=''
 
 # if TARGET_DISK environment variable is set accept it
 if [ -n "$TARGET_DISK" ] ; then
@@ -136,7 +142,7 @@ loadNfsIpArray() {
 }
 
 install_sipwise_key() {
-  wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://deb.sipwise.com/spce/sipwise.gpg
+  wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://${SIPWISE_REPO_URL}/spce/sipwise.gpg
 
   md5sum_sipwise_key_expected=32a4907a7d7aabe325395ca07c531234
   md5sum_sipwise_key_calculated=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
@@ -177,7 +183,7 @@ fai_upgrade() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
   local debsrcfile=$(mktemp)
-  echo "deb http://debian.sipwise.com/wheezy-backports wheezy-backports main" >> "$debsrcfile"
+  echo "deb http://${DEBIAN_REPO_URL}/wheezy-backports wheezy-backports main" >> "$debsrcfile"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
     -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
@@ -199,10 +205,10 @@ grml_debootstrap_upgrade() {
     local TMPDIR=$(mktemp -d)
     mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
     local debsrcfile=$(mktemp)
-    echo "deb http://deb.sipwise.com/grml.org grml-testing main" >> "$debsrcfile"
+    echo "deb http://${SIPWISE_REPO_URL}/grml.org grml-testing main" >> "$debsrcfile"
 
     # the Sipwise deb.grml.org mirror is signed with 0xA42C4F2A (= 680FBA8A)
-    wget -O /etc/apt/680FBA8A.asc http://deb.sipwise.com/autobuild/680FBA8A.asc
+    wget -O /etc/apt/680FBA8A.asc http://${SIPWISE_REPO_URL}/autobuild/680FBA8A.asc
     apt-key add /etc/apt/680FBA8A.asc
 
     DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -223,7 +229,7 @@ install_vbox_package() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb http://debian.sipwise.com/debian/ wheezy-backports non-free" > \
+  echo "deb http://${DEBIAN_REPO_URL}/debian/ wheezy-backports non-free" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -509,6 +515,22 @@ if checkBootParam ngcpnonwrecfg ; then
   logit "Disabling reconfig network as requested via boot option ngcpnonwrecfg"
   RESTART_NETWORK=false
 fi
+
+if checkBootParam debianrepohost ; then
+  DEBIAN_REPO_HOST=$(getBootParam debianrepohost)
+fi
+
+if checkBootParam debianrepoport ; then
+  DEBIAN_REPO_PORT=$(getBootParam debianrepoport)
+fi
+
+if checkBootParam sipwiserepohost ; then
+  SIPWISE_REPO_HOST=$(getBootParam sipwiserepohost)
+fi
+
+if checkBootParam sipwiserepoport ; then
+  SIPWISE_REPO_PORT=$(getBootParam sipwiserepoport)
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -602,6 +624,22 @@ if ! "$NGCP_INSTALLER" ; then
   CE_EDITION=false
   unset ROLE
 fi
+
+generate_reporitory_urls () {
+  if [ "$DEBIAN_REPO_PORT" = "80" ]; then
+    DEBIAN_REPO_URL="${DEBIAN_REPO_HOST}"
+  else
+    DEBIAN_REPO_URL="${DEBIAN_REPO_HOST}:${DEBIAN_REPO_PORT}"
+  fi
+
+  if [ "$SIPWISE_REPO_PORT" = "80" ]; then
+    SIPWISE_REPO_URL="${SIPWISE_REPO_HOST}"
+  else
+    SIPWISE_REPO_URL="${SIPWISE_REPO_HOST}:${SIPWISE_REPO_PORT}"
+  fi
+}
+
+generate_reporitory_urls
 
 set_deploy_status "grml_debootstrap_upgrade"
 grml_debootstrap_upgrade
@@ -1112,7 +1150,7 @@ echo "systemd.sh: mounting rootfs $ROOT_FS to $TARGET"
 mount "$ROOT_FS" "$TARGET"
 
 echo "systemd.sh: enabling ${DEBIAN_RELEASE} backports"
-echo deb http://debian.sipwise.com/debian/ ${DEBIAN_RELEASE}-backports main contrib non-free >> ${TARGET}/etc/apt/sources.list.d/systemd.list
+echo deb http://${DEBIAN_REPO_URL}/debian/ ${DEBIAN_RELEASE}-backports main contrib non-free >> ${TARGET}/etc/apt/sources.list.d/systemd.list
 chroot $TARGET apt-get update
 
 echo "systemd.sh: installing systemd"
@@ -1138,8 +1176,8 @@ else
   # NOTE: we use the debian.sipwise.com CNAME by intention here
   # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
   # over official Debian
-  MIRROR='http://debian.sipwise.com/debian/'
-  SEC_MIRROR='http://debian.sipwise.com/debian-security/'
+  MIRROR='http://${DEBIAN_REPO_URL}/debian/'
+  SEC_MIRROR='http://${DEBIAN_REPO_URL}/debian-security/'
   KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
 fi
 
@@ -1328,9 +1366,9 @@ get_installer_path() {
     INSTALLER=ngcp-installer-latest.deb
 
     if $PRO_EDITION ; then
-      INSTALLER_PATH="http://deb.sipwise.com/sppro/"
+      INSTALLER_PATH="http://${SIPWISE_REPO_URL}/sppro/"
     else
-      INSTALLER_PATH="http://deb.sipwise.com/spce/"
+      INSTALLER_PATH="http://${SIPWISE_REPO_URL}/spce/"
     fi
 
     return # we don't want to run any further code from this function
@@ -1343,18 +1381,18 @@ get_installer_path() {
     else
       local installer_package='ngcp-installer-pro'
     fi
-    local repos_base_path="http://deb.sipwise.com/sppro/${SP_VERSION}/dists/${DEBIAN_RELEASE}/main/binary-amd64/"
-    INSTALLER_PATH="http://deb.sipwise.com/sppro/${SP_VERSION}/pool/main/n/ngcp-installer/"
+    local repos_base_path="http://${SIPWISE_REPO_URL}/sppro/${SP_VERSION}/dists/${DEBIAN_RELEASE}/main/binary-amd64/"
+    INSTALLER_PATH="http://${SIPWISE_REPO_URL}/sppro/${SP_VERSION}/pool/main/n/ngcp-installer/"
   else
     local installer_package='ngcp-installer-ce'
-    local repos_base_path="http://deb.sipwise.com/spce/${SP_VERSION}/dists/${DEBIAN_RELEASE}/main/binary-amd64/"
-    INSTALLER_PATH="http://deb.sipwise.com/spce/${SP_VERSION}/pool/main/n/ngcp-installer/"
+    local repos_base_path="http://${SIPWISE_REPO_URL}/spce/${SP_VERSION}/dists/${DEBIAN_RELEASE}/main/binary-amd64/"
+    INSTALLER_PATH="http://${SIPWISE_REPO_URL}/spce/${SP_VERSION}/pool/main/n/ngcp-installer/"
   fi
 
   # use a separate repos for trunk releases
   if $TRUNK_VERSION ; then
-    local repos_base_path="http://deb.sipwise.com/autobuild/dists/release-trunk-${DEBIAN_RELEASE}/main/binary-amd64/"
-    INSTALLER_PATH="http://deb.sipwise.com/autobuild/pool/main/n/ngcp-installer/"
+    local repos_base_path="http://${SIPWISE_REPO_URL}/autobuild/dists/release-trunk-${DEBIAN_RELEASE}/main/binary-amd64/"
+    INSTALLER_PATH="http://${SIPWISE_REPO_URL}/autobuild/pool/main/n/ngcp-installer/"
   fi
 
   wget --timeout=30 -O Packages "${repos_base_path}/Packages"
@@ -1442,10 +1480,10 @@ EOF
 ## custom sources.list, deployed via deployment.sh
 
 # Sipwise repositories
-deb [arch=amd64] http://deb.sipwise.com/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
+deb [arch=amd64] http://${SIPWISE_REPO_URL}/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
 
 # Sipwise ${DEBIAN_RELEASE} backports
-deb [arch=amd64] http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
+deb [arch=amd64] http://${SIPWISE_REPO_URL}/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
 
 EOF
   elif [ -n "$MRBUILD_RELEASE" ] ; then
@@ -1454,23 +1492,23 @@ EOF
     if "$PRO_EDITION" ; then
       cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
 # Sipwise repository
-deb [arch=amd64] http://deb.sipwise.com/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
-#deb-src http://deb.sipwise.com/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+deb [arch=amd64] http://${SIPWISE_REPO_URL}/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+#deb-src http://${SIPWISE_REPO_URL}/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
 
 EOF
     else # CE
       cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
 # Sipwise repository
-deb [arch=amd64] http://deb.sipwise.com/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
-#deb-src http://deb.sipwise.com/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+deb [arch=amd64] http://${SIPWISE_REPO_URL}/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+#deb-src http://${SIPWISE_REPO_URL}/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
 
 EOF
     fi
 
     cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
 # Sipwise $DEBIAN_RELEASE backports
-deb [arch=amd64] http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
-#deb-src http://deb.sipwise.com/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
+deb [arch=amd64] http://${SIPWISE_REPO_URL}/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
+#deb-src http://${SIPWISE_REPO_URL}/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
 
 EOF
   fi # $MRBUILD_RELEASE
@@ -2097,7 +2135,7 @@ vagrant_configuration() {
     echo "Sipwise Debian mirror key is already present."
   else
     echo "Installing Sipwise Debian mirror key (680FBA8A)."
-    grml-chroot "${TARGET}" wget -O /etc/apt/680FBA8A.asc http://deb.sipwise.com/autobuild/680FBA8A.asc
+    grml-chroot "${TARGET}" wget -O /etc/apt/680FBA8A.asc http://${SIPWISE_REPO_URL}/autobuild/680FBA8A.asc
     grml-chroot "${TARGET}" apt-key add /etc/apt/680FBA8A.asc
   fi
 
