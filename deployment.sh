@@ -719,6 +719,8 @@ if "$PRO_EDITION" ; then
   esac
   [ -n "$INTERNAL_NETMASK" ] || INTERNAL_NETMASK=$DEFAULT_INTERNAL_NETMASK
   [ -n "$MCASTADDR" ] || MCASTADDR=$DEFAULT_MCASTADDR
+
+  logit "ha_int sp1: $IP1 sp2: $IP2 netmask: $INTERNAL_NETMASK"
 fi
 
 [ -n "$EIFACE" ] || EIFACE=$INSTALL_DEV
