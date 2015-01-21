@@ -1375,10 +1375,10 @@ get_installer_path() {
     INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/autobuild/pool/main/n/ngcp-installer/"
   fi
 
-  wget --timeout=30 -O Packages "${repos_base_path}/Packages"
+  wget --timeout=30 -O Packages.gz "${repos_base_path}Packages.gz"
   # sed: display paragraphs matching the "Package: ..." string, then grab string "^Version: " and display the actual version via awk
   # sort -u to avoid duplicates in repositories shipping the ngcp-installer-pro AND ngcp-installer-pro-ha-v3 debs
-  local version=$(sed "/./{H;\$!d;};x;/Package: ${installer_package}/b;d" Packages | awk '/^Version: / {print $2}' | sort -u)
+  local version=$(zcat Packages.gz | sed "/./{H;\$!d;};x;/Package: ${installer_package}/b;d" | awk '/^Version: / {print $2}' | sort -u)
 
   [ -n "$version" ] || die "Error: installer version for ngcp ${SP_VERSION}, Debian release $DEBIAN_RELEASE with installer package $installer_package could not be detected."
 
