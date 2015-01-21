@@ -1043,6 +1043,9 @@ locales-all
 firmware-bnx2
 firmware-bnx2x
 
+# MT#7999 ethtool used in bonding
+ethtool
+
 # support acpi (d-i installs them as well)
 acpi acpid acpi-support-base
 
