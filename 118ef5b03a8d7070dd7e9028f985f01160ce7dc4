@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3e81b7_f0d040f9",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1037,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-01-21T22:21:23Z",
+      "side": 1,
+      "message": "I don\u0027t like having this in the \"addons: packages which d-i installs but debootstrap doesn\u0027t\" section because that\u0027s misleading. Please move it to a section after firmware* and maybe even add a comment about it. Otherwise fine for me!",
+      "revId": "118ef5b03a8d7070dd7e9028f985f01160ce7dc4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
