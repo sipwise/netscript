@@ -183,7 +183,7 @@ fai_upgrade() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
   local debsrcfile=$(mktemp)
-  echo "deb http://${DEBIAN_REPO_HOST}/wheezy-backports wheezy-backports main" >> "$debsrcfile"
+  echo "deb http://${SIPWISE_REPO_HOST}/wheezy-backports wheezy-backports main" >> "$debsrcfile"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
     -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
