@@ -1043,6 +1043,9 @@ locales-all
 firmware-bnx2
 firmware-bnx2x
 
+# ethtool allows configure bonding on GRML for Carrier 3.x
+ethtool
+
 # support acpi (d-i installs them as well)
 acpi acpid acpi-support-base
 
