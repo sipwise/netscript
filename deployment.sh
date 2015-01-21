@@ -1034,6 +1034,7 @@ grub-pc
 pciutils
 usbutils
 ucf
+ethtool
 # locales -> but we want locales-all instead:
 locales-all
 
