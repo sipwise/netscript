@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3e81b7_3035a846",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 1046,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2015-01-22T09:32:21Z",
+      "side": 1,
+      "message": "on bootstrap installation!",
+      "range": {
+        "startLine": 1046,
+        "startChar": 38,
+        "endLine": 1046,
+        "endChar": 42
+      },
+      "revId": "c1cd14b95e1eb71d661071079b286942db54dc7c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
