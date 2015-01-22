@@ -1,0 +1,45 @@
+#!/usr/bin/make -f
+# Uncomment this to turn on verbose mode.
+# export DH_VERBOSE=1
+
+# Calculate current build version:
+#  - equal to $branch for Jenkins build by branch
+#  - substr from $release for Jenkins build by tag
+#  - equal to git branch for local builds
+NGCP_VERSION := UNKNOWN
+
+ifdef branch
+  ifneq ($(branch),none)
+    # Jenkins builds package by branch
+    NGCP_VERSION := $(shell debian/get_version $(branch))
+  endif
+endif
+
+ifdef release
+  ifneq ($(release),none)
+    # Jenkins builds package by tag
+    # $tag is not available (at the moment),
+    # we have to restore it from $release
+    NGCP_VERSION := $(release)
+    NGCP_VERSION := $(subst release-,,$(NGCP_VERSION))
+    NGCP_VERSION := $(subst -builddeps,,$(NGCP_VERSION))
+    NGCP_VERSION := $(subst -update,,$(NGCP_VERSION))
+  endif
+endif
+
+ifndef branch
+  ifndef release
+    # built locally, no $branch and $release
+    NGCP_VERSION := $(shell git rev-parse --abbrev-ref HEAD)
+    NGCP_VERSION := $(shell debian/get_version $(NGCP_VERSION))
+  endif
+endif
+
+# Replace git styled 'master' to human readable 'trunk'
+export NGCP_VERSION := $(NGCP_VERSION:master=trunk)
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	make script_version
