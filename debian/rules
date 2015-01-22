@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+# Uncomment this to turn on verbose mode.
+# export DH_VERBOSE=1
+
+ifneq ($(GIT_COMMIT),)
+export NGCP_VERSION := $(GIT_COMMIT)
+endif
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	echo "NGCP_VERSION=$(NGCP_VERSION)"
+	make script_version
