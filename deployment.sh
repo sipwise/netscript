@@ -1605,9 +1605,10 @@ EOT
 
   case "$CROLE" in
      proxy)
-        if chroot $TARGET service mysql start 2 ; then
+        if grml-chroot $TARGET /etc/init.d/mysql start 2 ; then
           logit "Configuring MySQL second instance"
-          chroot $TARGET ngcp-sync-constants -r -s
+          chroot $TARGET /usr/share/ngcp-ngcpcfg/helper/check-for-mysql 10 2
+          chroot $TARGET ngcp-sync-constants -r -s --local-repl
         else
           logit "Can't start MySQL second instance"
         fi
