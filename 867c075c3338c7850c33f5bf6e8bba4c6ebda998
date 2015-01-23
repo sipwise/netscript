@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3e81b7_50c14ce3",
+        "filename": "debian/rules",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-01-23T09:03:38Z",
+      "side": 1,
+      "message": "can you please share the logic behind those two lines?",
+      "revId": "867c075c3338c7850c33f5bf6e8bba4c6ebda998",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
