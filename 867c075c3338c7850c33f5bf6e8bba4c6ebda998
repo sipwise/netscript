@@ -16,6 +16,24 @@
       "revId": "867c075c3338c7850c33f5bf6e8bba4c6ebda998",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba3e81b7_10bbc473",
+        "filename": "debian/rules",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2015-01-23T10:47:08Z",
+      "side": 1,
+      "message": "This logic is copied from installer.git\n\nSee https://git.mgm.sipwise.com/gitweb/?p\u003dinstaller.git;a\u003dcommit;h\u003d6539ca9ffe43e890f30d6a7fbfc768057a3607af",
+      "parentUuid": "ba3e81b7_50c14ce3",
+      "revId": "867c075c3338c7850c33f5bf6e8bba4c6ebda998",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
