@@ -851,13 +851,16 @@ if "$LOGO" ; then
 fi
 
 if "$PRO_EDITION" ; then
-   # internal network (default on eth1)
-   if ifconfig "$INTERNAL_DEV" &>/dev/null ; then
-     ifconfig "$INTERNAL_DEV" $INTERNAL_IP netmask $INTERNAL_NETMASK
-   else
-     die "Error: no $INTERNAL_DEV NIC found, can not deploy internal network. Exiting."
-   fi
-
+  if "$RETRIEVE_MGMT_CONFIG" && "$RESTART_NETWORK" ; then
+    echo "Skipping $INTERNAL_DEV config"
+  else
+    # internal network (default on eth1)
+    if ifconfig "$INTERNAL_DEV" &>/dev/null ; then
+      ifconfig "$INTERNAL_DEV" $INTERNAL_IP netmask $INTERNAL_NETMASK
+    else
+      die "Error: no $INTERNAL_DEV NIC found, can not deploy internal network. Exiting."
+    fi
+  fi
   # ipmi on IBM hardware
   if ifconfig usb0 &>/dev/null ; then
     ifconfig usb0 169.254.1.102 netmask 255.255.0.0
