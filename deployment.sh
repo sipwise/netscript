@@ -705,10 +705,10 @@ if "$PRO_EDITION" ; then
     IP1=$(awk '/sp1/ { print $1 }' /tmp/hosts) || IP1=$DEFAULT_IP1
     IP2=$(awk '/sp2/ { print $1 }' /tmp/hosts) || IP2=$DEFAULT_IP2
 
-    wget --timeout=30 -O "/tmp/interfaces" "${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
-    INTERNAL_NETMASK=$(grep "$INTERNAL_DEV inet" -A2 /tmp/interfaces | awk '/netmask/ { print $2 }') \
-      || INTERNAL_NETMASK=$DEFAULT_INTERNAL_NETMASK
-    logit "ha_int sp1: $IP1 sp2: $IP2 netmask: $INTERNAL_NETMASK"
+    if [ -z "$INTERNAL_NETMASK" ]; then
+      wget --timeout=30 -O "/tmp/interfaces" "${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
+      INTERNAL_NETMASK=$(grep "$INTERNAL_DEV inet" -A2 /tmp/interfaces | awk '/netmask/ { print $2 }')
+    fi
   fi
 
   [ -n "$IP1" ] || IP1=$DEFAULT_IP1
