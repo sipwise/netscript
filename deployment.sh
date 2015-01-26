@@ -1433,8 +1433,10 @@ EOF
 }
 
 gen_installer_config () {
+  mkdir -p "${TARGET}/etc/ngcp-installer/"
+
   if "$PRO_EDITION" ; then
-    cat > ${TARGET}/usr/share/ngcp-installer/config_deploy.inc << EOF
+    cat > ${TARGET}/etc/ngcp-installer/config_deploy.inc << EOF
 HNAME="${ROLE}"
 CROLE="${CROLE}"
 IP1="${IP1}"
@@ -1445,7 +1447,7 @@ MCASTADDR="${MCASTADDR}"
 EOF
   fi
 
-  cat >> ${TARGET}/usr/share/ngcp-installer/config_deploy.inc << EOF
+  cat >> ${TARGET}/etc/ngcp-installer/config_deploy.inc << EOF
 FORCE=yes
 SKIP_SOURCES_LIST="${SKIP_SOURCES_LIST}"
 ADJUST_FOR_LOW_PERFORMANCE="${ADJUST_FOR_LOW_PERFORMANCE}"
