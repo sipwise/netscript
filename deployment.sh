@@ -738,21 +738,6 @@ fi
 [ -n "$EIFACE" ] || EIFACE=$INSTALL_DEV
 [ -n "$EADDR" ] || EADDR=$INSTALL_IP
 
-# needed as environment vars for ngcp-installer
-if "$PRO_EDITION" ; then
-  export CROLE
-  export ROLE
-  export IP1
-  export IP2
-  export EADDR
-  export EIFACE
-  export MCASTADDR
-  export DHCP
-else
-  export EIFACE
-  export DHCP
-fi
-
 if "$CE_EDITION" ; then
   case "$SP_VERSION" in
     # we do not have a local mirror for lenny, so disable it
@@ -1413,6 +1398,80 @@ get_installer_path() {
   fi
 }
 
+set_repos() {
+  cat > $TARGET/etc/apt/sources.list << EOF
+# Please visit /etc/apt/sources.list.d/ instead.
+EOF
+
+  cat > $TARGET/etc/apt/sources.list.d/debian.list << EOF
+## custom sources.list, deployed via deployment.sh
+
+# Debian repositories
+deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
+EOF
+
+  # drop this once Debian/jessie has security support
+  if [ -n "$SEC_MIRROR" ] ; then
+    echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" \
+      >> $TARGET/etc/apt/sources.list.d/debian.list
+  else
+    echo  "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
+    logit "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
+  fi
+
+cat >> $TARGET/etc/apt/sources.list.d/debian.list << EOF
+deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
+EOF
+
+  # support testing rc releases without providing an according installer package ahead
+  if [ -n "$AUTOBUILD_RELEASE" ] ; then
+    echo "Running installer with sources.list for $DEBIAN_RELEASE + autobuild release-$AUTOBUILD_RELEASE"
+
+    cat > $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
+## custom sources.list, deployed via deployment.sh
+
+# Sipwise repositories
+deb [arch=amd64] http://${SIPWISE_REPO_HOST}/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
+EOF
+  elif [ -n "$MRBUILD_RELEASE" ] ; then
+    echo "Running installer with sources.list for $DEBIAN_RELEASE + mr release-$MRBUILD_RELEASE"
+
+    if "$PRO_EDITION" ; then
+      cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
+# Sipwise repository
+deb [arch=amd64] http://${SIPWISE_REPO_HOST}/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+#deb-src http://${SIPWISE_REPO_HOST}/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+EOF
+    else # CE
+      cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
+# Sipwise repository
+deb [arch=amd64] http://${SIPWISE_REPO_HOST}/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+#deb-src http://${SIPWISE_REPO_HOST}/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+EOF
+    fi
+  fi # $MRBUILD_RELEASE
+}
+
+gen_installer_config () {
+  if "$PRO_EDITION" ; then
+    cat > ${TARGET}/usr/share/ngcp-installer/config_deploy.inc << EOF
+HNAME=${ROLE}
+CROLE=${CROLE}
+IP1=${IP1}
+IP2=${IP2}
+EIFACE=${EIFACE}
+EADDR=${EADDR}
+MCASTADDR=${MCASTADDR}
+EOF
+  fi
+
+  cat >> ${TARGET}/usr/share/ngcp-installer/config_deploy.inc << EOF
+SIPWISE_REPO_HOST=${SIPWISE_REPO_HOST}
+SIPWISE_REPO_TRANSPORT=${SIPWISE_REPO_TRANSPORT}
+EOF
+fi
+}
+
 if "$NGCP_INSTALLER" ; then
 
   if "$RETRIEVE_MGMT_CONFIG" ; then
@@ -1448,84 +1507,28 @@ if "$NGCP_INSTALLER" ; then
   # set INSTALLER_PATH and INSTALLER depending on release/version
   get_installer_path
 
-  cat > $TARGET/etc/apt/sources.list << EOF
-# Please visit /etc/apt/sources.list.d/ instead.
-EOF
-
-  cat > $TARGET/etc/apt/sources.list.d/debian.list << EOF
-## custom sources.list, deployed via deployment.sh
-
-# Debian repositories
-deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
-EOF
-
-# drop this once Debian/jessie has security support
-if [ -n "$SEC_MIRROR" ] ; then
-  echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> $TARGET/etc/apt/sources.list.d/debian.list
-else
-  echo  "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
-  logit "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
-fi
-
-cat >> $TARGET/etc/apt/sources.list.d/debian.list << EOF
-deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
-
-EOF
-
-  # support testing rc releases without providing an according installer package ahead
-  if [ -n "$AUTOBUILD_RELEASE" ] ; then
-    echo "Running installer with sources.list for $DEBIAN_RELEASE + autobuild release-$AUTOBUILD_RELEASE"
-
-    cat > $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
-## custom sources.list, deployed via deployment.sh
-
-# Sipwise repositories
-deb [arch=amd64] http://${SIPWISE_REPO_HOST}/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
-
-# Sipwise ${DEBIAN_RELEASE} backports
-deb [arch=amd64] http://${SIPWISE_REPO_HOST}/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
-
-EOF
-  elif [ -n "$MRBUILD_RELEASE" ] ; then
-    echo "Running installer with sources.list for $DEBIAN_RELEASE + mr release-$MRBUILD_RELEASE"
-
-    if "$PRO_EDITION" ; then
-      cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
-# Sipwise repository
-deb [arch=amd64] http://${SIPWISE_REPO_HOST}/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
-#deb-src http://${SIPWISE_REPO_HOST}/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
-
-EOF
-    else # CE
-      cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
-# Sipwise repository
-deb [arch=amd64] http://${SIPWISE_REPO_HOST}/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
-#deb-src http://${SIPWISE_REPO_HOST}/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
-
-EOF
-    fi
-
-    cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
-# Sipwise $DEBIAN_RELEASE backports
-deb [arch=amd64] http://${SIPWISE_REPO_HOST}/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
-#deb-src http://${SIPWISE_REPO_HOST}/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
-
-EOF
-  fi # $MRBUILD_RELEASE
-
+  # generate debian/sipwise repos
+  set_repos
 
   set_deploy_status "ngcp-installer"
 
-  # install and execute ngcp-installer
+  # install ngcp-installer
   logit "ngcp-installer: $INSTALLER"
-  INSTALLER_OPTS="TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ADJUST_FOR_LOW_PERFORMANCE=$ADJUST_FOR_LOW_PERFORMANCE "
-  INSTALLER_OPTS+="ENABLE_VM_SERVICES=$ENABLE_VM_SERVICES "
-  if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
-    echo "$INSTALLER_OPTS ngcp-installer $ROLE $CROLE $IP1 $IP2 $EADDR $EIFACE" > /tmp/ngcp-installer-cmdline.log
-    cat << EOT | grml-chroot $TARGET /bin/bash
+  cat << EOT | grml-chroot $TARGET /bin/bash
 wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
-$INSTALLER_OPTS ngcp-installer \$ROLE \$CROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+EOT
+
+  # set installer configs
+  gen_installer_config
+
+  # execute ngcp-installer
+  INSTALLER_OPTS="TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ADJUST_FOR_LOW_PERFORMANCE=$ADJUST_FOR_LOW_PERFORMANCE "
+  INSTALLER_OPTS+="ENABLE_VM_SERVICES=$ENABLE_VM_SERVICES "
+  if $PRO_EDITION ; then # HA v2
+    echo "$INSTALLER_OPTS ngcp-installer" > /tmp/ngcp-installer-cmdline.log
+    cat << EOT | grml-chroot $TARGET /bin/bash
+$INSTALLER_OPTS ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
@@ -1533,26 +1536,9 @@ if [ \$RC -ne 0 ] ; then
   exit \$RC
 fi
 EOT
-
-  elif $PRO_EDITION && $LINUX_HA3 ; then # HA v3
-    echo "$INSTALLER_OPTS ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $MCASTADDR" > /tmp/ngcp-installer-cmdline.log
-    cat << EOT | grml-chroot $TARGET /bin/bash
-wget ${INSTALLER_PATH}/${INSTALLER}
-dpkg -i $INSTALLER
-$INSTALLER_OPTS ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
-RC=\${PIPESTATUS[0]}
-if [ \$RC -ne 0 ] ; then
-  echo "Fatal error while running ngcp-installer (HA v3):" >&2
-  tail -10 /tmp/ngcp-installer.log
-  exit \$RC
-fi
-EOT
-
   else # spce
     echo "$INSTALLER_OPTS ngcp-installer" > /tmp/ngcp-installer-cmdline.log
     cat << EOT | grml-chroot $TARGET /bin/bash
-wget ${INSTALLER_PATH}/${INSTALLER}
-dpkg -i $INSTALLER
 echo y | $INSTALLER_OPTS ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[1]}
 if [ \$RC -ne 0 ] ; then
