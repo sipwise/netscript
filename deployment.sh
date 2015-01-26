@@ -245,12 +245,24 @@ install_vbox_package() {
 ensure_augtool_present() {
   if [ -x /usr/bin/augtool ] ; then
     echo "/usr/bin/augtool is present, nothing to do"
-  else
-    echo "augtool isn't present, installing augeas-tools package:"
-
-    apt-get update
-    DEBIAN_FRONTEND='noninteractive' apt-get -y install augeas-tools
+    return 0
   fi
+  echo "augtool isn't present, installing augeas-tools package:"
+
+  local TMPDIR=$(mktemp -d)
+  mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
+    "${TMPDIR}/cachedir/archives/partial"
+  echo "deb http://${DEBIAN_REPO_HOST}/debian/ wheezy main" > \
+    "${TMPDIR}/etc/sources.list"
+
+  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+    -o dir::state="${TMPDIR}/statedir" -o dir::etc="${TMPDIR}/etc" \
+    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" update
+
+  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+    -o dir::etc="${TMPDIR}/etc" -o dir::state="${TMPDIR}/statedir" \
+    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" \
+    -y --no-install-recommends install install augeas-tools
 }
 ### }}}
 
