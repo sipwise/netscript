@@ -411,11 +411,6 @@ if checkBootParam ngcpautobuildrelease ; then
   export SKIP_SOURCES_LIST=true # make sure it's available within grml-chroot subshell
 fi
 
-if checkBootParam ngcpmrrelease ; then
-  MRBUILD_RELEASE=$(getBootParam ngcpmrrelease)
-  export SKIP_SOURCES_LIST=true # make sure it's available within grml-chroot subshell
-fi
-
 # existing ngcp releases (like 2.2) with according repository and installer
 if checkBootParam ngcpvers ; then
   SP_VERSION=$(getBootParam ngcpvers)
@@ -1434,23 +1429,7 @@ EOF
 # Sipwise repositories
 deb [arch=amd64] http://${SIPWISE_REPO_HOST}/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
 EOF
-  elif [ -n "$MRBUILD_RELEASE" ] ; then
-    echo "Running installer with sources.list for $DEBIAN_RELEASE + mr release-$MRBUILD_RELEASE"
-
-    if "$PRO_EDITION" ; then
-      cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
-# Sipwise repository
-deb [arch=amd64] http://${SIPWISE_REPO_HOST}/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
-#deb-src http://${SIPWISE_REPO_HOST}/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
-EOF
-    else # CE
-      cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
-# Sipwise repository
-deb [arch=amd64] http://${SIPWISE_REPO_HOST}/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
-#deb-src http://${SIPWISE_REPO_HOST}/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
-EOF
-    fi
-  fi # $MRBUILD_RELEASE
+  fi
 }
 
 gen_installer_config () {
@@ -1529,7 +1508,7 @@ EOT
   # execute ngcp-installer
   echo "ngcp-installer" > /tmp/ngcp-installer-cmdline.log
   cat << EOT | grml-chroot $TARGET /bin/bash
-$INSTALLER_OPTS ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
