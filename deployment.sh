@@ -248,8 +248,19 @@ ensure_augtool_present() {
   else
     echo "augtool isn't present, installing augeas-tools package:"
 
-    apt-get update
-    DEBIAN_FRONTEND='noninteractive' apt-get -y install augeas-tools
+    # use temporary apt database for speed reasons
+    local TMPDIR=$(mktemp -d)
+    mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
+    local debsrcfile=$(mktemp)
+    echo "deb http://${DEBIAN_REPO_HOST}/debian/ wheezy main" >> "$debsrcfile"
+
+    DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+      -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
+      -o Dir::Etc::sourceparts=/dev/null update
+
+    DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+      -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
+      -o Dir::Etc::sourceparts=/dev/null -y install augeas-tools
   fi
 }
 ### }}}
