@@ -61,6 +61,7 @@ FILESYSTEM="ext4"
 SYSTEMD=false
 DEBIAN_REPO_HOST="debian.sipwise.com"
 SIPWISE_REPO_HOST="deb.sipwise.com"
+SIPWISE_REPO_TRANSPORT="http"
 
 # if TARGET_DISK environment variable is set accept it
 if [ -n "$TARGET_DISK" ] ; then
