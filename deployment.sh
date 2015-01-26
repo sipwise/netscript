@@ -1327,6 +1327,8 @@ if "$RETRIEVE_MGMT_CONFIG" && "$RESTART_NETWORK" ; then
   # should be able to make this as our only supported default mode and drop
   # everything inside the 'else' statement...
   if grep -q 'toram' /proc/cmdline || ! grep -q 'root=/dev/nfs' /proc/cmdline ; then
+    logit 'Set /etc/hosts from TARGET'
+    cp ${TARGET}/etc/hosts /etc/hosts
     echo  'Restarting networking'
     logit 'Restarting networking'
     /etc/init.d/networking restart
