@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3e81b7_5604a414",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1331,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-01-26T15:37:22Z",
+      "side": 1,
+      "message": "BTW, maybe it is safer do it in a way:\n\ngrep web01 \"${TARGET}/etc/hosts\" \u003e\u003e /etc/hosts\n\n?",
+      "revId": "7fd054ae46df40e9d8444284607196b29329e4c2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
