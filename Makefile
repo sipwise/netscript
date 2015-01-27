@@ -1,6 +1,6 @@
 # for syntax checks
 BASH_SCRIPTS = deployment.sh
-NGCP_VERSION += $(shell git log --pretty=format:"%h" -1 deployment.sh)
+NGCP_VERSION ?= $(shell git log --pretty=format:"%h" -1)
 NGCP_VERSION := $(strip $(NGCP_VERSION))
 
 syntaxcheck: shellcheck
@@ -19,5 +19,5 @@ script_version:
 	sed -i "s/SCRIPT_VERSION=\"%SCRIPT_VERSION%\"/SCRIPT_VERSION=${NGCP_VERSION}/" deployment.sh
 
 
-.PHONY: clean install build
+.PHONY: clean install build syntaxcheck shellcheck script_version
 # EOF
