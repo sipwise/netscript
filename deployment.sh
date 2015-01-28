@@ -62,6 +62,7 @@ SYSTEMD=false
 DEBIAN_REPO_HOST="debian.sipwise.com"
 SIPWISE_REPO_HOST="deb.sipwise.com"
 SIPWISE_REPO_TRANSPORT="http"
+DPL_MYSQL_REPLICATION=true
 
 # if TARGET_DISK environment variable is set accept it
 if [ -n "$TARGET_DISK" ] ; then
@@ -531,6 +532,10 @@ fi
 if checkBootParam sipwiserepo ; then
   SIPWISE_REPO_HOST=$(getBootParam sipwiserepo)
 fi
+
+if checkBootParam ngcpnomysqlrepl ; then
+  DPL_MYSQL_REPLICATION=false
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -560,6 +565,7 @@ Control installation parameters:
   ngcpinstvers=... - use specific NGCP installer version
   debianrepo=...   - hostname of Debian APT repository mirror
   sipwiserepo=...  - hostname of Sipwise APT repository mirror
+  ngcpnomysqlrepl  - skip MySQL sp1<->sp2 replication configuration/check
 
 Control target system:
 
@@ -1444,6 +1450,7 @@ IP2="${IP2}"
 EIFACE="${EIFACE}"
 EADDR="${EADDR}"
 MCASTADDR="${MCASTADDR}"
+DPL_MYSQL_REPLICATION="${DPL_MYSQL_REPLICATION}"
 EOF
   fi
 
