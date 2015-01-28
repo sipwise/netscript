@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3e81b7_04c4a690",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 536,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2015-01-28T13:19:17Z",
+      "side": 1,
+      "message": "ngcpnomysqlrepl instead of skipmysqlreplication?",
+      "revId": "c2721342670d4314866ecb67183b13a3a170d37d",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba3e81b7_e4c0827e",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1454,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2015-01-28T13:19:17Z",
+      "side": 1,
+      "message": "not so sure about quotes here if the values are true or false",
+      "revId": "c2721342670d4314866ecb67183b13a3a170d37d",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
