@@ -33,6 +33,24 @@
       "revId": "c2721342670d4314866ecb67183b13a3a170d37d",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba3e81b7_e46e4296",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1454,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-01-28T13:35:23Z",
+      "side": 1,
+      "message": "http://paste.mgm.sipwise.com/show/1147/",
+      "parentUuid": "ba3e81b7_e4c0827e",
+      "revId": "c2721342670d4314866ecb67183b13a3a170d37d",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
