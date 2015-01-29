@@ -1,3 +1,12 @@
+ngcp-netscript (3.6.1.2+0~mr3.6.1.2) unstable; urgency=low
+
+  [ Victor Seva ]
+  * [db95603] MT#11063 Sync with bootenv: don't try to figure out the INTERNAL_NETMASK if it is already set by parameter
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Thu, 29 Jan 2015 13:22:34 +0100
+
 ngcp-netscript (3.6.1.1+0~mr3.6.1.1) unstable; urgency=medium
 
   * Initial release
