@@ -2214,66 +2214,6 @@ vagrant_configuration() {
   rm -f "${TARGET}/etc/udev/rules.d/70-persistent-net.rules"
 }
 
-enable_vm_services() {
-  if [ "$SP_VERSION" = "" ] || expr $SP_VERSION \>= mr3.6 >/dev/null 2>&1 ; then
-    echo "enable_vm_services has been moved to ngcp-installer for mr3.6+, nothing to do here for $SP_VERSION"
-    return
-  fi
-
-  chroot "$TARGET" etckeeper commit "Snapshot before enabling VM defaults [$(date)]" || true
-  chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot before enabling VM defaults [$(date)]\" || true"
-
-  if "$PRO_EDITION" ; then
-    chroot "$TARGET" perl -wCSD << "EOF"
-use strict;
-use warnings;
-use YAML::Tiny;
-
-my $yaml = YAML::Tiny->new;
-my $inputfile  = "/etc/ngcp-config/config.yml";
-my $outputfile = $inputfile;
-
-$yaml = YAML::Tiny->read($inputfile) or die "File $inputfile could not be read";
-
-# Enable Presence (required for PRO, on CE already enabled)
-$yaml->[0]->{kamailio}->{proxy}->{presence}->{enable} = "yes";
-
-# Enable Voice-sniff
-$yaml->[0]->{voisniff}->{admin_panel} = "yes";
-$yaml->[0]->{voisniff}->{daemon}->{start} = "yes";
-$yaml->[0]->{voisniff}->{daemon}->{external_interfaces} = "eth0 eth2";
-$yaml->[0]->{voisniff}->{daemon}->{mysql_dump_threads} = 2;
-$yaml->[0]->{voisniff}->{daemon}->{threads_per_interface} = 2;
-
-open(my $fh, ">", "$outputfile") or die "Could not open $outputfile for writing";
-print $fh $yaml->write_string() or die "Could not write YAML to $outputfile";
-EOF
-  fi
-
-  # CE
-  chroot "$TARGET" perl -wCSD << "EOF"
-use strict;
-use warnings;
-use YAML::Tiny;
-
-my $yaml = YAML::Tiny->new;
-my $inputfile  = "/etc/ngcp-config/config.yml";
-my $outputfile = $inputfile;
-
-$yaml = YAML::Tiny->read($inputfile) or die "File $inputfile could not be read";
-
-# Enable SSH on all IPs/interfaces (0.0.0.0)
-push @{$yaml->[0]->{sshd}->{listen_addresses}}, '0.0.0.0';
-
-open(my $fh, ">", "$outputfile") or die "Could not open $outputfile for writing";
-print $fh $yaml->write_string() or die "Could not write YAML to $outputfile";
-EOF
-
-  # record configuration file changes
-  chroot "$TARGET" etckeeper commit "Snapshot after enabling VM defaults [$(date)]" || true
-  chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot after enabling VM defaults [$(date)]\" || true"
-}
-
 if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Nothing to do, /etc/hosts was already set up."
 else
@@ -2284,11 +2224,6 @@ fi
 if "$VAGRANT" ; then
   echo "Bootoption vagrant present, executing vagrant_configuration."
   vagrant_configuration
-fi
-
-if "$ENABLE_VM_SERVICES" ; then
-  echo "Bootoption enablevmservices present, executing enable_vm_services"
-  enable_vm_services
 fi
 
 if [ -n "$PUPPET" ] ; then
