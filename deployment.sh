@@ -35,6 +35,7 @@ DEFAULT_MCASTADDR=226.94.1.1
 TARGET=/mnt
 PRO_EDITION=false
 CE_EDITION=false
+CARRIER_EDITION=false
 NGCP_INSTALLER=false
 PUPPET=''
 RESTART_NETWORK=true
@@ -371,7 +372,7 @@ elif dmidecode| grep -q 'Location In Chassis'; then
 fi
 
 if checkBootParam ngcpinst || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 || \
-  checkBootParam ngcppro || checkBootParam ngcpce ; then
+  checkBootParam ngcppro || checkBootParam ngcpce || checkBootParam ngcpcarrier ; then
   NGCP_INSTALLER=true
 fi
 
@@ -379,7 +380,8 @@ if checkBootParam ngcpce ; then
   CE_EDITION=true
 fi
 
-if checkBootParam ngcppro || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 ; then
+if checkBootParam ngcpcarrier || checkBootParam ngcppro || \
+  checkBootParam ngcpsp1 || checkBootParam ngcpsp2 ; then
   PRO_EDITION=true
 fi
 
@@ -552,6 +554,7 @@ usage() {
 
 Control installation parameters:
 
+  ngcpcarrier      - install Carrier 3.x Edition
   ngcppro          - install Pro Edition
   ngcpsp1          - install first node (Pro Edition only)
   ngcpsp2          - install second node (Pro Edition only)
@@ -598,8 +601,9 @@ for param in $* ; do
     *-h*|*--help*|*help*) usage ; exit 0;;
     *ngcpsp1*) ROLE=sp1 ; TARGET_HOSTNAME=sp1; PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
     *ngcpsp2*) ROLE=sp2 ; TARGET_HOSTNAME=sp2; PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
-    *ngcppro*) PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
-    *ngcpce*) PRO_EDITION=false; CE_EDITION=true ; TARGET_HOSTNAME=spce ; ROLE='' ; NGCP_INSTALLER=true ;;
+    *ngcpcarrier*) PRO_EDITION=true; CE_EDITION=false; CARRIER_EDITION=true; NGCP_INSTALLER=true ;;
+    *ngcppro*) PRO_EDITION=true; CE_EDITION=false; CARRIER_EDITION=false; NGCP_INSTALLER=true ;;
+    *ngcpce*) PRO_EDITION=false; CE_EDITION=true; CARRIER_EDITION=false; TARGET_HOSTNAME=spce ; ROLE='' ; NGCP_INSTALLER=true ;;
     *ngcpvers=*) SP_VERSION=$(echo $param | sed 's/ngcpvers=//');;
     *nongcp*) NGCP_INSTALLER=false;;
     *nodebian*) DEBIAN_INSTALLER=false;; # TODO
@@ -612,7 +616,7 @@ for param in $* ; do
     *ngcpip2=*) IP2=$(echo $param | sed 's/ngcpip2=//');;
     *ngcpnetmask=*) INTERNAL_NETMASK=$(echo $param | sed 's/ngcpnetmask=//');;
     *ngcpmcast=*) MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
-    *ngcpcrole=*) CROLE=$(echo $param | sed 's/ngcpcrole=//');;
+    *ngcpcrole=*) CARRIER_EDITION=true; CROLE=$(echo $param | sed 's/ngcpcrole=//');;
     *ngcpcmaster=*) CMASTER=$(echo $param | sed 's/ngcpcmaster=//');;
     *ngcpnw.dhcp*) DHCP=true;;
     *ngcphav3*) LINUX_HA3=true; PRO_EDITION=true;;
@@ -839,7 +843,7 @@ if "$LOGO" ; then
   echo "Host IP(s): $IP_INFO | Deployment version: $SCRIPT_VERSION"
   echo "$CPU_INFO CPU(s) | ${RAM_INFO}kB RAM | $CHASSIS"
   echo ""
-  echo "Install ngcp: $NGCP_INSTALLER | Install pro: $PRO_EDITION [$ROLE|$CROLE] | Install ce: $CE_EDITION"
+  echo "Install ngcp: $NGCP_INSTALLER | Install CE: $CE_EDITION PRO: $PRO_EDITION [$ROLE] Carrier: [$CROLE]"
   echo "Installing $SP_VERSION_STR platform | Debian: $DEBIAN_RELEASE"
   echo "Install IP: $INSTALL_IP | Started deployment at $DATE_INFO"
   # number of lines
@@ -1267,14 +1271,13 @@ if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "mgmt_node=$(cat ${TARGET}/etc/ngcp_mgmt_node)"
 fi
 
-if "$PRO_EDITION" ; then
-  if [ -n "$CROLE" ] ; then
-    echo "Writing $CROLE to /etc/ngcp_ha_role"
-    echo $CROLE > $TARGET/etc/ngcp_ha_role
-  else
-    echo "No role definition set, not creating /etc/ngcp_ha_role"
-  fi
+if "$CARRIER_EDITION" ; then
+  echo "Writing $CROLE to /etc/ngcp_ha_role"
+  echo $CROLE > $TARGET/etc/ngcp_ha_role
+fi
 
+# TODO: we probaby do not use /etc/ngcp_ha_master anymore, check it and clean
+if "$PRO_EDITION" ; then
   if [ -n "$CMASTER" ] ; then
     echo "Writing $CMASTER to /etc/ngcp_ha_master"
     echo $CMASTER > $TARGET/etc/ngcp_ha_master
@@ -1352,7 +1355,7 @@ get_installer_path() {
   if [ -z "$SP_VERSION" ] && ! $TRUNK_VERSION ; then
     INSTALLER=ngcp-installer-latest.deb
 
-    if $PRO_EDITION ; then
+    if "$PRO_EDITION" ; then
       INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/sppro/"
     else
       INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/spce/"
@@ -1362,8 +1365,8 @@ get_installer_path() {
   fi
 
   # use pool directory according for ngcp release
-  if $PRO_EDITION ; then
-    if [ -n "$CROLE" ]; then
+  if "$PRO_EDITION" ; then
+    if "$CARRIER_EDITION" ; then
       local installer_package='ngcp-installer-carrier'
     else
       local installer_package='ngcp-installer-pro'
@@ -1389,12 +1392,10 @@ get_installer_path() {
 
   [ -n "$version" ] || die "Error: installer version for ngcp ${SP_VERSION}, Debian release $DEBIAN_RELEASE with installer package $installer_package could not be detected."
 
-  if "$PRO_EDITION" ; then
-    if [ -n "$CROLE" ]; then
-      INSTALLER="ngcp-installer-carrier_${version}_all.deb"
-    else
-      INSTALLER="ngcp-installer-pro_${version}_all.deb"
-    fi
+  if "$CARRIER_EDITION" ; then
+    INSTALLER="ngcp-installer-carrier_${version}_all.deb"
+  elif "$PRO_EDITION" ; then
+    INSTALLER="ngcp-installer-pro_${version}_all.deb"
   else
     INSTALLER="ngcp-installer-ce_${version}_all.deb"
   fi
@@ -1441,10 +1442,15 @@ EOF
 gen_installer_config () {
   mkdir -p "${TARGET}/etc/ngcp-installer/"
 
-  if "$PRO_EDITION" ; then
+  if "$CARRIER_EDITION" ; then
     cat > ${TARGET}/etc/ngcp-installer/config_deploy.inc << EOF
-HNAME="${ROLE}"
 CROLE="${CROLE}"
+EOF
+  fi
+
+  if "$PRO_EDITION" ; then
+    cat >> ${TARGET}/etc/ngcp-installer/config_deploy.inc << EOF
+HNAME="${ROLE}"
 IP1="${IP1}"
 IP2="${IP2}"
 EIFACE="${EIFACE}"
