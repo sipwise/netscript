@@ -2274,40 +2274,6 @@ EOF
   chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot after enabling VM defaults [$(date)]\" || true"
 }
 
-adjust_for_low_performance() {
-  # record configuration file changes
-  chroot "$TARGET" etckeeper commit "Snapshot before decreasing default resource usage [$(date)]" || true
-  chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot before decreasing default resource usage [$(date)]\" || true"
-
-  echo "Decreasing default resource usage"
-  if expr $SP_VERSION \<= mr3.2.999 >/dev/null 2>&1 ; then
-    # sems: need for NGCP <=mr3.2 (MT#7407)
-    sed -e 's/media_processor_threads=[0-9]\+$/media_processor_threads=1/g' \
-        -i ${TARGET}/etc/ngcp-config/templates/etc/sems/sems.conf.tt2 \
-        -i ${TARGET}/etc/sems/sems.conf || true
-  fi
-
-  if expr $SP_VERSION \<= 3.1 >/dev/null 2>&1 ; then
-    # kamailio: need for NGCP <=3.1 (MT#5513)
-    sed -e 's/tcp_children=4$/tcp_children=1/g' \
-        -i ${TARGET}/etc/ngcp-config/templates/etc/kamailio/proxy/kamailio.cfg.tt2 \
-        -i ${TARGET}/etc/kamailio/proxy/kamailio.cfg || true
-  fi
-
-  if expr $SP_VERSION \<= mr3.2.999 >/dev/null 2>&1 ; then
-    # nginx: need for NGCP <=mr3.2 (MT#7275)
-    sed -e 's/NPROC=[0-9]\+$/NPROC=2/g' \
-        -i ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-panel.tt2 \
-        -i ${TARGET}/etc/init.d/ngcp-panel \
-        -i ${TARGET}/etc/ngcp-config/templates/etc/init.d/ngcp-www-csc.tt2 \
-        -i ${TARGET}/etc/init.d/ngcp-www-csc || true
-  fi
-
-  # record configuration file changes
-  chroot "$TARGET" etckeeper commit "Snapshot after decreasing default resource usage [$(date)]" || true
-  chroot "$TARGET" bash -c "cd /etc/ngcp-config ; git commit -a -m \"Snapshot after decreasing default resource usage [$(date)]\" || true"
-}
-
 if "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Nothing to do, /etc/hosts was already set up."
 else
@@ -2318,11 +2284,6 @@ fi
 if "$VAGRANT" ; then
   echo "Bootoption vagrant present, executing vagrant_configuration."
   vagrant_configuration
-fi
-
-if "$ADJUST_FOR_LOW_PERFORMANCE" ; then
-  echo "Bootoption lowperformance present, executing adjust_for_low_performance"
-  adjust_for_low_performance
 fi
 
 if "$ENABLE_VM_SERVICES" ; then
