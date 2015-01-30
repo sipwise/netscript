@@ -1616,41 +1616,6 @@ EOT
     fi
   fi
 
-adjust_hb_device() {
-  local hb_device
-
-  if [ -n "$INTERNAL_DEV" ] ; then
-    export hb_device="$INTERNAL_DEV"
-  else
-    export hb_device="eth1" # default
-  fi
-
-  echo "Setting hb_device to ${hb_device}."
-
-  chroot $TARGET perl <<"EOF"
-use strict;
-use warnings;
-use YAML::Tiny;
-use Env qw(hb_device);
-
-my $yaml = YAML::Tiny->new;
-my $inputfile  = '/etc/ngcp-config/config.yml';
-my $outputfile = '/etc/ngcp-config/config.yml';
-
-$yaml = YAML::Tiny->read($inputfile);
-$yaml->[0]->{networking}->{hb_device} = "$hb_device";
-$yaml->write($outputfile);
-EOF
-
-  chroot $TARGET ngcpcfg commit 'setting hb_device in config.yml [via deployment process]'
-  chroot $TARGET ngcpcfg build /etc/ha.d/ha.cf
-}
-
-  if "$PRO_EDITION" ; then
-    echo "Deploying PRO edition (sp1) - adjusting heartbeat device (hb_device)."
-    adjust_hb_device
-  fi
-
   # make sure all services are stopped
   for service in \
     apache2 \
