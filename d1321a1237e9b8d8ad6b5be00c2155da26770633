@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3e81b7_9f1c5fc3",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1654,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2015-01-30T11:11:00Z",
+      "side": 1,
+      "message": "Why don\u0027t use ngcp.inc from system-tools here now in upgrade?\n\nNGCP_SERVICES_FILE\u003d\"/usr/share/ngcp-system-tools-XXX/ngcp.inc\"\nif ! [ -f \"$NGCP_SERVICES_FILE\" ]; then\n  echo \"Error: File $NGCP_SERVICES_FILE not found. Exiting.\" \u003e\u00262\n  exit 1\nfi\n\n# make sure services are stopped\n. \"$NGCP_SERVICES_FILE\"\nfor service in ${NGCP_SERVICES} ; do\n  \"/etc/init.d/${service}\" stop || true\ndone",
+      "revId": "d1321a1237e9b8d8ad6b5be00c2155da26770633",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
