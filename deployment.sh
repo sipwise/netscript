@@ -1462,6 +1462,8 @@ ENABLE_VM_SERVICES="${ENABLE_VM_SERVICES}"
 SIPWISE_REPO_HOST="${SIPWISE_REPO_HOST}"
 SIPWISE_REPO_TRANSPORT="${SIPWISE_REPO_TRANSPORT}"
 EOF
+
+  cat "${TARGET}/etc/ngcp-installer/config_deploy.inc" > /tmp/ngcp-installer-cmdline.log
 }
 
 if "$NGCP_INSTALLER" ; then
@@ -1511,11 +1513,10 @@ wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
 EOT
 
-  # set installer configs
+  # generate installer configs
   gen_installer_config
 
   # execute ngcp-installer
-  echo "ngcp-installer" > /tmp/ngcp-installer-cmdline.log
   cat << EOT | grml-chroot $TARGET /bin/bash
 ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
