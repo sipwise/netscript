@@ -1619,36 +1619,31 @@ EOT
     fi
   fi
 
-  # make sure all services are stopped
-  for service in \
-    apache2 \
-    asterisk \
-    collectd \
-    dnsmasq \
-    exim4 \
-    irqbalance \
-    kamailio-lb \
-    kamailio-proxy \
-    mediator \
-    monit \
-    mysql \
-    nfs-kernel-server \
-    ngcp-rate-o-mat \
-    ngcp-rtpengine-daemon \
-    ngcp-sems \
-    ntp \
-    rsyslog \
-    sems ; \
-  do
-    if [ -f $TARGET/etc/init.d/$service ] ; then
-      chroot $TARGET /etc/init.d/$service stop || true
-    fi
-  done
+  if "$CARRIER_EDITION" ; then
+    NGCP_SERVICES_FILE="${TAGRET}/usr/share/ngcp-system-tools-carrier/ngcp.inc"
+  elif "$PRO_EDITION" ; then
+    NGCP_SERVICES_FILE="${TAGRET}/usr/share/ngcp-system-tools-pro/ngcp.inc"
+  else
+    NGCP_SERVICES_FILE="${TAGRET}/usr/share/ngcp-system-tools-ce/ngcp.inc"
+  fi
 
-  if [ -f $TARGET/etc/init.d/prosody ] ; then
+  if ! [ -r "$NGCP_SERVICES_FILE" ]; then
+    echo "Error: File $NGCP_SERVICES_FILE not found. Exiting." >&2
+    exit 1
+  fi
+
+  # make sure services are stopped
+  if [ -f "${TARGET}/etc/init.d/prosody" ] ; then
     # prosody's init script requires mounted /proc
     grml-chroot $TARGET /etc/init.d/prosody stop || true
   fi
+
+  . "$NGCP_SERVICES_FILE"
+  for service in ${NGCP_SERVICES} ; do
+    if [ -f "${TARGET}/etc/init.d/$service" ] ; then
+      chroot $TARGET /etc/init.d/$service stop || true
+    fi
+  done
 
   # nuke files
   for i in $(find "$TARGET/var/log" -type f -size +0 -not -name \*.ini 2>/dev/null); do
@@ -1671,8 +1666,6 @@ EOT
   echo "# deployment.sh running on $(date)" > "${TARGET}"/var/log/deployment.log
   echo "SCRIPT_VERSION=${SCRIPT_VERSION}" >> "${TARGET}"/var/log/deployment.log
   echo "CMD_LINE=\"${CMD_LINE}\"" >> "${TARGET}"/var/log/deployment.log
-  echo "NGCP_INSTALLER_CMDLINE=\"TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $MCASTADDR\"" >> "${TARGET}"/var/log/deployment.log
-
 fi
 
 # adjust network.yml
