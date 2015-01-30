@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3e81b7_ea360be7",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1638,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-01-30T13:33:52Z",
+      "side": 1,
+      "message": "1) do we really have to stop prosody using grml-chroot?\n\n2) maybe we can use grml-chroot everywhere safely?",
+      "revId": "246883aee33753d7718063e0806a0af44fa6038c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba3e81b7_ca3347f5",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1642,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-01-30T13:33:52Z",
+      "side": 1,
+      "message": "we have to stop also: \n\n3) collectd exim4 irqbalance nfs-kernel-server ntp rsyslog\n\nso created review to ngcp.inc",
+      "revId": "246883aee33753d7718063e0806a0af44fa6038c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3e81b7_aa3003e9",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1674,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-01-30T13:33:52Z",
+      "side": 0,
+      "message": "This has no useful information for the moment as we using config_deployment.inc now. So removed.",
+      "revId": "094a34dfc8c663c8d76b5f72b4e321eebd2895f8",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
