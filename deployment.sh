@@ -7,7 +7,7 @@ exec  > >(tee -a $INSTALL_LOG    )
 exec 2> >(tee -a $INSTALL_LOG >&2)
 
 # set version to git commit ID
-SCRIPT_VERSION="%SCRIPT_VERSION%"
+SCRIPT_VERSION=OUTDATED
 
 # not set? then fall back to timestamp of execution
 if [ -z "$SCRIPT_VERSION" ] || [ "$SCRIPT_VERSION" = '%SCRIPT_VERSION%' ] ; then
@@ -61,8 +61,6 @@ FILESYSTEM="ext4"
 SYSTEMD=false
 DEBIAN_REPO_HOST="debian.sipwise.com"
 SIPWISE_REPO_HOST="deb.sipwise.com"
-SIPWISE_REPO_TRANSPORT="http"
-DPL_MYSQL_REPLICATION=true
 
 # if TARGET_DISK environment variable is set accept it
 if [ -n "$TARGET_DISK" ] ; then
@@ -247,24 +245,12 @@ install_vbox_package() {
 ensure_augtool_present() {
   if [ -x /usr/bin/augtool ] ; then
     echo "/usr/bin/augtool is present, nothing to do"
-    return 0
+  else
+    echo "augtool isn't present, installing augeas-tools package:"
+
+    apt-get update
+    DEBIAN_FRONTEND='noninteractive' apt-get -y install augeas-tools
   fi
-  echo "augtool isn't present, installing augeas-tools package:"
-
-  local TMPDIR=$(mktemp -d)
-  mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
-    "${TMPDIR}/cachedir/archives/partial"
-  echo "deb http://${DEBIAN_REPO_HOST}/debian/ wheezy main" > \
-    "${TMPDIR}/etc/sources.list"
-
-  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::state="${TMPDIR}/statedir" -o dir::etc="${TMPDIR}/etc" \
-    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" update
-
-  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::etc="${TMPDIR}/etc" -o dir::state="${TMPDIR}/statedir" \
-    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" \
-    -y --no-install-recommends install augeas-tools
 }
 ### }}}
 
@@ -412,6 +398,11 @@ if checkBootParam ngcpautobuildrelease ; then
   export SKIP_SOURCES_LIST=true # make sure it's available within grml-chroot subshell
 fi
 
+if checkBootParam ngcpmrrelease ; then
+  MRBUILD_RELEASE=$(getBootParam ngcpmrrelease)
+  export SKIP_SOURCES_LIST=true # make sure it's available within grml-chroot subshell
+fi
+
 # existing ngcp releases (like 2.2) with according repository and installer
 if checkBootParam ngcpvers ; then
   SP_VERSION=$(getBootParam ngcpvers)
@@ -532,10 +523,6 @@ fi
 if checkBootParam sipwiserepo ; then
   SIPWISE_REPO_HOST=$(getBootParam sipwiserepo)
 fi
-
-if checkBootParam ngcpnomysqlrepl ; then
-  DPL_MYSQL_REPLICATION=false
-fi
 ## }}}
 
 ## interactive mode {{{
@@ -565,7 +552,6 @@ Control installation parameters:
   ngcpinstvers=... - use specific NGCP installer version
   debianrepo=...   - hostname of Debian APT repository mirror
   sipwiserepo=...  - hostname of Sipwise APT repository mirror
-  ngcpnomysqlrepl  - skip MySQL sp1<->sp2 replication configuration/check
 
 Control target system:
 
@@ -719,10 +705,10 @@ if "$PRO_EDITION" ; then
     IP1=$(awk '/sp1/ { print $1 }' /tmp/hosts) || IP1=$DEFAULT_IP1
     IP2=$(awk '/sp2/ { print $1 }' /tmp/hosts) || IP2=$DEFAULT_IP2
 
-    if [ -z "$INTERNAL_NETMASK" ]; then
-      wget --timeout=30 -O "/tmp/interfaces" "${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
-      INTERNAL_NETMASK=$(grep "$INTERNAL_DEV inet" -A2 /tmp/interfaces | awk '/netmask/ { print $2 }')
-    fi
+    wget --timeout=30 -O "/tmp/interfaces" "${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
+    INTERNAL_NETMASK=$(grep "$INTERNAL_DEV inet" -A2 /tmp/interfaces | awk '/netmask/ { print $2 }') \
+      || INTERNAL_NETMASK=$DEFAULT_INTERNAL_NETMASK
+    logit "ha_int sp1: $IP1 sp2: $IP2 netmask: $INTERNAL_NETMASK"
   fi
 
   [ -n "$IP1" ] || IP1=$DEFAULT_IP1
@@ -739,6 +725,21 @@ fi
 
 [ -n "$EIFACE" ] || EIFACE=$INSTALL_DEV
 [ -n "$EADDR" ] || EADDR=$INSTALL_IP
+
+# needed as environment vars for ngcp-installer
+if "$PRO_EDITION" ; then
+  export CROLE
+  export ROLE
+  export IP1
+  export IP2
+  export EADDR
+  export EIFACE
+  export MCASTADDR
+  export DHCP
+else
+  export EIFACE
+  export DHCP
+fi
 
 if "$CE_EDITION" ; then
   case "$SP_VERSION" in
@@ -850,16 +851,13 @@ if "$LOGO" ; then
 fi
 
 if "$PRO_EDITION" ; then
-  if "$RETRIEVE_MGMT_CONFIG" && "$RESTART_NETWORK" ; then
-    echo "Skipping $INTERNAL_DEV config"
-  else
-    # internal network (default on eth1)
-    if ifconfig "$INTERNAL_DEV" &>/dev/null ; then
-      ifconfig "$INTERNAL_DEV" $INTERNAL_IP netmask $INTERNAL_NETMASK
-    else
-      die "Error: no $INTERNAL_DEV NIC found, can not deploy internal network. Exiting."
-    fi
-  fi
+   # internal network (default on eth1)
+   if ifconfig "$INTERNAL_DEV" &>/dev/null ; then
+     ifconfig "$INTERNAL_DEV" $INTERNAL_IP netmask $INTERNAL_NETMASK
+   else
+     die "Error: no $INTERNAL_DEV NIC found, can not deploy internal network. Exiting."
+   fi
+
   # ipmi on IBM hardware
   if ifconfig usb0 &>/dev/null ; then
     ifconfig usb0 169.254.1.102 netmask 255.255.0.0
@@ -1314,8 +1312,6 @@ if "$RETRIEVE_MGMT_CONFIG" && "$RESTART_NETWORK" ; then
   # should be able to make this as our only supported default mode and drop
   # everything inside the 'else' statement...
   if grep -q 'toram' /proc/cmdline || ! grep -q 'root=/dev/nfs' /proc/cmdline ; then
-    logit 'Set /etc/hosts from TARGET'
-    cp ${TARGET}/etc/hosts /etc/hosts
     echo  'Restarting networking'
     logit 'Restarting networking'
     /etc/init.d/networking restart
@@ -1400,70 +1396,6 @@ get_installer_path() {
   fi
 }
 
-set_repos() {
-  cat > $TARGET/etc/apt/sources.list << EOF
-# Please visit /etc/apt/sources.list.d/ instead.
-EOF
-
-  cat > $TARGET/etc/apt/sources.list.d/debian.list << EOF
-## custom sources.list, deployed via deployment.sh
-
-# Debian repositories
-deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
-EOF
-
-  # drop this once Debian/jessie has security support
-  if [ -n "$SEC_MIRROR" ] ; then
-    echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" \
-      >> $TARGET/etc/apt/sources.list.d/debian.list
-  else
-    echo  "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
-    logit "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
-  fi
-
-cat >> $TARGET/etc/apt/sources.list.d/debian.list << EOF
-deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
-EOF
-
-  # support testing rc releases without providing an according installer package ahead
-  if [ -n "$AUTOBUILD_RELEASE" ] ; then
-    echo "Running installer with sources.list for $DEBIAN_RELEASE + autobuild release-$AUTOBUILD_RELEASE"
-
-    cat > $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
-## custom sources.list, deployed via deployment.sh
-
-# Sipwise repositories
-deb [arch=amd64] http://${SIPWISE_REPO_HOST}/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
-EOF
-  fi
-}
-
-gen_installer_config () {
-  mkdir -p "${TARGET}/etc/ngcp-installer/"
-
-  if "$PRO_EDITION" ; then
-    cat > ${TARGET}/etc/ngcp-installer/config_deploy.inc << EOF
-HNAME="${ROLE}"
-CROLE="${CROLE}"
-IP1="${IP1}"
-IP2="${IP2}"
-EIFACE="${EIFACE}"
-EADDR="${EADDR}"
-MCASTADDR="${MCASTADDR}"
-DPL_MYSQL_REPLICATION="${DPL_MYSQL_REPLICATION}"
-EOF
-  fi
-
-  cat >> ${TARGET}/etc/ngcp-installer/config_deploy.inc << EOF
-FORCE=yes
-SKIP_SOURCES_LIST="${SKIP_SOURCES_LIST}"
-ADJUST_FOR_LOW_PERFORMANCE="${ADJUST_FOR_LOW_PERFORMANCE}"
-ENABLE_VM_SERVICES="${ENABLE_VM_SERVICES}"
-SIPWISE_REPO_HOST="${SIPWISE_REPO_HOST}"
-SIPWISE_REPO_TRANSPORT="${SIPWISE_REPO_TRANSPORT}"
-EOF
-}
-
 if "$NGCP_INSTALLER" ; then
 
   if "$RETRIEVE_MGMT_CONFIG" ; then
@@ -1499,25 +1431,84 @@ if "$NGCP_INSTALLER" ; then
   # set INSTALLER_PATH and INSTALLER depending on release/version
   get_installer_path
 
-  # generate debian/sipwise repos
-  set_repos
+  cat > $TARGET/etc/apt/sources.list << EOF
+# Please visit /etc/apt/sources.list.d/ instead.
+EOF
+
+  cat > $TARGET/etc/apt/sources.list.d/debian.list << EOF
+## custom sources.list, deployed via deployment.sh
+
+# Debian repositories
+deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
+EOF
+
+# drop this once Debian/jessie has security support
+if [ -n "$SEC_MIRROR" ] ; then
+  echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> $TARGET/etc/apt/sources.list.d/debian.list
+else
+  echo  "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
+  logit "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
+fi
+
+cat >> $TARGET/etc/apt/sources.list.d/debian.list << EOF
+deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
+
+EOF
+
+  # support testing rc releases without providing an according installer package ahead
+  if [ -n "$AUTOBUILD_RELEASE" ] ; then
+    echo "Running installer with sources.list for $DEBIAN_RELEASE + autobuild release-$AUTOBUILD_RELEASE"
+
+    cat > $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
+## custom sources.list, deployed via deployment.sh
+
+# Sipwise repositories
+deb [arch=amd64] http://${SIPWISE_REPO_HOST}/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
+
+# Sipwise ${DEBIAN_RELEASE} backports
+deb [arch=amd64] http://${SIPWISE_REPO_HOST}/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
+
+EOF
+  elif [ -n "$MRBUILD_RELEASE" ] ; then
+    echo "Running installer with sources.list for $DEBIAN_RELEASE + mr release-$MRBUILD_RELEASE"
+
+    if "$PRO_EDITION" ; then
+      cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
+# Sipwise repository
+deb [arch=amd64] http://${SIPWISE_REPO_HOST}/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+#deb-src http://${SIPWISE_REPO_HOST}/sppro/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+
+EOF
+    else # CE
+      cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
+# Sipwise repository
+deb [arch=amd64] http://${SIPWISE_REPO_HOST}/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+#deb-src http://${SIPWISE_REPO_HOST}/spce/${MRBUILD_RELEASE}/ ${DEBIAN_RELEASE} main
+
+EOF
+    fi
+
+    cat >> $TARGET/etc/apt/sources.list.d/sipwise.list << EOF
+# Sipwise $DEBIAN_RELEASE backports
+deb [arch=amd64] http://${SIPWISE_REPO_HOST}/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
+#deb-src http://${SIPWISE_REPO_HOST}/${DEBIAN_RELEASE}-backports/ ${DEBIAN_RELEASE}-backports main
+
+EOF
+  fi # $MRBUILD_RELEASE
+
 
   set_deploy_status "ngcp-installer"
 
-  # install ngcp-installer
+  # install and execute ngcp-installer
   logit "ngcp-installer: $INSTALLER"
-  cat << EOT | grml-chroot $TARGET /bin/bash
+  INSTALLER_OPTS="TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ADJUST_FOR_LOW_PERFORMANCE=$ADJUST_FOR_LOW_PERFORMANCE "
+  INSTALLER_OPTS+="ENABLE_VM_SERVICES=$ENABLE_VM_SERVICES "
+  if $PRO_EDITION && ! $LINUX_HA3 ; then # HA v2
+    echo "$INSTALLER_OPTS ngcp-installer $ROLE $CROLE $IP1 $IP2 $EADDR $EIFACE" > /tmp/ngcp-installer-cmdline.log
+    cat << EOT | grml-chroot $TARGET /bin/bash
 wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
-EOT
-
-  # set installer configs
-  gen_installer_config
-
-  # execute ngcp-installer
-  echo "ngcp-installer" > /tmp/ngcp-installer-cmdline.log
-  cat << EOT | grml-chroot $TARGET /bin/bash
-ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+$INSTALLER_OPTS ngcp-installer \$ROLE \$CROLE \$IP1 \$IP2 \$EADDR \$EIFACE 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
   echo "Fatal error while running ngcp-installer:" >&2
@@ -1525,6 +1516,35 @@ if [ \$RC -ne 0 ] ; then
   exit \$RC
 fi
 EOT
+
+  elif $PRO_EDITION && $LINUX_HA3 ; then # HA v3
+    echo "$INSTALLER_OPTS ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $MCASTADDR" > /tmp/ngcp-installer-cmdline.log
+    cat << EOT | grml-chroot $TARGET /bin/bash
+wget ${INSTALLER_PATH}/${INSTALLER}
+dpkg -i $INSTALLER
+$INSTALLER_OPTS ngcp-installer \$ROLE \$IP1 \$IP2 \$EADDR \$EIFACE \$MCASTADDR 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+RC=\${PIPESTATUS[0]}
+if [ \$RC -ne 0 ] ; then
+  echo "Fatal error while running ngcp-installer (HA v3):" >&2
+  tail -10 /tmp/ngcp-installer.log
+  exit \$RC
+fi
+EOT
+
+  else # spce
+    echo "$INSTALLER_OPTS ngcp-installer" > /tmp/ngcp-installer-cmdline.log
+    cat << EOT | grml-chroot $TARGET /bin/bash
+wget ${INSTALLER_PATH}/${INSTALLER}
+dpkg -i $INSTALLER
+echo y | $INSTALLER_OPTS ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
+RC=\${PIPESTATUS[1]}
+if [ \$RC -ne 0 ] ; then
+  echo "Fatal error while running ngcp-installer:" >&2
+  tail -10 /tmp/ngcp-installer.log
+  exit \$RC
+fi
+EOT
+  fi
 
   # baby, something went wrong!
   if [ $? -eq 0 ] ; then
@@ -1582,10 +1602,9 @@ EOT
 
   case "$CROLE" in
      proxy)
-        if grml-chroot $TARGET /etc/init.d/mysql start 2 ; then
+        if chroot $TARGET service mysql start 2 ; then
           logit "Configuring MySQL second instance"
-          chroot $TARGET /usr/share/ngcp-ngcpcfg/helper/check-for-mysql 10 2
-          chroot $TARGET ngcp-sync-constants -r -s --local-repl
+          chroot $TARGET ngcp-sync-constants -r -s
         else
           logit "Can't start MySQL second instance"
         fi
