@@ -465,6 +465,7 @@ fi
 
 if checkBootParam ngcpcrole ; then
   CROLE=$(getBootParam ngcpcrole)
+  CARRIER_EDITION=true
 fi
 
 if checkBootParam ngcpcmaster ; then
@@ -629,6 +630,7 @@ for param in $* ; do
 done
 
 if ! "$NGCP_INSTALLER" ; then
+  CARRIER_EDITION=false
   PRO_EDITION=false
   CE_EDITION=false
   unset ROLE
