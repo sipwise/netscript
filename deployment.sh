@@ -59,7 +59,6 @@ VAGRANT=false
 ADJUST_FOR_LOW_PERFORMANCE=false
 ENABLE_VM_SERVICES=false
 FILESYSTEM="ext4"
-SYSTEMD=false
 DEBIAN_REPO_HOST="debian.sipwise.com"
 SIPWISE_REPO_HOST="deb.sipwise.com"
 SIPWISE_REPO_TRANSPORT="http"
@@ -515,11 +514,6 @@ fi
 
 if checkBootParam enablevmservices ; then
   ENABLE_VM_SERVICES=true
-fi
-
-if checkBootParam ngcpsystemd ; then
-  logit "Enabling systemd support as requested via boot option ngcpsystemd"
-  SYSTEMD=true
 fi
 
 if checkBootParam ngcpnonwrecfg ; then
@@ -1127,35 +1121,6 @@ cat > /etc/debootstrap/pre-scripts/install-sipwise-key.sh << EOF
 cp /etc/apt/trusted.gpg.d/sipwise.gpg "\${MNTPOINT}"/etc/apt/trusted.gpg.d/
 EOF
 chmod 775 /etc/debootstrap/pre-scripts/install-sipwise-key.sh
-
-if "$SYSTEMD" ; then
-  logit "Enabling systemd installation via grml-debootstrap"
-  mkdir -p /etc/debootstrap/scripts/
-  cat > /etc/debootstrap/scripts/systemd.sh << EOF
-#!/bin/bash
-# installed via deployment.sh
-
-echo "systemd.sh: mounting rootfs $ROOT_FS to $TARGET"
-mount "$ROOT_FS" "$TARGET"
-
-echo "systemd.sh: enabling ${DEBIAN_RELEASE} backports"
-echo deb http://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE}-backports main contrib non-free >> ${TARGET}/etc/apt/sources.list.d/systemd.list
-chroot $TARGET apt-get update
-
-echo "systemd.sh: installing systemd"
-echo 'Yes, do as I say!' | chroot $TARGET apt-get -t ${DEBIAN_RELEASE}-backports --force-yes -y install systemd-sysv sysvinit-
-
-echo "systemd.sh: verifying that acpid is enabled"
-if ! chroot $TARGET systemctl is-enabled acpid.service ; then
-  echo "acpid service is disabled, enabling"
-  chroot $TARGET systemctl enable acpid.service
-fi
-
-echo "systemd.sh: unmounting $TARGET again"
-umount "$TARGET"
-EOF
-  chmod 775 /etc/debootstrap/scripts/systemd.sh
-fi
 
 # drop this once we mirror Debian/jessie
 if [ "$DEBIAN_RELEASE" = "jessie" ] ; then
