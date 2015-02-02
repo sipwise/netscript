@@ -832,6 +832,7 @@ if "$LOGO" ; then
   CPU_INFO=$(lscpu | awk '/^CPU\(s\)/ {print $2}')
   RAM_INFO=$(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)
   DATE_INFO=$(date)
+  INSTALLER_TYPE="Install CE: $CE_EDITION PRO: $PRO_EDITION [$ROLE] Carrier: $CARRIER_EDITION [$CROLE]"
   # color
   echo -ne "\ec\e[1;32m"
   clear
@@ -842,7 +843,7 @@ if "$LOGO" ; then
   echo "Host IP(s): $IP_INFO | Deployment version: $SCRIPT_VERSION"
   echo "$CPU_INFO CPU(s) | ${RAM_INFO}kB RAM | $CHASSIS"
   echo ""
-  echo "Install ngcp: $NGCP_INSTALLER | Install CE: $CE_EDITION PRO: $PRO_EDITION [$ROLE] Carrier: [$CROLE]"
+  echo "Install ngcp: $NGCP_INSTALLER | $INSTALLER_TYPE"
   echo "Installing $SP_VERSION_STR platform | Debian: $DEBIAN_RELEASE"
   echo "Install IP: $INSTALL_IP | Started deployment at $DATE_INFO"
   # number of lines
