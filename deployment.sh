@@ -1479,8 +1479,9 @@ if "$NGCP_INSTALLER" ; then
   set_repos
 
   if "$CARRIER_EDITION"; then
-    # mount GRML linux image to be copied into ngcpcfg-api folders by ngcp-installer
-    mount --bind "$GRML_PXE_IMAGES_PATH" "${TARGET}/$PXE_IMAGES_PATH"
+    logit "Mounting GRML image for ngcpcfg-api in ngcp-installer..."
+    mkdir -p "${TARGET}/$PXE_IMAGES_PATH"
+    mount --read-only --bind "$GRML_PXE_IMAGES_PATH" "${TARGET}/$PXE_IMAGES_PATH"
   fi
 
   set_deploy_status "ngcp-installer"
