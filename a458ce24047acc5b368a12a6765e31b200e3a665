@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a437d4f_cfcd9d5f",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1444,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2015-02-04T07:36:11Z",
+      "side": 1,
+      "message": "please remove the function, this is just one line and it\u0027s called just once",
+      "revId": "a458ce24047acc5b368a12a6765e31b200e3a665",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
