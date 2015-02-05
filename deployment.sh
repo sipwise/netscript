@@ -1573,29 +1573,6 @@ EOT
         ;;
   esac
 
-  # we require those packages for dkms, so do NOT remove them:
-  # binutils cpp-4.3 gcc-4.3-base linux-kbuild-2.6.32
-  echo "Processing ngcp-rtpengine dkms package"
-  if ! grml-chroot $TARGET dkms status | grep -q "ngcp-rtpengine" ; then
-    echo "dkms status failed [checking for ngcp-rtpengine]:" | tee -a /tmp/dkms.log
-    grml-chroot $TARGET dkms status 2>&1| tee -a /tmp/dkms.log
-  else
-    if grml-chroot $TARGET dkms status | grep -v -- '-rt-amd64' | grep -q "^ngcp-rtpengine.*: installed" ; then
-      echo "ngcp-rtpengine kernel package already installed, skipping" | tee -a /tmp/dkms.log
-    else
-      KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r -V | head -1))
-      if [ -z "$KERNELHEADERS" ] ; then
-        die "Error: no kernel headers found for building ngcp-rtpengine the kernel module."
-      fi
-
-      KERNELVERSION=${KERNELHEADERS##linux-headers-}
-      NGCPVERSION=$(grml-chroot $TARGET dkms status | grep ngcp-rtpengine | awk -F, '{print $2}' | sed 's/:.*//')
-      grml-chroot $TARGET dkms build -k $KERNELVERSION --kernelsourcedir /usr/src/$KERNELHEADERS \
-             -m $rtpengine_name -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
-      grml-chroot $TARGET dkms install -k $KERNELVERSION -m $rtpengine_name -v $NGCPVERSION 2>&1 | tee -a /tmp/dkms.log
-    fi
-  fi
-
   # make sure all services are stopped
   for service in \
     apache2 \
