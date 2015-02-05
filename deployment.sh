@@ -469,10 +469,6 @@ if checkBootParam ngcpcrole ; then
   CARRIER_EDITION=true
 fi
 
-if checkBootParam ngcpcmaster ; then
-  CMASTER=$(getBootParam ngcpcmaster)
-fi
-
 if checkBootParam ngcpnolvm ; then
   logit "Disabling LVM due to ngcpnolvm boot option"
   LVM=false
@@ -555,7 +551,6 @@ Control installation parameters:
   ngcpsp2          - install second node (Pro Edition only)
   ngcpce           - install CE Edition
   ngcpcrole=...    - server role (Carrier)
-  ngcpcmaster=...  - IP of master server (Carrier)
   ngcpvers=...     - install specific SP/CE version
   nongcp           - do not install NGCP but install plain Debian only
   noinstall        - do not install neither Debian nor NGCP
@@ -611,7 +606,6 @@ for param in $* ; do
     *ngcpnetmask=*) INTERNAL_NETMASK=$(echo $param | sed 's/ngcpnetmask=//');;
     *ngcpmcast=*) MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
     *ngcpcrole=*) CARRIER_EDITION=true; CROLE=$(echo $param | sed 's/ngcpcrole=//');;
-    *ngcpcmaster=*) CMASTER=$(echo $param | sed 's/ngcpcmaster=//');;
     *ngcpnw.dhcp*) DHCP=true;;
     *ngcphav3*) LINUX_HA3=true; PRO_EDITION=true;;
     *ngcpnobonding*) BONDING=false;;
@@ -788,7 +782,6 @@ if "$PRO_EDITION" ; then
   Host Role:         $ROLE
   Host Role Carrier: $CROLE
   Profile:           $PROFILE
-  Master Server:     $CMASTER
 
   External NW iface: $EXTERNAL_DEV
   Ext host IP:       $EXTERNAL_IP
@@ -1241,16 +1234,6 @@ fi
 if "$CARRIER_EDITION" ; then
   echo "Writing $CROLE to /etc/ngcp_ha_role"
   echo $CROLE > $TARGET/etc/ngcp_ha_role
-fi
-
-# TODO: we probaby do not use /etc/ngcp_ha_master anymore, check it and clean
-if "$PRO_EDITION" ; then
-  if [ -n "$CMASTER" ] ; then
-    echo "Writing $CMASTER to /etc/ngcp_ha_master"
-    echo $CMASTER > $TARGET/etc/ngcp_ha_master
-  else
-    echo "No mgmgt master set, not creating /etc/ngcp_ha_master"
-  fi
 fi
 
 if "$PRO_EDITION" && [[ $(imvirt) != "Physical" ]] ; then
