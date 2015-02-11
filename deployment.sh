@@ -1556,6 +1556,14 @@ EOT
         ;;
   esac
 
+  # upload db dump only if we're deploying a trunk version
+  if $TRUNK_VERSION && checkBootParam ngcpupload ; then
+    set_deploy_status "upload_data"
+    grml-chroot $TARGET apt-get -y install ngcp-dev-tools
+    grml-chroot $TARGET ngcp-dumps-upload-to-sipwise
+    set_deploy_status "ngcp-installer"
+  fi
+
   NGCP_SERVICES_FILE="${TAGRET}/usr/share/ngcp-system-tools/ngcp.inc"
   if ! [ -r "$NGCP_SERVICES_FILE" ]; then
     echo "Error: File $NGCP_SERVICES_FILE not found. Exiting." >&2
@@ -2163,140 +2171,6 @@ for i in asterisk atd collectd collectdmon dbus-daemon exim4 \
 	 redis-server snmpd voisniff-ng ; do
   killall -9 $i >/dev/null 2>&1 || true
 done
-
-upload_file() {
-  [ -n "$1" ] || return 1
-
-  file="$1"
-
-  DB_MD5=$(curl --max-time 180 --connect-timeout 30 -F file=@"${file}" http://jenkins.mgm.sipwise.com:4567/upload)
-
-  if [[ "$DB_MD5" == $(md5sum "${file}" | awk '{print $1}') ]] ; then
-    echo "Upload of $file went fine."
-  else
-    echo "#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!"
-    echo "#!#!#!#!#!#!#!      Warning: error while uploading ${file}.      #!#!#!#!#!#!#!"
-    echo "#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!"
-  fi
-}
-
-upload_db_dump() {
-  if "$CE_EDITION" ; then
-    echo "CE edition noticed, continuing..."
-  else
-    echo "This is not a CE edition, ignoring request to generate and upload DB dump."
-    return 0
-  fi
-
-  chroot $TARGET /etc/init.d/mysql restart || true
-
-  # retrieve list of databases
-  databases=$(chroot $TARGET mysql -B -N -e 'show databases' | grep -ve '^information_schema$' -ve '^mysql$' -ve '^performance_schema$')
-
-  if [ -z "$databases" ] ; then
-    echo "Warning: could not retrieve list of available databases, retrying in 10 seconds."
-    sleep 10
-    databases=$(chroot $TARGET mysql -B -N -e 'show databases' | grep -ve '^information_schema$' -ve '^mysql$')
-
-    if [ -z "$databases" ] ; then
-      echo "Warning: still could not retrieve list of available databases, giving up."
-      return 0
-    fi
-  fi
-
-  # the only way to rely on mysqldump writing useful data is checking for "Dump
-  # completed on" inside the dump as it writes errors also to stdout, so before
-  # actually dumping it for committing it to VCS we need to dump it once without
-  # the "--skip-comments" option, do the check on that and then really dump it
-  # later...
-  if ! chroot $TARGET mysqldump --add-drop-database -B $databases > /dump.db ; then
-    die "Error while dumping mysql databases."
-  fi
-
-  if ! grep -q 'Dump completed on' /dump.db ; then
-    die "Error: invalid data inside database dump."
-  fi
-
-  if ! chroot $TARGET mysqldump --add-drop-database --skip-comments -B $databases > /dump.db ; then
-    die "Error while dumping mysql databases."
-  fi
-
-  chroot $TARGET /etc/init.d/mysql stop >/dev/null 2>&1 || true
-
-  echo
-  echo "NOTE: you can safely IGNORE the message stating:"
-  echo "        ERROR 2002 (HY000): Can't connect to local MySQL server through socket ..."
-  echo "      listed above. If you're seeing this note here everything went fine."
-  echo
-
-  upload_file "/dump.db"
-}
-
-upload_yml_cfg() {
-  if "$CE_EDITION" ; then
-    echo "CE edition noticed, continuing..."
-  else
-    echo "This is not a CE edition, ignoring request to generate and upload  dump."
-    return 0
-  fi
-
-  cat << EOT | grml-chroot $TARGET /bin/bash
-# CE
-/usr/share/ngcp-cfg-schema/cfg_scripts/init/0001_init_config_ce.up    /dev/null  /config_ce.yml
-/usr/share/ngcp-cfg-schema/cfg_scripts/init/0002_init_constants_ce.up /dev/null  /constants_ce.yml
-
-# PRO
-/usr/share/ngcp-cfg-schema/cfg_scripts/init/0001_init_config_pro.up    /dev/null /config_pro.yml
-/usr/share/ngcp-cfg-schema/cfg_scripts/init/0002_init_constants_pro.up /dev/null /constants_pro.yml
-
-# config.yml
-for file in /usr/share/ngcp-cfg-schema/cfg_scripts/config/*.up ; do
-  [ -r \$file ] || continue
-  case $(basename \$file) in
-    *_pro.up)
-      \$file /config_pro.yml /config_pro.yml
-      ;;
-    *_ce.up)
-      \$file /config_ce.yml  /config_ce.yml
-      ;;
-    *)
-      \$file /config_ce.yml  /config_ce.yml
-      \$file /config_pro.yml /config_pro.yml
-      ;;
-  esac
-done
-
-# constants.yml
-for file in /usr/share/ngcp-cfg-schema/cfg_scripts/constants/*.up ; do
-  [ -r \$file ] || continue
-  case $(basename \$file) in
-    *_pro.up)
-      \$file /constants_pro.yml /constants_pro.yml
-      ;;
-    *_ce.up)
-      \$file /constants_ce.yml  /constants_ce.yml
-      ;;
-    *)
-      \$file /constants_ce.yml  /constants_ce.yml
-      \$file /constants_pro.yml /constants_pro.yml
-      ;;
-  esac
-done
-EOT
-
-  for file in config_ce.yml constants_ce.yml config_pro.yml constants_pro.yml ; do
-    upload_file "${TARGET}/$file"
-  done
-}
-
-# upload db dump only if we're deploying a trunk version
-if $TRUNK_VERSION && ! checkBootParam ngcpnoupload ; then
-  set_deploy_status "upload_data"
-  echo "Trunk version detected, considering DB dump upload."
-  upload_db_dump
-  echo "Trunk version detected, considering yml configs upload."
-  upload_yml_cfg
-fi
 
 # remove retrieved and generated files
 rm -f ${TARGET}/config_*yml
