@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9a437d4f_e3c63a49",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1564,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-02-11T19:52:51Z",
+      "side": 1,
+      "message": "the problem here is only upgrade :-(\nwe have to play with tricks during upgrade.",
+      "parentUuid": "9a437d4f_239e8257",
+      "revId": "d7474c94c9479a4dd996596521724e47d8f5ccfa",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a437d4f_e3e3da03",
         "filename": "deployment.sh",
         "patchSetId": 1
@@ -30,6 +48,30 @@
       "writtenOn": "2015-02-11T16:22:37Z",
       "side": 1,
       "message": "prosody comment should be changed here",
+      "range": {
+        "startLine": 1577,
+        "startChar": 8,
+        "endLine": 1577,
+        "endChar": 15
+      },
+      "revId": "d7474c94c9479a4dd996596521724e47d8f5ccfa",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a437d4f_c3c33637",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1577,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-02-11T19:52:51Z",
+      "side": 1,
+      "message": "like what? IMHO, it should be removed at all :-)\nI can add to commit message that we use grml-chroot here, because prosody requires /proc.\nack?",
+      "parentUuid": "9a437d4f_e3e3da03",
       "range": {
         "startLine": 1577,
         "startChar": 8,
