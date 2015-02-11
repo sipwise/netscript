@@ -1556,36 +1556,28 @@ EOT
         ;;
   esac
 
-  # make sure all services are stopped
-  for service in \
-    apache2 \
-    asterisk \
-    collectd \
-    dnsmasq \
-    exim4 \
-    irqbalance \
-    kamailio-lb \
-    kamailio-proxy \
-    mediator \
-    monit \
-    mysql \
-    nfs-kernel-server \
-    ngcp-rate-o-mat \
-    ngcp-rtpengine-daemon \
-    ngcp-sems \
-    ntp \
-    rsyslog \
-    sems ; \
-  do
-    if [ -f $TARGET/etc/init.d/$service ] ; then
-      chroot $TARGET /etc/init.d/$service stop || true
+  if "$CARRIER_EDITION" ; then
+    NGCP_SERVICES_FILE="${TAGRET}/usr/share/ngcp-system-tools-carrier/ngcp.inc"
+  elif "$PRO_EDITION" ; then
+    NGCP_SERVICES_FILE="${TAGRET}/usr/share/ngcp-system-tools-pro/ngcp.inc"
+  else
+    NGCP_SERVICES_FILE="${TAGRET}/usr/share/ngcp-system-tools-ce/ngcp.inc"
+  fi
+
+  if ! [ -r "$NGCP_SERVICES_FILE" ]; then
+    echo "Error: File $NGCP_SERVICES_FILE not found. Exiting." >&2
+    exit 1
+  fi
+
+  # make sure services are stopped
+  . "$NGCP_SERVICES_FILE"
+  for service in ${HA_NGCP_SERVICES} ${NGCP_SERVICES} ${NON_NGCP_SERVICES} ; do
+    if [ -f "${TARGET}/etc/init.d/$service" ] ; then
+      echo "Stopping $service ..."
+      # prosody's init script requires mounted /proc
+      grml-chroot $TARGET /etc/init.d/$service stop || true
     fi
   done
-
-  if [ -f $TARGET/etc/init.d/prosody ] ; then
-    # prosody's init script requires mounted /proc
-    grml-chroot $TARGET /etc/init.d/prosody stop || true
-  fi
 
   # nuke files
   for i in $(find "$TARGET/var/log" -type f -size +0 -not -name \*.ini 2>/dev/null); do
