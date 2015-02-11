@@ -16,6 +16,24 @@
       "revId": "7f758d4ebefa6162e52b87805431c9fa6350a7fc",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a437d4f_a3a9527d",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1564,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-02-11T19:18:51Z",
+      "side": 1,
+      "message": "This is not true, we set ngcp-installer status in line 1470.\n\nHere we just restore it if necessary:\n\nngcp-installer-\u003eupload-\u003engcp-installer\n\nshould I drop both lines 1561 and 1564?",
+      "parentUuid": "9a437d4f_83888e23",
+      "revId": "7f758d4ebefa6162e52b87805431c9fa6350a7fc",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
