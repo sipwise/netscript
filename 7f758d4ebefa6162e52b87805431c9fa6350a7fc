@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a437d4f_83888e23",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1564,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-02-11T18:14:04Z",
+      "side": 1,
+      "message": "This one is confusing, because if the \"ngcpupload\" boot option isn\u0027t present then the ngcp-installer status isn\u0027t set. I\u0027d either move it to *after* the if ... statement or drop it at all.",
+      "revId": "7f758d4ebefa6162e52b87805431c9fa6350a7fc",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
