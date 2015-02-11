@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "9a437d4f_239e8257",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1564,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-02-11T18:23:21Z",
+      "side": 1,
+      "message": "I\u0027m wondering why we actually use /usr/share/ngcp-system-tools-{ce,carrier,pro}/ as directories instead of just using /usr/share/ngcp-system-tools/ here, since the packages already conflict with each other.\n\nIs it worth cleaning this up while at it? I could take car of that.",
+      "revId": "d7474c94c9479a4dd996596521724e47d8f5ccfa",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a437d4f_e3e3da03",
         "filename": "deployment.sh",
         "patchSetId": 1
