@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "9a437d4f_c3da1617",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1564,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2015-02-11T21:42:56Z",
+      "side": 1,
+      "message": "My mistake :-(\nI was foolish using that schema at the beginning.\n\nI already said several times that I hate this",
+      "parentUuid": "9a437d4f_239e8257",
+      "revId": "d7474c94c9479a4dd996596521724e47d8f5ccfa",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a437d4f_e3e3da03",
         "filename": "deployment.sh",
         "patchSetId": 1
