@@ -34,6 +34,24 @@
       "revId": "7f758d4ebefa6162e52b87805431c9fa6350a7fc",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a437d4f_832beeea",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1564,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-02-12T08:13:55Z",
+      "side": 1,
+      "message": "Ah no, this makes total sense - thanks for clarifying, well done!",
+      "parentUuid": "9a437d4f_a3a9527d",
+      "revId": "7f758d4ebefa6162e52b87805431c9fa6350a7fc",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
