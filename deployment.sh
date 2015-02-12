@@ -1564,7 +1564,7 @@ EOT
     set_deploy_status "ngcp-installer"
   fi
 
-  NGCP_SERVICES_FILE="${TAGRET}/usr/share/ngcp-system-tools/ngcp.inc"
+  NGCP_SERVICES_FILE="${TARGET}/usr/share/ngcp-system-tools/ngcp.inc"
   if ! [ -r "$NGCP_SERVICES_FILE" ]; then
     echo "Error: File $NGCP_SERVICES_FILE not found. Exiting." >&2
     exit 1
