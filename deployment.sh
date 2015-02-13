@@ -1,5 +1,6 @@
 #!/bin/bash
 # Purpose: automatically install Debian + sip:provider platform
+# Test ignore
 ################################################################################
 
 INSTALL_LOG='/tmp/deployment-installer-debug.log'
