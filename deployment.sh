@@ -212,8 +212,8 @@ grml_debootstrap_upgrade() {
     echo "deb http://${SIPWISE_REPO_HOST}/grml.org grml-testing main" >> "$debsrcfile"
 
     # the Sipwise deb.grml.org mirror is signed with 0xA42C4F2A (= 680FBA8A)
-    wget -O /etc/apt/680FBA8A.asc http://${SIPWISE_REPO_HOST}/autobuild/680FBA8A.asc
-    apt-key add /etc/apt/680FBA8A.asc
+    wget -O /etc/apt/sipwise_repos.asc "http://${SIPWISE_REPO_HOST}/repo-keys/sipwise.asc"
+    apt-key add /etc/apt/sipwise_repos.asc
 
     DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
       -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
@@ -1990,8 +1990,8 @@ vagrant_configuration() {
     echo "Sipwise Debian mirror key is already present."
   else
     echo "Installing Sipwise Debian mirror key (680FBA8A)."
-    grml-chroot "${TARGET}" wget -O /etc/apt/680FBA8A.asc http://${SIPWISE_REPO_HOST}/autobuild/680FBA8A.asc
-    grml-chroot "${TARGET}" apt-key add /etc/apt/680FBA8A.asc
+    grml-chroot "${TARGET}" wget -O /etc/apt/sipwise_repos.asc "http://${SIPWISE_REPO_HOST}/repo-keys/sipwise.asc"
+    grml-chroot "${TARGET}" apt-key add /etc/apt/sipwise_repos.asc
   fi
 
   # make sure we use the most recent package versions, including apt-key setup
