@@ -1625,6 +1625,9 @@ elif "$PRO_EDITION" ; then
     exit 0
   fi
 
+  # we have to start glusterfs-server back to work with shared storage
+  invoke-rc.d glusterfs-server start
+
   if [ "$ROLE" = "sp1" ] ; then
     cp /etc/ngcp-config/network.yml /etc/ngcp-config/network.yml.factory_default
 
@@ -1723,6 +1726,9 @@ elif "$PRO_EDITION" ; then
       echo "Skipping ngcpcfg init-mgmt as it is not available"
     fi
   fi
+
+  # we have to stop glusterfs-server back
+  invoke-rc.d glusterfs-server stop
 EOT
 fi
 
