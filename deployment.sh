@@ -368,7 +368,7 @@ if dmidecode| grep -q 'Rack Mount Chassis' ; then
 elif dmidecode| grep -q 'Location In Chassis: Not Specified'; then
   :
 elif dmidecode| grep -q 'Location In Chassis'; then
-  CHASSIS="Running in blade chassis $(dmidecode| awk '/Location In Chassis/ {print $4}')"
+  CHASSIS="Running in blade chassis $(dmidecode| awk '/Location In Chassis: Slot/ {print $4}')"
   PRO_EDITION=true
 fi
 
