@@ -1,5 +1,6 @@
 #!/bin/bash
 # Purpose: automatically install Debian + sip:provider platform
+# test new Jenkins jobs
 ################################################################################
 
 INSTALL_LOG='/tmp/deployment-installer-debug.log'
