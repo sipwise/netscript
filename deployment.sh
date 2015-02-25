@@ -1047,6 +1047,11 @@ acpi acpid acpi-support-base
 # be able to login on the system, even if just installing plain Debian
 openssh-server
 
+# support bridge / bonding / vlan
+bridge-utils
+ifenslave-2.6
+vlan
+
 # packages d-i installs but we ignore/skip:
 #discover
 #gettext-base
@@ -1080,15 +1085,6 @@ if "$LVM" ; then
   cat >> /etc/debootstrap/packages << EOF
 # support LVM
 lvm2
-EOF
-fi
-
-if "$VLAN" ; then
-  cat >> /etc/debootstrap/packages << EOF
-# support bridge / bonding / vlan
-bridge-utils
-ifenslave-2.6
-vlan
 EOF
 fi
 
