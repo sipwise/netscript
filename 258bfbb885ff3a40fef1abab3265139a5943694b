@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a288981_48e763e5",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1086,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2015-02-25T14:31:22Z",
+      "side": 1,
+      "message": "be brave and install this always. :-P",
+      "revId": "258bfbb885ff3a40fef1abab3265139a5943694b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
