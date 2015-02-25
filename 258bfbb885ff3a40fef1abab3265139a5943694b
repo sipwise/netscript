@@ -16,6 +16,24 @@
       "revId": "258bfbb885ff3a40fef1abab3265139a5943694b",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a288981_48fe436d",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1086,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-02-25T14:33:42Z",
+      "side": 1,
+      "message": "IMHO, you can install it always as currently we are isolated in trunk. So we can roll it back if issues are noticed.",
+      "parentUuid": "7a288981_48e763e5",
+      "revId": "258bfbb885ff3a40fef1abab3265139a5943694b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
