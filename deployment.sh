@@ -1083,7 +1083,7 @@ lvm2
 EOF
 fi
 
-if "$VLAN" ; then
+if "$VLAN" || ! "$NGCP_INSTALLER" ; then
   cat >> /etc/debootstrap/packages << EOF
 # support bridge / bonding / vlan
 bridge-utils
