@@ -181,8 +181,6 @@ fai_upgrade() {
     return 0
   fi
 
-  install_sipwise_key
-
   # use temporary apt database for speed reasons
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
@@ -210,8 +208,6 @@ grml_debootstrap_upgrade() {
     mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
     local debsrcfile=$(mktemp)
     echo "deb http://${SIPWISE_REPO_HOST}/grml.org grml-testing main" >> "$debsrcfile"
-
-    install_sipwise_key
 
     DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
       -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
@@ -623,6 +619,9 @@ if ! "$NGCP_INSTALLER" ; then
   CE_EDITION=false
   unset ROLE
 fi
+
+set_deploy_status "installing_sipwise_keys"
+install_sipwise_key
 
 set_deploy_status "grml_debootstrap_upgrade"
 grml_debootstrap_upgrade
@@ -1100,8 +1099,6 @@ if [ -n "$FIRMWARE_PACKAGES" ] ; then
 $FIRMWARE_PACKAGES
 EOF
 fi
-
-install_sipwise_key
 
 mkdir -p /etc/debootstrap/pre-scripts/
 cat > /etc/debootstrap/pre-scripts/install-sipwise-key.sh << EOF
@@ -1984,16 +1981,6 @@ EOF
 }
 
 vagrant_configuration() {
-  # if ngcp-keyring isn't present (e.g. on plain Debian systems) then we have
-  # to install our key for usage of our own Debian mirror
-  if grml-chroot "${TARGET}" apt-key list | grep -q 680FBA8A ; then
-    echo "Sipwise Debian mirror key is already present."
-  else
-    echo "Installing Sipwise Debian mirror key (680FBA8A)."
-    grml-chroot "${TARGET}" wget -O /etc/apt/680FBA8A.asc http://${SIPWISE_REPO_HOST}/autobuild/680FBA8A.asc
-    grml-chroot "${TARGET}" apt-key add /etc/apt/680FBA8A.asc
-  fi
-
   # make sure we use the most recent package versions, including apt-key setup
   grml-chroot "${TARGET}" apt-get update
 
