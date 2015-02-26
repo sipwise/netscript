@@ -211,9 +211,7 @@ grml_debootstrap_upgrade() {
     local debsrcfile=$(mktemp)
     echo "deb http://${SIPWISE_REPO_HOST}/grml.org grml-testing main" >> "$debsrcfile"
 
-    # the Sipwise deb.grml.org mirror is signed with 0xA42C4F2A (= 680FBA8A)
-    wget -O /etc/apt/680FBA8A.asc http://${SIPWISE_REPO_HOST}/autobuild/680FBA8A.asc
-    apt-key add /etc/apt/680FBA8A.asc
+    install_sipwise_key
 
     DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
       -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
