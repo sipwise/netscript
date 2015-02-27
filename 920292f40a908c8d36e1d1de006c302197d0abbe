@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a2585a7_8d8fa1cc",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-02-27T00:32:02Z",
+      "side": 1,
+      "message": "s/Clenup/Clean up/",
+      "revId": "920292f40a908c8d36e1d1de006c302197d0abbe",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a2585a7_6dbc756d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-02-27T00:32:02Z",
+      "side": 1,
+      "message": "install_sipwise_key takes care of creating /etc/apt/trusted.gpg.d/sipwise.gpg in the resulting installation, the grml-debootstrap $KEYRING option is relevant only for bootstrapping the system (so no gpg/keyring file gets copied there).",
+      "revId": "920292f40a908c8d36e1d1de006c302197d0abbe",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a2585a7_4dc1b9e3",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-02-27T00:32:02Z",
+      "side": 1,
+      "message": "ACK, nice catch - thanks!",
+      "revId": "920292f40a908c8d36e1d1de006c302197d0abbe",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
