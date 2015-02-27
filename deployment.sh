@@ -1111,18 +1111,12 @@ cp /etc/apt/trusted.gpg.d/sipwise.gpg "\${MNTPOINT}"/etc/apt/trusted.gpg.d/
 EOF
 chmod 775 /etc/debootstrap/pre-scripts/install-sipwise-key.sh
 
-# drop this once we mirror Debian/jessie
-if [ "$DEBIAN_RELEASE" = "jessie" ] ; then
-  MIRROR='http://debian.inode.at/debian/'
-  KEYRING='/usr/share/keyrings/debian-archive-keyring.gpg'
-else
-  # NOTE: we use the debian.sipwise.com CNAME by intention here
-  # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
-  # over official Debian
-  MIRROR="http://${DEBIAN_REPO_HOST}/debian/"
-  SEC_MIRROR="http://${DEBIAN_REPO_HOST}/debian-security/"
-  KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
-fi
+# NOTE: we use the debian.sipwise.com CNAME by intention here
+# to avoid conflicts with apt-pinning, preferring deb.sipwise.com
+# over official Debian
+MIRROR="http://${DEBIAN_REPO_HOST}/debian/"
+SEC_MIRROR="http://${DEBIAN_REPO_HOST}/debian-security/"
+KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
 
 set_deploy_status "debootstrap"
 
