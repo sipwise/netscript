@@ -1,3 +1,15 @@
+ngcp-netscript (3.7.2.1+0~mr3.7.2.1) unstable; urgency=low
+
+  [ Victor Seva ]
+  * [cc39ee2] MT#11063 Sync with bootenv: don't try to figure out the INTERNAL_NETMASK if it is already set by parameter
+
+  [ Alexander Lutay ]
+  * [598b176] MT#11455 Use install_sipwise_key for grml_debootstrap_upgrade
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Tue, 03 Mar 2015 16:43:40 +0100
+
 ngcp-netscript (3.7.2.0+0~mr3.7.2.0) unstable; urgency=medium
 
   * Initial release
