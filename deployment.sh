@@ -371,7 +371,6 @@ elif dmidecode| grep -q 'Location In Chassis: Not Specified'; then
   :
 elif dmidecode| grep -q 'Location In Chassis'; then
   CHASSIS="Running in blade chassis $(dmidecode| awk '/Location In Chassis: Slot/ {print $4}')"
-  PRO_EDITION=true
 fi
 
 if checkBootParam ngcpinst || checkBootParam ngcpsp1 || checkBootParam ngcpsp2 || \
