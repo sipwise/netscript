@@ -142,17 +142,34 @@ loadNfsIpArray() {
 }
 
 install_sipwise_key() {
-  if "$PRO_EDITION" ; then
-    wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://${SIPWISE_REPO_HOST}/sppro/sipwise.gpg
+  if -f "/etc/apt/trusted.gpg.d/sipwise.gpg" ; then
+    md5sum_sipwise_key=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
+    echo "Sipwise keyring already installed (MD5: [${md5sum_sipwise_key}])"
+    return
   else
-    wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://${SIPWISE_REPO_HOST}/spce/sipwise.gpg
+    echo "Sipwise keyring not found, downloading."
   fi
 
-  md5sum_sipwise_key_expected=32a4907a7d7aabe325395ca07c531234
-  md5sum_sipwise_key_calculated=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
+  for x in 1 2 3; do
+
+    if "$PRO_EDITION" ; then
+      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://${SIPWISE_REPO_HOST}/sppro/sipwise.gpg
+    else
+      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://${SIPWISE_REPO_HOST}/spce/sipwise.gpg
+    fi
+
+    md5sum_sipwise_key_expected=32a4907a7d7aabe325395ca07c531234
+    md5sum_sipwise_key_calculated=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
+
+    if [ "$md5sum_sipwise_key_calculated" != "$md5sum_sipwise_key_expected" ] ; then
+      echo "Sipwise keyring has wrong checksum (expected: [$md5sum_sipwise_key_expected] - got: [$md5sum_sipwise_key_calculated]), retry $x"
+    else
+      break
+    fi
+  done
 
   if [ "$md5sum_sipwise_key_calculated" != "$md5sum_sipwise_key_expected" ] ; then
-    die "Error validating sipwise keyring for apt usage (expected: [$md5sum_sipwise_key_expected] - got: [$md5sum_sipwise_key_calculated])"
+    die "Error validating sipwise keyring for apt usage, aborting installation."
   fi
 
   mkdir -p /etc/debootstrap/pre-scripts/
