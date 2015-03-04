@@ -1,3 +1,13 @@
+ngcp-netscript (3.7.1.4+0~mr3.7.1.4) unstable; urgency=low
+
+  [ Alexander Lutay ]
+  * [35c0fe7] MT#11493 Updated IBM chassis slot detection
+  * [784ea02] MT#11947 Do NOT force PRO_EDITION if blade chassis detected
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Wed, 04 Mar 2015 18:11:30 +0100
+
 ngcp-netscript (3.7.1.3+0~mr3.7.1.3) unstable; urgency=low
 
   [ Alexander Lutay ]
