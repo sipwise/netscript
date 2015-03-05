@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a2585a7_023ff826",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-03-05T12:36:31Z",
+      "side": 1,
+      "message": "if [ -f ...",
+      "revId": "fa1670ee8efde25c8df28435f1c36c5ce2622e2d",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
