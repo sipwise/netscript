@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a2585a7_a219447b",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 150,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-03-05T00:30:14Z",
+      "side": 1,
+      "message": "BTW, since we check for the same md5sum in line 153 (no matter whether spce or sppro), is there really a point in downloading the file from the sppro repository at all, shouldn\u0027t we just always use spce/sipwise.gpg?",
+      "revId": "873895f13e80fbd5a5caae0cbc10ca9f0d9aafc9",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
