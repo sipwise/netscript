@@ -1222,21 +1222,6 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
 
-# needed for carrier
-if "$RETRIEVE_MGMT_CONFIG" ; then
-  echo "Retrieving /etc/hosts configuration from management server"
-  wget --timeout=30 -O "${TARGET}/etc/hosts" "${MANAGEMENT_IP}:3000/hostconfig/$(cat ${TARGET}/etc/hostname)"
-  # required for bootstrapping remote origin in ngcpcfg carrier setup
-  echo "Retrieving /etc/ngcp_mgmt_node file from management server"
-  wget --timeout=30 -O "${TARGET}/etc/ngcp_mgmt_node" "${MANAGEMENT_IP}:3000/mgmt"
-  echo "mgmt_node=$(cat ${TARGET}/etc/ngcp_mgmt_node)"
-fi
-
-if "$CARRIER_EDITION" ; then
-  echo "Writing $CROLE to /etc/ngcp_ha_role"
-  echo $CROLE > $TARGET/etc/ngcp_ha_role
-fi
-
 if "$PRO_EDITION" && [[ $(imvirt) != "Physical" ]] ; then
   echo "Generating udev persistent net rules."
   INT_MAC=$(udevadm info -a -p /sys/class/net/${INTERNAL_DEV} | awk -F== '/ATTR{address}/ {print $2}')
@@ -1253,13 +1238,17 @@ SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}==$EXT_MAC, ATTR{de
 EOF
 fi
 
-# needs to be executed *after* udev rules have been set up,
-# otherwise we get duplicated MAC address<->device name mappings
 if "$RETRIEVE_MGMT_CONFIG" ; then
+  # needs to be executed *after* udev rules have been set up,
+  # otherwise we get duplicated MAC address<->device name mappings
   echo "Retrieving network configuration from management server"
   wget --timeout=30 -O /etc/network/interfaces "${MANAGEMENT_IP}:3000/nwconfig/$(cat ${TARGET}/etc/hostname)"
-
   cp /etc/network/interfaces "${TARGET}/etc/network/interfaces"
+  # can't be moved to ngcp-installer, otherwise Grml cannot execute:
+  # > wget --timeout=30 -O Packages.gz "${repos_base_path}Packages.gz"
+  # because host 'web01' is unknown
+  echo "Retrieving /etc/hosts configuration from management server"
+  wget --timeout=30 -O "${TARGET}/etc/hosts" "${MANAGEMENT_IP}:3000/hostconfig/$(cat ${TARGET}/etc/hostname)"
 fi
 
 if "$RETRIEVE_MGMT_CONFIG" && "$RESTART_NETWORK" ; then
