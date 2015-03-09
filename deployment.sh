@@ -63,6 +63,7 @@ DEBIAN_REPO_HOST="debian.sipwise.com"
 SIPWISE_REPO_HOST="deb.sipwise.com"
 SIPWISE_REPO_TRANSPORT="http"
 DPL_MYSQL_REPLICATION=true
+SKIP_NETWORK_YML=false
 GRML_PXE_IMAGES_PATH="/lib/live/mount/medium"
 PXE_IMAGES_PATH="/tmp/grml_pxe"
 
@@ -547,6 +548,10 @@ fi
 
 if checkBootParam ngcpnomysqlrepl ; then
   DPL_MYSQL_REPLICATION=false
+fi
+
+if checkBootParam skipnetworkyml ; then
+  SKIP_NETWORK_YML=true
 fi
 ## }}}
 
@@ -1350,6 +1355,10 @@ get_installer_path() {
   else
     INSTALLER="ngcp-installer-ce_${version}_all.deb"
   fi
+
+  # overwrite everything TODO: remove me
+  INSTALLER_PATH="http://deb.sipwise.com/autobuild/pool/main/n/ngcp-installer/"
+  INSTALLER="ngcp-installer-pro_0.19.0.0+0~mr3.8.0.0+0~20150310093841.771+wheezy~1.gbp324f91_all.deb"
 }
 
 set_repos() {
@@ -1397,10 +1406,12 @@ gen_installer_config () {
     cat > ${TARGET}/etc/ngcp-installer/config_deploy.inc << EOF
 CROLE="${CROLE}"
 PXE_IMAGES_PATH="${PXE_IMAGES_PATH}"
+MANAGEMENT_IP="${MANAGEMENT_IP}"
 EOF
   fi
 
   if "$PRO_EDITION" ; then
+    get_network_devices
     cat >> ${TARGET}/etc/ngcp-installer/config_deploy.inc << EOF
 HNAME="${ROLE}"
 IP1="${IP1}"
@@ -1409,6 +1420,14 @@ EIFACE="${EIFACE}"
 EADDR="${EADDR}"
 MCASTADDR="${MCASTADDR}"
 DPL_MYSQL_REPLICATION="${DPL_MYSQL_REPLICATION}"
+TARGET_HOSTNAME="${TARGET_HOSTNAME}"
+DEFAULT_INSTALL_DEV="${DEFAULT_INSTALL_DEV}"
+INTERNAL_DEV="${INTERNAL_DEV}"
+GW="$(ip route show dev $DEFAULT_INSTALL_DEV | awk '/^default via/ {print $3}')"
+EXTERNAL_DEV="${EXTERNAL_DEV}"
+NETWORK_DEVICES="${NETWORK_DEVICES}"
+DEFAULT_INTERNAL_NETMASK="${DEFAULT_INTERNAL_NETMASK}"
+RETRIEVE_MGMT_CONFIG="${RETRIEVE_MGMT_CONFIG}"
 EOF
   fi
 
@@ -1419,40 +1438,26 @@ ADJUST_FOR_LOW_PERFORMANCE="${ADJUST_FOR_LOW_PERFORMANCE}"
 ENABLE_VM_SERVICES="${ENABLE_VM_SERVICES}"
 SIPWISE_REPO_HOST="${SIPWISE_REPO_HOST}"
 SIPWISE_REPO_TRANSPORT="${SIPWISE_REPO_TRANSPORT}"
+NAMESERVER="$(awk '/^nameserver/ {print $2}' /etc/resolv.conf)"
 EOF
 
   cat "${TARGET}/etc/ngcp-installer/config_deploy.inc" > /tmp/ngcp-installer-cmdline.log
 }
 
+get_network_devices () {
+  # get list of available network devices (excl. some known-to-be-irrelevant ones, also see MT#8297)
+  net_devices=$(tail -n +3 /proc/net/dev | awk -F: '{print $1}'| sed "s/\s*//" | grep -ve '^vmnet' -ve '^vboxnet' -ve '^docker' -ve '^usb' | sort -u)
+
+  NETWORK_DEVICES=""
+  for network_device in $net_devices $DEFAULT_INSTALL_DEV $INTERNAL_DEV $EXTERNAL_DEV ; do
+    # avoid duplicates
+    echo "$NETWORK_DEVICES" | grep -wq "$network_device" || NETWORK_DEVICES="$NETWORK_DEVICES $network_device"
+  done
+  export NETWORK_DEVICES
+  unset net_devices
+}
+
 if "$NGCP_INSTALLER" ; then
-
-  if "$RETRIEVE_MGMT_CONFIG" ; then
-    password=sipwise
-    echo "Retrieving SSH keys from management server (using password ${password})"
-
-    mkdir -p "${TARGET}"/root/.ssh
-
-    wget --timeout=30 -O "${TARGET}"/root/.ssh/authorized_keys "${MANAGEMENT_IP}:3000/ssh/authorized_keys"
-    wget --timeout=30 -O "${TARGET}"/root/.ssh/id_rsa          "${MANAGEMENT_IP}:3000/ssh/id_rsa?password=${password}"
-    wget --timeout=30 -O "${TARGET}"/root/.ssh/id_rsa.pub      "${MANAGEMENT_IP}:3000/ssh/id_rsa_pub"
-    wget --timeout=30 -O "${TARGET}"/root/.ssh/known_hosts     "${MANAGEMENT_IP}:3000/ssh/known_hosts"
-
-    chmod 600 "${TARGET}"/root/.ssh/authorized_keys
-    chmod 600 "${TARGET}"/root/.ssh/id_rsa
-    chmod 644 "${TARGET}"/root/.ssh/id_rsa.pub
-    chmod 600 "${TARGET}"/root/.ssh/known_hosts
-
-    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_dsa_key     "${MANAGEMENT_IP}:3000/ssh/host_dsa_key?password=${password}"
-    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_dsa_key.pub "${MANAGEMENT_IP}:3000/ssh/host_dsa_key_pub"
-    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_rsa_key     "${MANAGEMENT_IP}:3000/ssh/host_rsa_key?password=${password}"
-    wget --timeout=30 -O "${TARGET}"/etc/ssh/ssh_host_rsa_key.pub "${MANAGEMENT_IP}:3000/ssh/host_rsa_key_pub"
-
-    chmod 600 "${TARGET}"/etc/ssh/ssh_host_dsa_key
-    chmod 644 "${TARGET}"/etc/ssh/ssh_host_dsa_key.pub
-    chmod 600 "${TARGET}"/etc/ssh/ssh_host_rsa_key
-    chmod 644 "${TARGET}"/etc/ssh/ssh_host_rsa_key.pub
-  fi
-
   # add sipwise user
   adduser_sipwise
 
@@ -1499,39 +1504,7 @@ EOT
     die "Error during installation of ngcp. Find details at: $TARGET/tmp/ngcp-installer.log $TARGET/tmp/ngcp-installer-debug.log"
   fi
 
-  if "$PRO_EDITION" ; then
-    # set variable to have the *other* node from the PRO setup available for ngcp-network
-    case $ROLE in
-      sp1)
-        logit "Role matching sp1"
-        if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *a ]] ; then # usually carrier env
-          logit "Target hostname is set and ends with 'a'"
-          THIS_HOST="$TARGET_HOSTNAME"
-          PEER="${TARGET_HOSTNAME%a}b"
-        else # usually PRO env
-          logit "Target hostname is not set or does not end with 'a'"
-          THIS_HOST="$ROLE"
-          PEER=sp2
-        fi
-        ;;
-      sp2)
-        logit "Role matching sp2"
-        if [ -n "$TARGET_HOSTNAME" ] && [[ "$TARGET_HOSTNAME" == *b ]] ; then # usually carrier env
-          THIS_HOST="$TARGET_HOSTNAME"
-          PEER="${TARGET_HOSTNAME%b}a"
-        else # usually PRO env
-          logit "Target hostname is not set or does not end with 'b'"
-          THIS_HOST="$ROLE"
-          PEER=sp1
-        fi
-        ;;
-      *)
-        logit "Using unsupported role: $ROLE"
-        ;;
-    esac
-  fi
-
-  if "$RETRIEVE_MGMT_CONFIG" ; then
+  if "$RETRIEVE_MGMT_CONFIG" ; then # TODO2
     if [ "$ROLE" = "sp1" ] ; then
       password=sipwise
 
@@ -1605,131 +1578,15 @@ EOT
 
 fi
 
-# adjust network.yml
-if "$RETRIEVE_MGMT_CONFIG" ; then
-  echo "Nothing to do (RETRIEVE_MGMT_CONFIG is set), network.yml was already set up."
+# adjust network.yml TODO1
+if "$SKIP_NETWORK_YML"; then
+  echo "Network.yml init has been skipped."
 elif "$PRO_EDITION" ; then
-  # get list of available network devices (excl. some known-to-be-irrelevant ones, also see MT#8297)
-  net_devices=$(tail -n +3 /proc/net/dev | awk -F: '{print $1}'| sed "s/\s*//" | grep -ve '^vmnet' -ve '^vboxnet' -ve '^docker' -ve '^usb' | sort -u)
-
-  NETWORK_DEVICES=""
-  for network_device in $net_devices $DEFAULT_INSTALL_DEV $INTERNAL_DEV $EXTERNAL_DEV ; do
-    # avoid duplicates
-    echo "$NETWORK_DEVICES" | grep -wq "$network_device" || NETWORK_DEVICES="$NETWORK_DEVICES $network_device"
-  done
-  export NETWORK_DEVICES
-  unset net_devices
-
   cat << EOT | grml-chroot $TARGET /bin/bash
-  if ! [ -r /etc/ngcp-config/network.yml ] ; then
-    echo '/etc/ngcp-config/network.yml does not exist'
-    exit 0
-  fi
-
-  # we have to start glusterfs-server back to work with shared storage
-  invoke-rc.d glusterfs-server start
-
-  if [ "$ROLE" = "sp1" ] ; then
-    cp /etc/ngcp-config/network.yml /etc/ngcp-config/network.yml.factory_default
-
-    ngcp-network --host=$THIS_HOST --set-interface=lo --ip=auto --netmask=auto --hwaddr=auto --ipv6='::1' --type=web_int
-    ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --shared-ip=none --shared-ipv6=none
-    ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
-    ngcp-network --host=$THIS_HOST --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto
-    nameserver="$(awk '/^nameserver/ {print $2}' /etc/resolv.conf)"
-    for entry in \$nameserver ; do
-      ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --dns=\$entry
-    done
-
-    GW=$(ip route show dev $DEFAULT_INSTALL_DEV | awk '/^default via/ {print $3}')
-    if [ -n "\$GW" ] ; then
-      ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --gateway="\$GW"
-    fi
-
-    ngcp-network --host=$THIS_HOST --peer=$PEER
-    ngcp-network --host=$THIS_HOST --move-from=lo --move-to=$INTERNAL_DEV --type=ha_int
-    # set *_ext types accordingly for PRO setup
-    ngcp-network --host=$THIS_HOST --move-from=lo --move-to=$EXTERNAL_DEV \
-                                   --type=sip_ext --type=rtp_ext --type=mon_ext
-    ngcp-network --host=$THIS_HOST --set-interface=$EXTERNAL_DEV --type=web_ext
-
-    ngcp-network --host=$PEER --peer=$THIS_HOST
-    ngcp-network --host=$PEER --set-interface=$EXTERNAL_DEV --shared-ip=none --shared-ipv6=none
-    ngcp-network --host=$PEER --set-interface=lo --ipv6='::1' --ip=auto --netmask=auto --hwaddr=auto
-
-    # add ssh_ext to all the interfaces of sp1 on sp1
-    for interface in \$NETWORK_DEVICES ; do
-      ngcp-network --host=$THIS_HOST --set-interface=\$interface --type=ssh_ext
-    done
-
-    # add ssh_ext to lo and $INTERNAL_DEV interfaces of sp2 on sp1 so we can reach the ssh server at any time
-    ngcp-network --host=$PEER --set-interface=lo --type=ssh_ext
-    ngcp-network --host=$PEER --set-interface=$INTERNAL_DEV --type=ssh_ext
-
-    # needed to make sure MySQL setup is OK for first node until second node is set up
-    ngcp-network --host=$PEER --set-interface=$INTERNAL_DEV --ip=$IP2 --netmask=$DEFAULT_INTERNAL_NETMASK --type=ha_int
-    ngcp-network --host=$PEER --role=proxy --role=lb --role=mgmt --role=rtp --role=db
-    ngcp-network --host=$PEER --set-interface=lo --type=sip_int --type=web_int --type=web_ext --type=aux_ext
-
-    # version >= mr3.5, previous versions has no dbnode option
-    ngcp-network --host=$PEER --dbnode=2 || true
-
-    cp /etc/ngcp-config/network.yml /mnt/glusterfs/shared_config/network.yml
-
-    # use --no-db-sync only if supported by ngcp[cfg] version
-    if grep -q -- --no-db-sync /usr/sbin/ngcpcfg ; then
-      ngcpcfg --no-db-sync commit "deployed /etc/ngcp-config/network.yml on $ROLE"
-    else
-      ngcpcfg commit "deployed /etc/ngcp-config/network.yml on $ROLE"
-    fi
-
-    ngcpcfg build
-    ngcpcfg push --shared-only
-  else # ROLE = sp2
-    ngcpcfg pull
-    ngcp-network --host=$THIS_HOST --set-interface=$DEFAULT_INSTALL_DEV --ip=auto --netmask=auto --hwaddr=auto
-
-    # finalize the --ip=$IP2 from previous run on first node
-    ngcp-network --host=$THIS_HOST --set-interface=$INTERNAL_DEV --ip=auto --netmask=auto --hwaddr=auto --type=ha_int
-    # set *_ext types accordingly for PRO setup
-    ngcp-network --host=$THIS_HOST --set-interface=$EXTERNAL_DEV --type=web_int --type=web_ext --type=sip_ext \
-                              --type=rtp_ext --type=mon_ext
-
-    # add ssh_ext to all the interfaces of sp2 on sp2
-    for interface in \$NETWORK_DEVICES ; do
-      ngcp-network --host=$THIS_HOST --set-interface=\$interface --type=ssh_ext
-    done
-
-    # use --no-db-sync only if supported by ngcp[cfg] version
-    if grep -q -- --no-db-sync /usr/sbin/ngcpcfg ; then
-      ngcpcfg --no-db-sync commit "deployed /etc/ngcp-config/network.yml on $ROLE"
-    else
-      ngcpcfg commit "deployed /etc/ngcp-config/network.yml on $ROLE"
-    fi
-
-    ngcpcfg push --shared-only
-
-    # make sure login from second node to first node works
-    ssh-keyscan $PEER >> ~/.ssh/known_hosts
-
-    # live system uses a different SSH host key than the finally installed
-    # system, so do NOT use ssh-keyscan here
-    tail -1 ~/.ssh/known_hosts | sed "s/\w* /$THIS_HOST /" >> ~/.ssh/known_hosts
-    tail -1 ~/.ssh/known_hosts | sed "s/\w* /$MANAGEMENT_IP /" >> ~/.ssh/known_hosts
-    scp ~/.ssh/known_hosts $PEER:~/.ssh/known_hosts
-
+  if [ "$ROLE" = "sp2" ] ; then
     ssh $PEER ngcpcfg pull
     ngcpcfg build
-
-    if ngcpcfg --help |grep -q init-mgmt ; then
-      ngcpcfg init-mgmt $MANAGEMENT_IP
-    else
-      echo "Skipping ngcpcfg init-mgmt as it is not available"
-    fi
   fi
-
-  # we have to stop glusterfs-server back
-  invoke-rc.d glusterfs-server stop
 EOT
 fi
 
