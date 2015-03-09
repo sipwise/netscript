@@ -63,6 +63,7 @@ DEBIAN_REPO_HOST="debian.sipwise.com"
 SIPWISE_REPO_HOST="deb.sipwise.com"
 SIPWISE_REPO_TRANSPORT="http"
 DPL_MYSQL_REPLICATION=true
+SKIP_NETWORK_YML=false
 GRML_PXE_IMAGES_PATH="/lib/live/mount/medium"
 PXE_IMAGES_PATH="/tmp/grml_pxe"
 
@@ -547,6 +548,10 @@ fi
 
 if checkBootParam ngcpnomysqlrepl ; then
   DPL_MYSQL_REPLICATION=false
+fi
+
+if checkBootParam skipnetworkyml ; then
+  SKIP_NETWORK_YML=true
 fi
 ## }}}
 
@@ -1409,6 +1414,7 @@ EIFACE="${EIFACE}"
 EADDR="${EADDR}"
 MCASTADDR="${MCASTADDR}"
 DPL_MYSQL_REPLICATION="${DPL_MYSQL_REPLICATION}"
+TARGET_HOSTNAME="${TARGET_HOSTNAME}"
 EOF
   fi
 
@@ -1606,7 +1612,9 @@ EOT
 fi
 
 # adjust network.yml
-if "$RETRIEVE_MGMT_CONFIG" ; then
+if "$SKIP_NETWORK_YML"; then
+  echo "Network.yml init has been skipped."
+elif "$RETRIEVE_MGMT_CONFIG" ; then
   echo "Nothing to do (RETRIEVE_MGMT_CONFIG is set), network.yml was already set up."
 elif "$PRO_EDITION" ; then
   # get list of available network devices (excl. some known-to-be-irrelevant ones, also see MT#8297)
