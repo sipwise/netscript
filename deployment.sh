@@ -1128,7 +1128,6 @@ fi
 # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
 # over official Debian
 MIRROR="http://${DEBIAN_REPO_HOST}/debian/"
-SEC_MIRROR="http://${DEBIAN_REPO_HOST}/debian-security/"
 KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
 
 set_deploy_status "debootstrap"
@@ -1140,12 +1139,13 @@ cat > /etc/debootstrap/etc/apt/sources.list << EOF
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
 EOF
 
-# drop this once Debian/jessie has security support
-if [ -n "$SEC_MIRROR" ] ; then
-  echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
+# drop this once Debian/jessie has security support (AKA released as stable)
+if [ "$DEBIAN_RELEASE" = "jessie" ] ; then
+  echo  "Warning: not enabling security repository for $DEBIAN_RELEASE"
+  logit "Warning: not enabling security repository for $DEBIAN_RELEASE"
 else
-  echo  "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
-  logit "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
+  SEC_MIRROR="http://${DEBIAN_REPO_HOST}/debian-security/"
+  echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
 fi
 
 echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
