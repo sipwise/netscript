@@ -2100,6 +2100,11 @@ vagrant_configuration() {
   # see http://ablecoder.com/b/2012/04/09/vagrant-broken-networking-when-packaging-ubuntu-boxes/
   echo "Removing /etc/udev/rules.d/70-persistent-net.rules"
   rm -f "${TARGET}/etc/udev/rules.d/70-persistent-net.rules"
+
+  if [ -d "${TARGET}/etc/.git" ]; then
+    echo "Commit /etc/* changes using etckeeper"
+    chroot "$TARGET" etckeeper commit "Vagrant/VirtualBox changes on /etc/*"
+  fi
 }
 
 if "$RETRIEVE_MGMT_CONFIG" ; then
