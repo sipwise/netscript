@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a2585a7_9b522d12",
+        "filename": "deployment.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 1430,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2015-03-11T09:52:38Z",
+      "side": 1,
+      "message": "is this needed?",
+      "revId": "8da9203cb7e863e85fa0de29f577dbd70b957fd4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a2585a7_bb4de974",
+        "filename": "deployment.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 1445,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2015-03-11T09:52:38Z",
+      "side": 1,
+      "message": "is this needed?",
+      "revId": "8da9203cb7e863e85fa0de29f577dbd70b957fd4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
