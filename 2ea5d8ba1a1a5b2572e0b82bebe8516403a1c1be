@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "5a2585a7_81099c2e",
+        "filename": "deployment.sh",
+        "patchSetId": 8
+      },
+      "lineNbr": 1247,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-03-12T14:11:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5a2585a7_9ee21bd4",
+      "revId": "2ea5d8ba1a1a5b2572e0b82bebe8516403a1c1be",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a2585a7_de2b0393",
         "filename": "deployment.sh",
         "patchSetId": 8
@@ -30,6 +48,24 @@
       "writtenOn": "2015-03-12T13:45:04Z",
       "side": 1,
       "message": "I assume that\u0027s because /etc/hosts just isn\u0027t set up properly then, right? Is there any way for us to solve that or is this fine for us as is?",
+      "revId": "2ea5d8ba1a1a5b2572e0b82bebe8516403a1c1be",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a2585a7_a12b7881",
+        "filename": "deployment.sh",
+        "patchSetId": 8
+      },
+      "lineNbr": 1249,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-03-12T14:11:43Z",
+      "side": 1,
+      "message": "Yes you are right. The \"default\" /etc/hosts in line 1214 knows nothing about web01\n\nSure we can try to move it into installer once more, but I would like to start with something. Current changes looks stable to be merged. IMHO.\n\nAnyway it is not a last message which can/should be moved in installer :-)",
+      "parentUuid": "5a2585a7_de2b0393",
       "revId": "2ea5d8ba1a1a5b2572e0b82bebe8516403a1c1be",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
