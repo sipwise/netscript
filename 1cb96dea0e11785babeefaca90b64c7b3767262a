@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a2585a7_617350b2",
+        "filename": "deployment.sh",
+        "patchSetId": 9
+      },
+      "lineNbr": 1247,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-03-12T14:06:14Z",
+      "side": 1,
+      "message": "s/cannot/can\u0027t/ (the \"globally\" flag had a purpose in my previous comment :))",
+      "revId": "1cb96dea0e11785babeefaca90b64c7b3767262a",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
