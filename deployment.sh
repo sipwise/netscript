@@ -65,6 +65,7 @@ SIPWISE_REPO_TRANSPORT="http"
 DPL_MYSQL_REPLICATION=true
 GRML_PXE_IMAGES_PATH="/lib/live/mount/medium"
 PXE_IMAGES_PATH="/tmp/grml_pxe"
+FILL_APPROX_CACHE=false
 
 # if TARGET_DISK environment variable is set accept it
 if [ -n "$TARGET_DISK" ] ; then
@@ -548,6 +549,10 @@ fi
 if checkBootParam ngcpnomysqlrepl ; then
   DPL_MYSQL_REPLICATION=false
 fi
+
+if checkBootParam ngcpfillcache ; then
+  FILL_APPROX_CACHE=true
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -633,6 +638,7 @@ for param in $* ; do
     *vagrant*) VAGRANT=true;;
     *lowperformance*) ADJUST_FOR_LOW_PERFORMANCE=true;;
     *enablevmservices*) ENABLE_VM_SERVICES=true;;
+    *ngcpfillcache*) FILL_APPROX_CACHE=true;;
   esac
   shift
 done
@@ -1400,6 +1406,7 @@ gen_installer_config () {
 CROLE="${CROLE}"
 PXE_IMAGES_PATH="${PXE_IMAGES_PATH}"
 MANAGEMENT_IP="${MANAGEMENT_IP}"
+FILL_APPROX_CACHE="${FILL_APPROX_CACHE}"
 EOF
   fi
 
@@ -1558,8 +1565,8 @@ EOT
 
 fi
 
-if "$RETRIEVE_MGMT_CONFIG" ; then
-  echo "Nothing to do (RETRIEVE_MGMT_CONFIG is set), /etc/network/interfaces was already set up."
+if "$CARRIER_EDITION" ; then
+  echo "Nothing to do on Carrier, /etc/network/interfaces was already set up."
 elif ! "$NGCP_INSTALLER" ; then
   echo "Not modifying /etc/network/interfaces as installing plain Debian."
 elif "$DHCP" ; then
@@ -1932,8 +1939,8 @@ vagrant_configuration() {
   fi
 }
 
-if "$RETRIEVE_MGMT_CONFIG" ; then
-  echo "Nothing to do, /etc/hosts was already set up."
+if "$CARRIER_EDITION" ; then
+  echo "Nothing to do on Carrier, /etc/hosts was already set up."
 else
   echo "Generating /etc/hosts"
   generate_etc_hosts
