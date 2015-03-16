@@ -32,6 +32,9 @@ DEFAULT_IP1=192.168.255.251
 DEFAULT_IP2=192.168.255.252
 DEFAULT_INTERNAL_NETMASK=255.255.255.248
 DEFAULT_MCASTADDR=226.94.1.1
+DEFAULT_EXT_IP1=192.168.52.114
+DEFAULT_EXT_NETMASK=255.255.255.0
+DEFAULT_EXT_SHARED_IP1=192.168.52.116
 TARGET=/mnt
 PRO_EDITION=false
 CE_EDITION=false
@@ -66,6 +69,13 @@ DPL_MYSQL_REPLICATION=true
 GRML_PXE_IMAGES_PATH="/lib/live/mount/medium"
 PXE_IMAGES_PATH="/tmp/grml_pxe"
 FILL_APPROX_CACHE=false
+VLAN_BOOT_INT=2
+VLAN_SSH_EXT=300
+VLAN_WEB_EXT=1718
+VLAN_SIP_EXT=1719
+VLAN_SIP_INT=1720
+VLAN_HA_INT=1721
+VLAN_RTP_EXT=1722
 
 # if TARGET_DISK environment variable is set accept it
 if [ -n "$TARGET_DISK" ] ; then
@@ -471,6 +481,10 @@ if checkBootParam ngcpnetmask ; then
   INTERNAL_NETMASK=$(getBootParam ngcpnetmask)
 fi
 
+if checkBootParam ngcpextnetmask ; then
+  EXTERNAL_NETMASK=$(getBootParam ngcpextnetmask)
+fi
+
 if checkBootParam ngcpeaddr ; then
   EADDR=$(getBootParam ngcpeaddr)
 fi
@@ -486,6 +500,9 @@ fi
 if checkBootParam ngcpcrole ; then
   CROLE=$(getBootParam ngcpcrole)
   CARRIER_EDITION=true
+  # The first Carrier node is booted via DHCP, while requires static HW config on reboot
+  [ -n "$EADDR" ] || EADDR=$DEFAULT_EXT_IP1
+  [ -n "$EADDR_SHARED" ] || EADDR_SHARED=$DEFAULT_EXT_SHARED_IP1
 fi
 
 if checkBootParam ngcpnolvm ; then
@@ -552,6 +569,34 @@ fi
 
 if checkBootParam ngcpfillcache ; then
   FILL_APPROX_CACHE=true
+fi
+
+if checkBootParam ngcpvlanbootint ; then
+  VLAN_BOOT_INT=$(getBootParam ngcpvlanbootint)
+fi
+
+if checkBootParam ngcpvlansshext ; then
+  VLAN_SSH_EXT=$(getBootParam ngcpvlansshext)
+fi
+
+if checkBootParam ngcpvlanwebext ; then
+  VLAN_WEB_EXT=$(getBootParam ngcpvlanwebext)
+fi
+
+if checkBootParam ngcpvlansipext ; then
+  VLAN_SIP_EXT=$(getBootParam ngcpvlansipext)
+fi
+
+if checkBootParam ngcpvlansipint ; then
+  VLAN_SIP_INT=$(getBootParam ngcpvlansipint)
+fi
+
+if checkBootParam ngcpvlanhaint ; then
+  VLAN_HA_INT=$(getBootParam ngcpvlanhaint)
+fi
+
+if checkBootParam ngcpvlanrtpext ; then
+  VLAN_RTP_EXT=$(getBootParam ngcpvlanrtpext)
 fi
 ## }}}
 
@@ -627,6 +672,7 @@ for param in $* ; do
     *ngcpip1=*) IP1=$(echo $param | sed 's/ngcpip1=//');;
     *ngcpip2=*) IP2=$(echo $param | sed 's/ngcpip2=//');;
     *ngcpnetmask=*) INTERNAL_NETMASK=$(echo $param | sed 's/ngcpnetmask=//');;
+    *ngcpextnetmask=*) EXTERNAL_NETMASK=$(echo $param | sed 's/ngcpextnetmask=//');;
     *ngcpmcast=*) MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
     *ngcpcrole=*) CARRIER_EDITION=true; CROLE=$(echo $param | sed 's/ngcpcrole=//');;
     *ngcpnw.dhcp*) DHCP=true;;
@@ -639,6 +685,13 @@ for param in $* ; do
     *lowperformance*) ADJUST_FOR_LOW_PERFORMANCE=true;;
     *enablevmservices*) ENABLE_VM_SERVICES=true;;
     *ngcpfillcache*) FILL_APPROX_CACHE=true;;
+    *ngcpvlanbootint*) VLAN_BOOT_INT=$(echo $param | sed 's/ngcpvlanbootint=//');;
+    *ngcpvlansshext*) VLAN_SSH_EXT=$(echo $param | sed 's/ngcpvlansshext=//');;
+    *ngcpvlanwebext*) VLAN_WEB_EXT=$(echo $param | sed 's/ngcpvlanwebext=//');;
+    *ngcpvlansipext*) VLAN_SIP_EXT=$(echo $param | sed 's/ngcpvlansipext=//');;
+    *ngcpvlansipint*) VLAN_SIP_INT=$(echo $param | sed 's/ngcpvlansipint=//');;
+    *ngcpvlanhaint*) VLAN_HA_INT=$(echo $param | sed 's/ngcpvlanhaint=//');;
+    *ngcpvlanrtpext*) VLAN_RTP_EXT=$(echo $param | sed 's/ngcpvlanrtpext=//');;
   esac
   shift
 done
@@ -740,8 +793,13 @@ if "$PRO_EDITION" ; then
     IP2=$(awk '/sp2/ { print $1 }' /tmp/hosts) || IP2=$DEFAULT_IP2
 
     if [ -z "$INTERNAL_NETMASK" ]; then
-      wget --timeout=30 -O "/tmp/interfaces" "${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
+      wget --timeout=30 -O "/tmp/interfaces" "http://${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
       INTERNAL_NETMASK=$(grep "$INTERNAL_DEV inet" -A2 /tmp/interfaces | awk '/netmask/ { print $2 }')
+    fi
+
+    if [ -z "$EXTERNAL_NETMASK" ]; then
+      wget --timeout=30 -O "/tmp/interfaces" "http://${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
+      EXTERNAL_NETMASK=$(grep "$EXTERNAL_DEV inet" -A2 /tmp/interfaces | awk '/netmask/ { print $2 }')
     fi
   fi
 
@@ -752,6 +810,7 @@ if "$PRO_EDITION" ; then
     sp2) INTERNAL_IP=$IP2 ;;
   esac
   [ -n "$INTERNAL_NETMASK" ] || INTERNAL_NETMASK=$DEFAULT_INTERNAL_NETMASK
+  [ -n "$EXTERNAL_NETMASK" ] || EXTERNAL_NETMASK=$DEFAULT_EXT_NETMASK
   [ -n "$MCASTADDR" ] || MCASTADDR=$DEFAULT_MCASTADDR
 
   logit "ha_int sp1: $IP1 sp2: $IP2 netmask: $INTERNAL_NETMASK"
@@ -1407,6 +1466,14 @@ CROLE="${CROLE}"
 PXE_IMAGES_PATH="${PXE_IMAGES_PATH}"
 MANAGEMENT_IP="${MANAGEMENT_IP}"
 FILL_APPROX_CACHE="${FILL_APPROX_CACHE}"
+EADDR_SHARED="${EADDR_SHARED}"
+VLAN_BOOT_INT="${VLAN_BOOT_INT}"
+VLAN_SSH_EXT="${VLAN_SSH_EXT}"
+VLAN_WEB_EXT="${VLAN_WEB_EXT}"
+VLAN_SIP_EXT="${VLAN_SIP_EXT}"
+VLAN_SIP_INT="${VLAN_SIP_INT}"
+VLAN_HA_INT="${VLAN_HA_INT}"
+VLAN_RTP_EXT="${VLAN_RTP_EXT}"
 EOF
   fi
 
@@ -1427,6 +1494,11 @@ GW="$(ip route show dev $DEFAULT_INSTALL_DEV | awk '/^default via/ {print $3}')"
 EXTERNAL_DEV="${EXTERNAL_DEV}"
 NETWORK_DEVICES="${NETWORK_DEVICES}"
 DEFAULT_INTERNAL_NETMASK="${DEFAULT_INTERNAL_NETMASK}"
+# I would like to delete ${DEFAULT_INTERNAL_NETMASK} and use ${INTERNAL_NETMASK} into installer,
+# Lets test we have INTERNAL_NETMASK==DEFAULT_INTERNAL_NETMASK for CE/PRO/Carrier (in installer)
+# and switch code to INTERNAL_NETMASK then.
+INTERNAL_NETMASK="${INTERNAL_NETMASK}"
+EXTERNAL_NETMASK="${EXTERNAL_NETMASK}"
 RETRIEVE_MGMT_CONFIG="${RETRIEVE_MGMT_CONFIG}"
 EOF
   fi
