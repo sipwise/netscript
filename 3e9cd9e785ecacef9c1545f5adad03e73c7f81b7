@@ -16,6 +16,24 @@
       "revId": "3e9cd9e785ecacef9c1545f5adad03e73c7f81b7",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a2585a7_f0c38836",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 1510,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-03-16T16:22:26Z",
+      "side": 1,
+      "message": "It is not necessary, I am going to clean this after mr3.8 anyway... to big comment to be missed :-)\n\nI just need to merge installer, test everywhere and clean it.",
+      "parentUuid": "5a2585a7_900a04d1",
+      "revId": "3e9cd9e785ecacef9c1545f5adad03e73c7f81b7",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
