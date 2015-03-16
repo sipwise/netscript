@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a2585a7_900a04d1",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 1510,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-03-16T15:14:19Z",
+      "side": 1,
+      "message": "Move that comment to the ticket or so? :)",
+      "revId": "3e9cd9e785ecacef9c1545f5adad03e73c7f81b7",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
