@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "5a2585a7_1023b406",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 821,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-03-16T17:12:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5a2585a7_50ec9cc7",
+      "revId": "3e9cd9e785ecacef9c1545f5adad03e73c7f81b7",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a2585a7_900a04d1",
         "filename": "deployment.sh",
         "patchSetId": 3
