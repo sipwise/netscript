@@ -1,3 +1,43 @@
+ngcp-netscript (3.8.1.0+0~mr3.8.1.0) unstable; urgency=low
+
+  [ Alexander Lutay ]
+  * [b4bb192] MT#9695 Add boot options ngcpnomysqlrepl for PRO reinstall
+  * [d65a545] MT#11263 Remove adjust_for_low_performance compatibility code
+  * [21bf493] MT#11263 Remove enable_vm_services compatibility code
+  * [772c0ea] MT#11263 Small restyling for better code readability (ngcp-installer-cmdline.log)
+  * [d1321a1] MT#11263 Remove compatibility code for ngcp-mediaproxy-ng
+  * [11458cf] MT#11263 Remove compatibility code (function adjust_hb_device)
+  * [094a34d] MT#11263 Introduce CARRIER_EDITION to simplify carrier detection in code
+  * [cd161f7] MT#11263 Fixed definition of CARRIER_EDITION variable
+  * [3b73ba8] MT#11263 Small layout changes for logo header
+  * [8ea34f8] MT#11263 Remove boot option ngcpsystemd (replaced by Jessie VMs)
+  * [68673df] MT#10093 Bypass ngcp-installer PXE specific resources for Carrier 3.x
+  * [b54a156] MT#10093 Fix PXE_IMAGES_PATH handling (create folder + read-only)
+  * [daf8a3c] MT#11263 Remove old code 'dkms install ngcp-rtpengine'
+  * [cbdb868] MT#11263 Remove old code: boot option 'ngcpmaster'
+  * [e75b014] MT#11263 Switch hardcoded list of service to system-tools/ngcp.inc
+  * [f919236] MT#11263 Move db/cfg upload to separate script ngcp-dumps-upload-to-sipwise
+  * [bfd912d] MT#11263 Typo fix for previous commit
+  * [3935632] MT#11263 Start/stop glusterfs-server manually for manipulations with network.yml
+  * [710440b] MT#11493 Updated IBM chassis slot detection
+  * [f08477d] MT#11455 Use install_sipwise_key for grml_debootstrap_upgrade
+  * [43c9f15] MT#11455 Clean up keyring usage flow
+  * [bbb0367] MT#11947 Do NOT force PRO_EDITION if blade chassis detected
+  * [e51ca3f] MT#11947 Re-download sipwise.gpg if file is corrupted
+  * [9112067] MT#9223 Commit /etc/* changes using etckeeper for Vagrant/VirtualBox
+  * [a0c272a] MT#9249 Move network.yml commands from deployment.sh to installer.git
+  * [fbfcb7f] MT#9249 Add boot option ngcpfillcache & stop changing hosts/interfaces on Carrier
+  * [354bd2c] MT#9249 Add more defaults and boot options for network.yml on Carrier
+
+  [ Michael Prokop ]
+  * [cfd2239] MT#11393 Install vlan and related network tools on all systems
+  * [05c83c8] MT#7335 Use our own Debian/jessie mirror
+  * [f40a15b] MT#7335 Disable security mirror when installing jessie
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Wed, 18 Mar 2015 14:05:53 +0100
+
 ngcp-netscript (3.8.0.0+0~mr3.8.0.0) unstable; urgency=medium
 
   * Initial release
