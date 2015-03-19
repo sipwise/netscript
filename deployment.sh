@@ -1350,17 +1350,6 @@ if "$RETRIEVE_MGMT_CONFIG" && "$RESTART_NETWORK" ; then
   fi # toram
 fi
 
-SIPWISE_HOME="/var/sipwise"
-adduser_sipwise() {
-  if "$NGCP_INSTALLER" ; then
-    adduser_options="--disabled-password"	# NGCP
-  else
-    adduser_options="--disabled-login"		# Debian plain
-  fi
-
-  chroot $TARGET adduser sipwise --gecos "Sipwise" --home ${SIPWISE_HOME} --shell /bin/bash $adduser_options
-}
-
 get_installer_path() {
   if [ -z "$SP_VERSION" ] && ! $TRUNK_VERSION ; then
     INSTALLER=ngcp-installer-latest.deb
@@ -1534,9 +1523,6 @@ EOF
 }
 
 if "$NGCP_INSTALLER" ; then
-  # add sipwise user
-  adduser_sipwise
-
   # set INSTALLER_PATH and INSTALLER depending on release/version
   get_installer_path
 
@@ -1936,30 +1922,21 @@ vagrant_configuration() {
     git clone git://git.mgm.sipwise.com/vmbuilder "${ngcp_vmbuilder}"
   fi
 
-  echo "Adjusting sudo configuration"
-  mkdir -p "${TARGET}/etc/sudoers.d"
-  echo "sipwise ALL=NOPASSWD: ALL" > "${TARGET}/etc/sudoers.d/vagrant"
-  chmod 0440 "${TARGET}/etc/sudoers.d/vagrant"
+  if "$NGCP_INSTALLER" ; then
+    SIPWISE_HOME="/var/sipwise"
 
-  if chroot $TARGET getent passwd | grep '^sipwise' ; then
-    echo "User sipwise exists already, nothing to do"
-  else
-    echo "Adding user sipwise"
-    adduser_sipwise
+    # TODO: move PATH adjustment to ngcp-installer (ngcpcfg should have a template here)
+    if ! grep -q '^# Added for Vagrant' "${TARGET}/${SIPWISE_HOME}/.profile" 2>/dev/null ; then
+      echo "Adjusting PATH configuration for user Sipwise"
+      echo "# Added for Vagrant" >> "${TARGET}/${SIPWISE_HOME}/.profile"
+      echo "PATH=\$PATH:/sbin:/usr/sbin" >> "${TARGET}/${SIPWISE_HOME}/.profile"
+    fi
+
+    echo "Adjusting ssh configuration for user sipwise (add Vagrant SSH key)"
+    mkdir -p "${TARGET}/${SIPWISE_HOME}/.ssh/"
+    cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/${SIPWISE_HOME}/.ssh/authorized_keys"
+    chroot "${TARGET}" chown sipwise:sipwise ${SIPWISE_HOME}/.ssh ${SIPWISE_HOME}/.ssh/authorized_keys
   fi
-
-  if grep -q '^# Added for Vagrant' "${TARGET}/${SIPWISE_HOME}/.profile" 2>/dev/null ; then
-    echo "PATH configuration for user Sipwise is already adjusted"
-  else
-    echo "Adjusting PATH configuration for user Sipwise"
-    echo "# Added for Vagrant" >> "${TARGET}/${SIPWISE_HOME}/.profile"
-    echo "PATH=\$PATH:/sbin:/usr/sbin" >> "${TARGET}/${SIPWISE_HOME}/.profile"
-  fi
-
-  echo "Adjusting ssh configuration for user sipwise"
-  mkdir -p "${TARGET}/${SIPWISE_HOME}/.ssh/"
-  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/${SIPWISE_HOME}/.ssh/authorized_keys"
-  chroot "${TARGET}" chown sipwise:sipwise ${SIPWISE_HOME}/.ssh ${SIPWISE_HOME}/.ssh/authorized_keys
 
   echo "Adjusting ssh configuration for user root"
   mkdir -p "${TARGET}/root/.ssh/"
@@ -1967,9 +1944,7 @@ vagrant_configuration() {
 
   # see https://github.com/mitchellh/vagrant/issues/1673
   # and https://bugs.launchpad.net/ubuntu/+source/xen-3.1/+bug/1167281
-  if grep -q 'adjusted for Vagrant' "${TARGET}/root/.profile" ; then
-    echo "Workaround for annoying bug 'stdin: is not a tty' Vagrant message seems to be present already"
-  else
+  if ! grep -q 'adjusted for Vagrant' "${TARGET}/root/.profile" ; then
     echo "Adding workaround for annoying bug 'stdin: is not a tty' Vagrant message"
     sed -ri -e "s/mesg\s+n/# adjusted for Vagrant\ntty -s \&\& mesg n/" "${TARGET}/root/.profile"
   fi
