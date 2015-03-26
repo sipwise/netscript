@@ -595,6 +595,10 @@ fi
 if checkBootParam ngcpvlanrtpext ; then
   VLAN_RTP_EXT=$(getBootParam ngcpvlanrtpext)
 fi
+
+if checkBootParam ngcpppa ; then
+  NGCP_PPA=$(getBootParam ngcpppa)
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -624,6 +628,7 @@ Control installation parameters:
   debianrepo=...   - hostname of Debian APT repository mirror
   sipwiserepo=...  - hostname of Sipwise APT repository mirror
   ngcpnomysqlrepl  - skip MySQL sp1<->sp2 replication configuration/check
+  ngcpppa=...      - use NGCP PPA Debian repository
 
 Control target system:
 
@@ -689,6 +694,7 @@ for param in $* ; do
     *ngcpvlansipint*) VLAN_SIP_INT=$(echo $param | sed 's/ngcpvlansipint=//');;
     *ngcpvlanhaint*) VLAN_HA_INT=$(echo $param | sed 's/ngcpvlanhaint=//');;
     *ngcpvlanrtpext*) VLAN_RTP_EXT=$(echo $param | sed 's/ngcpvlanrtpext=//');;
+    *ngcpppa*) NGCP_PPA=$(echo $param | sed 's/ngcpppa=//');;
   esac
   shift
 done
@@ -1384,6 +1390,11 @@ get_installer_path() {
     INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/autobuild/pool/main/n/ngcp-installer/"
   fi
 
+  if [ -n "$NGCP_PPA" ] ; then
+    local repos_base_path="http://${SIPWISE_REPO_HOST}/autobuild/dists/${NGCP_PPA}/main/binary-amd64/"
+    INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/autobuild/pool/main/n/ngcp-installer/"
+  fi
+
   wget --timeout=30 -O Packages.gz "${repos_base_path}Packages.gz"
   # sed: display paragraphs matching the "Package: ..." string, then grab string "^Version: " and display the actual version via awk
   # sort -u to avoid duplicates in repositories shipping the ngcp-installer-pro AND ngcp-installer-pro-ha-v3 debs
@@ -1517,6 +1528,7 @@ ENABLE_VM_SERVICES="${ENABLE_VM_SERVICES}"
 SIPWISE_REPO_HOST="${SIPWISE_REPO_HOST}"
 SIPWISE_REPO_TRANSPORT="${SIPWISE_REPO_TRANSPORT}"
 NAMESERVER="$(awk '/^nameserver/ {print $2}' /etc/resolv.conf)"
+NGCP_PPA="${NGCP_PPA}"
 EOF
 
   cat "${TARGET}/etc/ngcp-installer/config_deploy.inc" > /tmp/ngcp-installer-cmdline.log
