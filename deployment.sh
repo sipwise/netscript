@@ -598,6 +598,11 @@ fi
 
 if checkBootParam ngcpppa ; then
   NGCP_PPA=$(getBootParam ngcpppa)
+  NGCP_PPA_INSTALLER="${NGCP_PPA_INSTALLER:-${NGCP_PPA}}"
+fi
+
+if checkBootParam ngcpppainstaller ; then
+  NGCP_PPA_INSTALLER=$(getBootParam ngcpppainstaller)
 fi
 ## }}}
 
@@ -1390,8 +1395,8 @@ get_installer_path() {
     INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/autobuild/pool/main/n/ngcp-installer/"
   fi
 
-  if [ -n "$NGCP_PPA" ] ; then
-    local repos_base_path="http://${SIPWISE_REPO_HOST}/autobuild/dists/${NGCP_PPA}/main/binary-amd64/"
+  if [ -n "$NGCP_PPA_INSTALLER" ] ; then
+    local repos_base_path="http://${SIPWISE_REPO_HOST}/autobuild/dists/${NGCP_PPA_INSTALLER}/main/binary-amd64/"
     INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/autobuild/pool/main/n/ngcp-installer/"
   fi
 
