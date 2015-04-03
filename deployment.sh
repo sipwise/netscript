@@ -924,6 +924,12 @@ if "$LOGO" ; then
   RAM_INFO=$(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)
   DATE_INFO=$(date)
   INSTALLER_TYPE="Install CE: $CE_EDITION PRO: $PRO_EDITION [$ROLE] Carrier: $CARRIER_EDITION [$CROLE]"
+  if [ -n "$NGCP_PPA" ] ; then
+    PPA_INFO="| PPA: ${NGCP_PPA} "
+  fi
+  if [ -n "$NGCP_PPA_INSTALLER" ] ; then
+    PPA_INFO+="| Installer PPA: ${NGCP_PPA_INSTALLER}"
+  fi
   # color
   echo -ne "\ec\e[1;32m"
   clear
@@ -935,7 +941,7 @@ if "$LOGO" ; then
   echo "$CPU_INFO CPU(s) | ${RAM_INFO}kB RAM | $CHASSIS"
   echo ""
   echo "Install ngcp: $NGCP_INSTALLER | $INSTALLER_TYPE"
-  echo "Installing $SP_VERSION_STR platform | Debian: $DEBIAN_RELEASE"
+  echo "Installing $SP_VERSION_STR platform | Debian: $DEBIAN_RELEASE $PPA_INFO"
   echo "Install IP: $INSTALL_IP | Started deployment at $DATE_INFO"
   # number of lines
   echo -ne "\e[10;0r"
