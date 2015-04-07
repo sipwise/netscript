@@ -598,7 +598,6 @@ fi
 
 if checkBootParam ngcpppa ; then
   NGCP_PPA=$(getBootParam ngcpppa)
-  NGCP_PPA_INSTALLER="${NGCP_PPA_INSTALLER:-${NGCP_PPA}}"
 fi
 
 if checkBootParam ngcpppainstaller ; then
@@ -699,6 +698,7 @@ for param in $* ; do
     *ngcpvlansipint*) VLAN_SIP_INT=$(echo $param | sed 's/ngcpvlansipint=//');;
     *ngcpvlanhaint*) VLAN_HA_INT=$(echo $param | sed 's/ngcpvlanhaint=//');;
     *ngcpvlanrtpext*) VLAN_RTP_EXT=$(echo $param | sed 's/ngcpvlanrtpext=//');;
+    *ngcpppainstaller*) NGCP_PPA_INSTALLER=$(echo $param | sed 's/ngcpppainstaller=//');;
     *ngcpppa*) NGCP_PPA=$(echo $param | sed 's/ngcpppa=//');;
   esac
   shift
