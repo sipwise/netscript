@@ -152,10 +152,21 @@ loadNfsIpArray() {
   [ "$n" == "7" ] && return 0 || return 1
 }
 
+debootstrap_sipwise_key() {
+  mkdir -p /etc/debootstrap/pre-scripts/
+  cat > /etc/debootstrap/pre-scripts/install-sipwise-key.sh << EOF
+#!/bin/bash
+# installed via deployment.sh
+cp /etc/apt/trusted.gpg.d/sipwise.gpg "\${MNTPOINT}"/etc/apt/trusted.gpg.d/
+EOF
+  chmod 775 /etc/debootstrap/pre-scripts/install-sipwise-key.sh
+}
+
 install_sipwise_key() {
   if [ -f "/etc/apt/trusted.gpg.d/sipwise.gpg" ]; then
     md5sum_sipwise_key=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
-    echo "Sipwise keyring already installed (MD5: [${md5sum_sipwise_key}])"
+    echo "Sipwise keyring already installed (MD5: [${md5sum_sipwise_key}]), debootstrap sipwise key"
+    debootstrap_sipwise_key
     return
   else
     echo "Sipwise keyring not found, downloading."
@@ -183,13 +194,7 @@ install_sipwise_key() {
     die "Error validating sipwise keyring for apt usage, aborting installation."
   fi
 
-  mkdir -p /etc/debootstrap/pre-scripts/
-  cat > /etc/debootstrap/pre-scripts/install-sipwise-key.sh << EOF
-#!/bin/bash
-# installed via deployment.sh
-cp /etc/apt/trusted.gpg.d/sipwise.gpg "\${MNTPOINT}"/etc/apt/trusted.gpg.d/
-EOF
-  chmod 775 /etc/debootstrap/pre-scripts/install-sipwise-key.sh
+  debootstrap_sipwise_key
 }
 
 # see MT#6253
