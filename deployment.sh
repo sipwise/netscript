@@ -144,7 +144,7 @@ install_sipwise_key() {
     wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://${SIPWISE_REPO_HOST}/spce/sipwise.gpg
   fi
 
-  md5sum_sipwise_key_expected=32a4907a7d7aabe325395ca07c531234
+  md5sum_sipwise_key_expected=bcd09c9ad563b2d380152a97d5a0ea83
   md5sum_sipwise_key_calculated=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
 
   if [ "$md5sum_sipwise_key_calculated" != "$md5sum_sipwise_key_expected" ] ; then
