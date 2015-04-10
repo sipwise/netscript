@@ -1,3 +1,12 @@
+ngcp-netscript (3.6.2.3+0~mr3.6.2.3) unstable; urgency=low
+
+  [ Alexander Lutay ]
+  * [64e8679] MT#8883 Update md5sum of md5sum_sipwise_key_expected
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Fri, 10 Apr 2015 13:22:39 +0200
+
 ngcp-netscript (3.6.2.2+0~mr3.6.2.2) unstable; urgency=low
 
   [ Victor Seva ]
