@@ -1225,7 +1225,20 @@ fi
 
 echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
 
-
+# GRUB versions until Debian/wheezy generate an invalid device.map
+# entry if /dev/disk/by-id/lvm-pv-uuid-* is present, resulting in
+# a GRUB installation failing with "error: no such disk" during boot.
+# This is only a problem if we're using a virtio disk and deploying
+# from a system running lvm2 v2.02.106 or newer.
+if [ "$DISK" = "vda" ] ; then
+  case "$DEBIAN_RELEASE" in
+    lenny|squeeze|wheezy)
+      echo  "Applying /dev/disk/by-id/lvm-pv-uuid-* workaround for virtio disk and Debian release <= wheezy"
+      logit "Applying /dev/disk/by-id/lvm-pv-uuid-* workaround for virtio disk and Debian release <= wheezy"
+      rm -f /dev/disk/by-id/lvm-pv-uuid-*
+      ;;
+  esac
+fi
 
 # install Debian
 echo y | grml-debootstrap \
