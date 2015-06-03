@@ -1,3 +1,16 @@
+ngcp-netscript (3.8.3.0+0~mr3.8.3.0) unstable; urgency=low
+
+  [ Alexander Lutay ]
+  * [38810a7] MT#8883 Update md5sum of md5sum_sipwise_key_expected
+  * [d2183da] MT#8883 Fix 43c9f159: CE Install CD missed pre-scripts/install-sipwise-key.sh
+
+  [ Michael Prokop ]
+  * [a25fa24] MT#12537 Workaround for GRUB installations to virtio disks with lvm >=v2.02.106
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Wed, 03 Jun 2015 16:35:02 +0200
+
 ngcp-netscript (3.8.2.0+0~mr3.8.2.0) unstable; urgency=low
 
   * New release.
