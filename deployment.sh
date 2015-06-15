@@ -1293,9 +1293,12 @@ cat >> "${TARGET}/etc/fstab" << EOF
 $SWAP_PARTITION                      none           swap       sw,pri=0  0  0
 EOF
 
-# removals: packages which debootstrap installs but d-i doesn't
-chroot $TARGET apt-get --purge -y remove \
-ca-certificates openssl tcpd xauth
+case "$DEBIAN_RELEASE" in
+  lenny|squeeze|wheezy)
+    echo "Removing packages which debootstrap installs but d-i doesn't"
+    chroot $TARGET apt-get --purge -y remove ca-certificates openssl tcpd xauth
+    ;;
+esac
 
 if "$PRO_EDITION" ; then
   echo "Pro edition: keeping firmware* packages."
@@ -2077,8 +2080,6 @@ EOF
 
   chroot $TARGET apt-get -y install resolvconf libnss-myhostname
 
-  chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
-
   cat > ${TARGET}/etc/puppet/puppet.conf << EOF
 # Deployed via deployment.sh
 [main]
@@ -2087,7 +2088,6 @@ vardir=/var/lib/puppet
 ssldir=/var/lib/puppet/ssl
 rundir=/var/run/puppet
 factpath=$vardir/lib/facter
-templatedir=$confdir/templates
 prerun_command=/etc/puppet/etckeeper-commit-pre
 postrun_command=/etc/puppet/etckeeper-commit-post
 server=puppet.mgm.sipwise.com
@@ -2100,7 +2100,16 @@ ssl_client_verify_header=SSL_CLIENT_VERIFY
 environment=$PUPPET
 EOF
 
-  grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || true
+  case "$DEBIAN_RELEASE" in
+    squeeze|wheezy)
+      chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
+      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || true
+      ;;
+    jessie|stretch)
+      grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log || true
+      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || true
+      ;;
+  esac
 fi
 
 # make sure we don't leave any running processes
