@@ -26,6 +26,9 @@ fi
 export LC_ALL=C
 export LANG=C
 
+# avoid SHELL being set but not available, causing needrestart failure, see #788819
+unset SHELL
+
 # defaults
 DEFAULT_INSTALL_DEV=eth0
 DEFAULT_IP1=192.168.255.251
