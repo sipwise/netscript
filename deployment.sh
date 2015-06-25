@@ -1168,6 +1168,9 @@ bridge-utils
 ifenslave-2.6
 vlan
 
+# MT#13637 support https in sources.list
+apt-transport-https
+
 # packages d-i installs but we ignore/skip:
 #discover
 #gettext-base
