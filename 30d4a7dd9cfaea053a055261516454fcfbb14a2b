@@ -16,6 +16,24 @@
       "revId": "30d4a7dd9cfaea053a055261516454fcfbb14a2b",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa5d592f_337c9a72",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-06-25T12:35:43Z",
+      "side": 1,
+      "message": "wanted to do this in a separate step, but let\u0027s do it in one step then",
+      "parentUuid": "fa5d592f_90021c0a",
+      "revId": "30d4a7dd9cfaea053a055261516454fcfbb14a2b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
