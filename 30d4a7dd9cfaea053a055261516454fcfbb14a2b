@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa5d592f_90021c0a",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-06-25T11:45:31Z",
+      "side": 1,
+      "message": "you need to set https here too.",
+      "revId": "30d4a7dd9cfaea053a055261516454fcfbb14a2b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
