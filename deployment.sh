@@ -67,7 +67,7 @@ ENABLE_VM_SERVICES=false
 FILESYSTEM="ext4"
 DEBIAN_REPO_HOST="debian.sipwise.com"
 SIPWISE_REPO_HOST="deb.sipwise.com"
-SIPWISE_REPO_TRANSPORT="http"
+SIPWISE_REPO_TRANSPORT="https"
 DPL_MYSQL_REPLICATION=true
 GRML_PXE_IMAGES_PATH="/lib/live/mount/medium"
 PXE_IMAGES_PATH="/tmp/grml_pxe"
@@ -178,9 +178,9 @@ install_sipwise_key() {
   for x in 1 2 3; do
 
     if "$PRO_EDITION" ; then
-      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://${SIPWISE_REPO_HOST}/sppro/sipwise.gpg
+      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/sppro/sipwise.gpg
     else
-      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://${SIPWISE_REPO_HOST}/spce/sipwise.gpg
+      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/spce/sipwise.gpg
     fi
 
     md5sum_sipwise_key_expected=bcd09c9ad563b2d380152a97d5a0ea83
@@ -229,7 +229,7 @@ fai_upgrade() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
   local debsrcfile=$(mktemp)
-  echo "deb http://${SIPWISE_REPO_HOST}/wheezy-backports wheezy-backports main" >> "$debsrcfile"
+  echo "deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/wheezy-backports wheezy-backports main" >> "$debsrcfile"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
     -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
@@ -251,7 +251,7 @@ grml_debootstrap_upgrade() {
     local TMPDIR=$(mktemp -d)
     mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
     local debsrcfile=$(mktemp)
-    echo "deb http://${SIPWISE_REPO_HOST}/grml.org grml-testing main" >> "$debsrcfile"
+    echo "deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/grml.org grml-testing main" >> "$debsrcfile"
 
     DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
       -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
@@ -271,7 +271,7 @@ install_vbox_package() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb http://${DEBIAN_REPO_HOST}/debian/ wheezy-backports non-free" > \
+  echo "deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ wheezy-backports non-free" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -294,7 +294,7 @@ ensure_augtool_present() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb http://${DEBIAN_REPO_HOST}/debian/ wheezy main" > \
+  echo "deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ wheezy main" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -445,7 +445,7 @@ if checkBootParam "arch" ; then
 fi
 
 # test unfinished releases against
-# "http://deb.sipwise.com/autobuild/ release-$AUTOBUILD_RELEASE"
+# "https://deb.sipwise.com/autobuild/ release-$AUTOBUILD_RELEASE"
 if checkBootParam ngcpautobuildrelease ; then
   AUTOBUILD_RELEASE=$(getBootParam ngcpautobuildrelease)
   export SKIP_SOURCES_LIST=true # make sure it's available within grml-chroot subshell
@@ -1168,6 +1168,9 @@ bridge-utils
 ifenslave-2.6
 vlan
 
+# MT#13637 support https in sources.list
+apt-transport-https
+
 # packages d-i installs but we ignore/skip:
 #discover
 #gettext-base
@@ -1222,7 +1225,7 @@ fi
 # NOTE: we use the debian.sipwise.com CNAME by intention here
 # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
 # over official Debian
-MIRROR="http://${DEBIAN_REPO_HOST}/debian/"
+MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/"
 KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
 
 set_deploy_status "debootstrap"
@@ -1239,7 +1242,7 @@ if [ "$DEBIAN_RELEASE" = "jessie" ] ; then
   echo  "Warning: not enabling security repository for $DEBIAN_RELEASE"
   logit "Warning: not enabling security repository for $DEBIAN_RELEASE"
 else
-  SEC_MIRROR="http://${DEBIAN_REPO_HOST}/debian-security/"
+  SEC_MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian-security/"
   echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
 fi
 
@@ -1396,9 +1399,9 @@ get_installer_path() {
     INSTALLER=ngcp-installer-latest.deb
 
     if "$PRO_EDITION" ; then
-      INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/sppro/"
+      INSTALLER_PATH="${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/sppro/"
     else
-      INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/spce/"
+      INSTALLER_PATH="${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/spce/"
     fi
 
     return # we don't want to run any further code from this function
@@ -1411,23 +1414,23 @@ get_installer_path() {
     else
       local installer_package='ngcp-installer-pro'
     fi
-    local repos_base_path="http://${SIPWISE_REPO_HOST}/sppro/${SP_VERSION}/dists/${DEBIAN_RELEASE}/main/binary-amd64/"
-    INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/sppro/${SP_VERSION}/pool/main/n/ngcp-installer/"
+    local repos_base_path="${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/sppro/${SP_VERSION}/dists/${DEBIAN_RELEASE}/main/binary-amd64/"
+    INSTALLER_PATH="${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/sppro/${SP_VERSION}/pool/main/n/ngcp-installer/"
   else
     local installer_package='ngcp-installer-ce'
-    local repos_base_path="http://${SIPWISE_REPO_HOST}/spce/${SP_VERSION}/dists/${DEBIAN_RELEASE}/main/binary-amd64/"
-    INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/spce/${SP_VERSION}/pool/main/n/ngcp-installer/"
+    local repos_base_path="${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/spce/${SP_VERSION}/dists/${DEBIAN_RELEASE}/main/binary-amd64/"
+    INSTALLER_PATH="${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/spce/${SP_VERSION}/pool/main/n/ngcp-installer/"
   fi
 
   # use a separate repos for trunk releases
   if $TRUNK_VERSION ; then
-    local repos_base_path="http://${SIPWISE_REPO_HOST}/autobuild/dists/release-trunk-${DEBIAN_RELEASE}/main/binary-amd64/"
-    INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/autobuild/pool/main/n/ngcp-installer/"
+    local repos_base_path="${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/autobuild/dists/release-trunk-${DEBIAN_RELEASE}/main/binary-amd64/"
+    INSTALLER_PATH="${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/autobuild/pool/main/n/ngcp-installer/"
   fi
 
   if [ -n "$NGCP_PPA_INSTALLER" ] ; then
-    local repos_base_path="http://${SIPWISE_REPO_HOST}/autobuild/dists/${NGCP_PPA_INSTALLER}/main/binary-amd64/"
-    INSTALLER_PATH="http://${SIPWISE_REPO_HOST}/autobuild/pool/main/n/ngcp-installer/"
+    local repos_base_path="${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/autobuild/dists/${NGCP_PPA_INSTALLER}/main/binary-amd64/"
+    INSTALLER_PATH="${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/autobuild/pool/main/n/ngcp-installer/"
   fi
 
   wget --timeout=30 -O Packages.gz "${repos_base_path}Packages.gz"
@@ -1479,7 +1482,7 @@ EOF
 ## custom sources.list, deployed via deployment.sh
 
 # Sipwise repositories
-deb [arch=amd64] http://${SIPWISE_REPO_HOST}/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
+deb [arch=amd64] ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/autobuild/release/release-${AUTOBUILD_RELEASE} release-${AUTOBUILD_RELEASE} main
 EOF
   fi
 }
