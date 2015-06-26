@@ -200,6 +200,31 @@ install_sipwise_key() {
   debootstrap_sipwise_key
 }
 
+install_apt_transport_https () {
+  echo "Installing apt-transport-https"
+
+  if dpkg -s apt-transport-https 2>&1 | grep -qE "^Installed" ; then
+    echo "apt-transport-https is already installed, nothing to do about it."
+    return 0
+  fi
+
+  # use temporary apt database for speed reasons
+  local TMPDIR=$(mktemp -d)
+  mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
+    "${TMPDIR}/cachedir/archives/partial"
+  echo "deb http://${DEBIAN_REPO_HOST}/debian/ wheezy main contrib non-free" > \
+    "${TMPDIR}/etc/sources.list"
+
+  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+    -o dir::state="${TMPDIR}/statedir" -o dir::etc="${TMPDIR}/etc" \
+    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" update
+
+  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+    -o dir::etc="${TMPDIR}/etc" -o dir::state="${TMPDIR}/statedir" \
+    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" \
+    -y --no-install-recommends install apt-transport-https
+}
+
 # see MT#6253
 fai_upgrade() {
   upgrade=false # upgrade only if needed
@@ -725,6 +750,9 @@ fi
 
 set_deploy_status "installing_sipwise_keys"
 install_sipwise_key
+
+set_deploy_status "installing_apt_transport_https"
+install_apt_transport_https
 
 set_deploy_status "grml_debootstrap_upgrade"
 grml_debootstrap_upgrade
