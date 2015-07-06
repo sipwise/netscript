@@ -1203,6 +1203,17 @@ fi
 sync
 mount "$ROOT_FS" "$TARGET"
 
+# MT#13711
+case "$DEBIAN_RELEASE" in
+  lenny|squeeze)
+    echo  "Setting up /etc/apt/apt.conf.d/42_ngcp_aptproxy to avoid random 'Hash Sum mismatch' failures."
+    logit "Setting up /etc/apt/apt.conf.d/42_ngcp_aptproxy to avoid random 'Hash Sum mismatch' failures."
+    echo "// NGCP_MANAGED_FILE - do not remove this line if it should be automatically handled" > "${TARGET}/etc/apt/apt.conf.d/42_ngcp_aptproxy"
+    echo "// Installed via 'deployment.sh' on $(date)" >> "${TARGET}/etc/apt/apt.conf.d/42_ngcp_aptproxy"
+    echo 'Acquire::http::Pipeline-Depth "0";' >> "${TARGET}/etc/apt/apt.conf.d/42_ngcp_aptproxy"
+    ;;
+esac
+
 # MT#7805
 if "$NGCP_INSTALLER" ; then
   cat << EOT | augtool --root="$TARGET"
