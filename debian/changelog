@@ -1,3 +1,26 @@
+ngcp-netscript (4.0.0.0+0~mr4.0.0.0) unstable; urgency=medium
+
+  [ Alexander Lutay ]
+  * [d689c13] MT#6557 Move sipwise user creation to ngcp-installer
+  * [5d64bd1] MT#12195 Add support for NGCP PPA repos to deployment.sh (testing installer)
+  * [87927cf] MT#10697 Add ngcpppainstaller boot option
+  * [419689d] MT#10697 Add PPA debug details to 'green hat'
+  * [64dc77b] MT#8883 Update md5sum of md5sum_sipwise_key_expected
+  * [e5664d5] MT#8883 Fix 43c9f159: CE Install CD missed pre-scripts/install-sipwise-key.sh
+  * [364a434] MT#13637 Install apt-transport-https in GRML if not available (using http)
+
+  [ Victor Seva ]
+  * [2a9cf92] MT#10697 fix 87927cf1fcb45. Don't set ngcpppainstaller from ngcpppa
+
+  [ Michael Prokop ]
+  * [7340bf2] MT#12537 Workaround for GRUB installations to virtio disks with lvm >=v2.02.106
+  * [adcb72d] MT#12713 Support jessie deployments using puppet
+  * [4daf950] MT#12713 jessie support: do not fail under needrestart
+  * [81900e0] MT#13637 Install apt-transport-https, switch to HTTPS + provide sipwiserepotransport boot option
+  * [c938cea] MT#13711 Set up /etc/apt/apt.conf.d/42_ngcp_aptproxy on fresh lenny/squeeze installs
+
+ -- Alexander Lutay <alutay@sipwise.com>  Mon, 13 Jul 2015 11:46:46 +0200
+
 ngcp-netscript (3.9.0.0+0~mr4.0.0.0) unstable; urgency=low
 
   [ Alexander Lutay ]
