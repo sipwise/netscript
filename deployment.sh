@@ -2036,6 +2036,7 @@ vagrant_configuration() {
   mkdir -p "${TARGET}/root/.ssh/"
   cat "${ngcp_vmbuilder}/config/id_rsa_sipwise.pub" >> "${TARGET}/root/.ssh/sipwise_vagrant_key"
   chroot "${TARGET}" chmod 0600 /root/.ssh/sipwise_vagrant_key
+  sed -i 's|^[#\s]*\(AuthorizedKeysFile.*\)$|\1 %h/.ssh/sipwise_vagrant_key|g' "${TARGET}/etc/ssh/sshd_config"
 
   # see https://github.com/mitchellh/vagrant/issues/1673
   # and https://bugs.launchpad.net/ubuntu/+source/xen-3.1/+bug/1167281
