@@ -1258,6 +1258,7 @@ fi
 # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
 # over official Debian
 MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/"
+SEC_MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian-security/"
 KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
 
 set_deploy_status "debootstrap"
@@ -1267,18 +1268,9 @@ logit "Setting up /etc/debootstrap/etc/apt/sources.list"
 cat > /etc/debootstrap/etc/apt/sources.list << EOF
 # Set up via deployment.sh for grml-debootstrap usage
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
+deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
+deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 EOF
-
-# drop this once Debian/jessie has security support (AKA released as stable)
-if [ "$DEBIAN_RELEASE" = "jessie" ] ; then
-  echo  "Warning: not enabling security repository for $DEBIAN_RELEASE"
-  logit "Warning: not enabling security repository for $DEBIAN_RELEASE"
-else
-  SEC_MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian-security/"
-  echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
-fi
-
-echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
 
 # GRUB versions until Debian/wheezy generate an invalid device.map
 # entry if /dev/disk/by-id/lvm-pv-uuid-* is present, resulting in
@@ -1502,18 +1494,7 @@ EOF
 
 # Debian repositories
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
-EOF
-
-  # drop this once Debian/jessie has security support
-  if [ -n "$SEC_MIRROR" ] ; then
-    echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" \
-      >> $TARGET/etc/apt/sources.list.d/debian.list
-  else
-    echo  "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
-    logit "Warning: security mirror variable SEC_MIRROR is unset, not enabling security repository for $DEBIAN_RELEASE"
-  fi
-
-cat >> $TARGET/etc/apt/sources.list.d/debian.list << EOF
+deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
 deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 EOF
 
