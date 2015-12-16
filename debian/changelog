@@ -1,3 +1,16 @@
+ngcp-netscript (4.3.0.0+0~mr4.3.0.0) unstable; urgency=medium
+
+  [ Alexander Lutay ]
+  * [b557563] MT#16489 Switch Vagrant VMs from .ssh/authorized_keys to .ssh/sipwise_vagrant_key
+  * [35df7a5] MT#16489 Fix typo and default permissions for .ssh/sipwise_vagrant_key
+  * [034b6d3] MT#16489 Fix plain vagrant VMs (enable ssh key /root/.ssh/sipwise_vagrant_key)
+  * [828b767] MT#16489 Fix plain squeeze plain vagrant VM
+  * [da4b25d] MT#16683 Enable repository jessie-security for upcoming mr4.2
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Wed, 16 Dec 2015 09:20:37 +0100
+
 ngcp-netscript (4.2.0.0+0~mr4.2.0.0) unstable; urgency=medium
 
   * New release.
