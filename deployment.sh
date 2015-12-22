@@ -1195,9 +1195,8 @@ acpi acpid acpi-support-base
 # be able to login on the system, even if just installing plain Debian
 openssh-server
 
-# support bridge / bonding / vlan
+# support bridge / vlan
 bridge-utils
-ifenslave-2.6
 vlan
 
 # MT#13637 support https in sources.list
@@ -1210,6 +1209,22 @@ apt-transport-https
 #kbd
 #laptop-detect
 #os-prober
+EOF
+
+# ifenslave-2.6 in jessie+ is a transitional dummy package that will disappear.
+case "$DEBIAN_RELEASE" in
+lenny|squeeze|wheezy)
+  PKG_IFENSLAVE="ifenslave-2.6"
+  ;;
+*)
+  PKG_IFENSLAVE="ifenslave"
+  ;;
+esac
+echo  "Adding ${PKG_IFENSLAVE} package (because we're installing ${DEBIAN_RELEASE})"
+logit "Adding ${PKG_IFENSLAVE} package (because we're installing ${DEBIAN_RELEASE})"
+cat >> /etc/debootstrap/packages << EOF
+# support bonding
+${PKG_IFENSLAVE}
 EOF
 
 # MT#8813 The linux-headers-2.6-amd64 package doesn't exist in jessie and newer
