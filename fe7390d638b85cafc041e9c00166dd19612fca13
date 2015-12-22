@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a96c907_dd4f6e91",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1218,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-12-22T15:59:42Z",
+      "side": 1,
+      "message": "I\u0027m afraid this might not be enough, because we use our own Sipwise mirror also for the plain Debian installations and without the proper key(ring)/apt-key setup installation fails then. :-/\n\nWhat *might* be an option is fetching the .deb from https://deb.sipwise.com/spce/$({LATEST_LTS_OR_STABLE_RELEASE}/pool/main/n/ngcp-keyring/ and installing that then in the non-$NGCP_INSTALLER situation?",
+      "revId": "fe7390d638b85cafc041e9c00166dd19612fca13",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
