@@ -9,7 +9,8 @@ Homepage: http://sipwise.com/
 
 Package: ngcp-netscript
 Architecture: any
-Depends: ${misc:Depends},
-         ${shlibs:Depends}
+Depends:
+ ${misc:Depends},
+ ngcp-keyring,
 Description: NGCP deployment scripts
  scripts needed to install Sipwise NGCP system.
