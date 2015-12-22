@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a96c907_9d9ec655",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1136,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-12-22T15:34:42Z",
+      "side": 1,
+      "message": "I don\u0027t think we have access to the according repository providing ngcp-keyring all the time, this should be true for CE/PRO/Carrier installations, but at least for plain Debian that\u0027s not true.",
+      "revId": "2f407fa54dbf644d05578361d10a9b6964e0f0da",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
