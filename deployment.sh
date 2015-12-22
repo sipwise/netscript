@@ -155,49 +155,10 @@ loadNfsIpArray() {
   [ "$n" == "7" ] && return 0 || return 1
 }
 
-debootstrap_sipwise_key() {
-  mkdir -p /etc/debootstrap/pre-scripts/
-  cat > /etc/debootstrap/pre-scripts/install-sipwise-key.sh << EOF
-#!/bin/bash
-# installed via deployment.sh
-cp /etc/apt/trusted.gpg.d/sipwise.gpg "\${MNTPOINT}"/etc/apt/trusted.gpg.d/
-EOF
-  chmod 775 /etc/debootstrap/pre-scripts/install-sipwise-key.sh
-}
-
-install_sipwise_key() {
-  if [ -f "/etc/apt/trusted.gpg.d/sipwise.gpg" ]; then
-    md5sum_sipwise_key=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
-    echo "Sipwise keyring already installed (MD5: [${md5sum_sipwise_key}]), debootstrap sipwise key"
-    debootstrap_sipwise_key
-    return
-  else
-    echo "Sipwise keyring not found, downloading."
+check_sipwise_keyring() {
+  if ! [ -f "/usr/share/keyrings/sipwise-archive-keyring.gpg" ]; then
+    die "Sipwise keyring not found, aborting installation."
   fi
-
-  for x in 1 2 3; do
-
-    if "$PRO_EDITION" ; then
-      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/sppro/sipwise.gpg
-    else
-      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/spce/sipwise.gpg
-    fi
-
-    md5sum_sipwise_key_expected=bcd09c9ad563b2d380152a97d5a0ea83
-    md5sum_sipwise_key_calculated=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
-
-    if [ "$md5sum_sipwise_key_calculated" != "$md5sum_sipwise_key_expected" ] ; then
-      echo "Sipwise keyring has wrong checksum (expected: [$md5sum_sipwise_key_expected] - got: [$md5sum_sipwise_key_calculated]), retry $x"
-    else
-      break
-    fi
-  done
-
-  if [ "$md5sum_sipwise_key_calculated" != "$md5sum_sipwise_key_expected" ] ; then
-    die "Error validating sipwise keyring for apt usage, aborting installation."
-  fi
-
-  debootstrap_sipwise_key
 }
 
 install_apt_transport_https () {
@@ -748,8 +709,8 @@ if ! "$NGCP_INSTALLER" ; then
   unset ROLE
 fi
 
-set_deploy_status "installing_sipwise_keys"
-install_sipwise_key
+set_deploy_status "check_sipwise_keyring"
+check_sipwise_keyring
 
 set_deploy_status "installing_apt_transport_https"
 install_apt_transport_https
@@ -1171,6 +1132,9 @@ echo FSCK=no >>/etc/debootstrap/config
 
 # package selection
 cat > /etc/debootstrap/packages << EOF
+# ngcp archive keyring
+ngcp-keyring
+
 # addons: packages which d-i installs but debootstrap doesn't
 eject
 grub-pc
@@ -1259,7 +1223,7 @@ fi
 # over official Debian
 MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/"
 SEC_MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian-security/"
-KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
+KEYRING='/usr/share/keyrings/sipwise-archive-keyring.gpg'
 
 set_deploy_status "debootstrap"
 
