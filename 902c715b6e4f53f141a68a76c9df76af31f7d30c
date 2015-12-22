@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a96c907_bdb622db",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1216,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-12-22T15:36:05Z",
+      "side": 1,
+      "message": "IMO the indenting should match what we already use in that file, see e.g. line 1232",
+      "revId": "902c715b6e4f53f141a68a76c9df76af31f7d30c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
