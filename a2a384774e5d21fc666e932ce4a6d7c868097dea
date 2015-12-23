@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a9dcd25_3b0eb735",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 1214,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-12-23T12:24:02Z",
+      "side": 1,
+      "message": "JFYI, previuosly netscript from trunk used to install all the releases. This is why you have all this \"lenny|squeeze|wheezy)\" code there.\n\nHalf a year ago we have switched it to release specific workflow, like for all other repositories. So deployment.sh from trunk will be user for mr4.3+\n\nWe just didn\u0027t finish script cleanup due to rush we had last year.\n\nIn light of this, IMHO it is useless to write that code at all, as Jessie only can be used with current trunk script.\n\nSo, s/ifenslave-2.6/ifenslave/  should be ebough here at all.\n\nStill current code should work, it is just IMHO useless.",
+      "revId": "a2a384774e5d21fc666e932ce4a6d7c868097dea",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
