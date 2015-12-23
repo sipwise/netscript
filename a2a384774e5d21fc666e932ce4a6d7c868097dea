@@ -16,6 +16,24 @@
       "revId": "a2a384774e5d21fc666e932ce4a6d7c868097dea",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa6b99d7_5afff501",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 1214,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-12-23T12:29:06Z",
+      "side": 1,
+      "message": "Actually, you are probably right here guys, the code here is necessary to install plain-debian squeeze/wheezy VMs which uses script from trunk. SO, LGTM",
+      "parentUuid": "1a9dcd25_3b0eb735",
+      "revId": "a2a384774e5d21fc666e932ce4a6d7c868097dea",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
