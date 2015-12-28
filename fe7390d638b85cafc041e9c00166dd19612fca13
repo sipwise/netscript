@@ -16,6 +16,24 @@
       "revId": "fe7390d638b85cafc041e9c00166dd19612fca13",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_df121358",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1218,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2015-12-28T14:06:07Z",
+      "side": 1,
+      "message": "\u003e I\u0027m afraid this might not be enough, because we use our own Sipwise mirror also for the plain Debian installations and without the proper key(ring)/apt-key setup installation fails then. :-/\n\n\nMaybe Guillem can share some magic how to \"convert\" our mirror to be signed by Debian official key(s)?",
+      "parentUuid": "7a96c907_dd4f6e91",
+      "revId": "fe7390d638b85cafc041e9c00166dd19612fca13",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
