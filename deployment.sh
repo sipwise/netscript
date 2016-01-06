@@ -1103,8 +1103,12 @@ fi
 if "$LVM" ; then
   # make sure lvcreate understands the --yes option
   lv_create_opts=''
-  lvm_version=$(dpkg-query -W -f='${Version}\n' lvm2)
-  if dpkg --compare-versions "$lvm_version" lt 2.02.106 ; then
+  lvm_version=$(dpkg-query -W -f='${Version}\n' lvm2) || die "Unknown package lvm2"
+  setupstorage_version=$(dpkg-query --show --showformat='${Version}' fai-setup-storage) || die "Unknown package fai-setup-storage"
+
+  if dpkg --compare-versions "$setupstorage_version" ge 5.0 ; then
+    logit "Installed fai-setup-storage version ${setupstorage_version} doesn't need the LVM '--yes' workaround."
+  elif dpkg --compare-versions "$lvm_version" lt 2.02.106 ; then
     logit "Installed lvm2 version ${lvm_version} doesn't need the '--yes' workaround."
   else
     logit "Enabling '--yes' workaround for lvm2 version ${lvm_version}."
