@@ -44,6 +44,7 @@ CE_EDITION=false
 CARRIER_EDITION=false
 NGCP_INSTALLER=false
 PUPPET=''
+PUPPET_SERVER=puppet.mgm.sipwise.com
 RESTART_NETWORK=true
 INTERACTIVE=false
 DHCP=false
@@ -458,6 +459,10 @@ fi
 if checkBootParam "puppetenv" ; then
   # we expected to get the environment for puppet
   PUPPET=$(getBootParam puppetenv)
+fi
+
+if checkBootParam "puppetserver" ; then
+  PUPPET_SERVER=$(getBootParam puppetserver)
 fi
 
 if checkBootParam "debianrelease" ; then
@@ -2149,7 +2154,7 @@ rundir=/var/run/puppet
 factpath=$vardir/lib/facter
 prerun_command=/etc/puppet/etckeeper-commit-pre
 postrun_command=/etc/puppet/etckeeper-commit-post
-server=puppet.mgm.sipwise.com
+server=${PUPPET_SERVER}
 
 [master]
 ssl_client_header=SSL_CLIENT_S_DN
