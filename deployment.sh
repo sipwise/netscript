@@ -2119,6 +2119,7 @@ if "$VAGRANT" ; then
 fi
 
 if [ -n "$PUPPET" ] ; then
+  set_deploy_status "puppet"
   echo "Rebuilding /etc/hosts"
   cat > $TARGET/etc/hosts << EOF
 # Generated via deployment.sh
