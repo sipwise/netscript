@@ -16,6 +16,24 @@
       "revId": "54aef85ee3fabf9e125bbccede01bbad02558c84",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba65a107_397479ce",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 2173,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-01-18T15:07:50Z",
+      "side": 1,
+      "message": "this approach will not work, as check_puppet_rc will not be called in case of 0 exit code in puppet, due to  ||",
+      "parentUuid": "ba65a107_99eee58a",
+      "revId": "54aef85ee3fabf9e125bbccede01bbad02558c84",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
