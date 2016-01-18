@@ -36,6 +36,24 @@
     },
     {
       "key": {
+        "uuid": "ba65a107_c42b1481",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 2177,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-01-18T15:19:53Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ba65a107_79175152",
+      "revId": "8885e5187d880fe994eea66d831215927367780e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba65a107_b91de975",
         "filename": "deployment.sh",
         "patchSetId": 4
@@ -53,6 +71,24 @@
     },
     {
       "key": {
+        "uuid": "ba65a107_6420089c",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 2182,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-01-18T15:19:53Z",
+      "side": 1,
+      "message": "yes, fixed.",
+      "parentUuid": "ba65a107_b91de975",
+      "revId": "8885e5187d880fe994eea66d831215927367780e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba65a107_3909d931",
         "filename": "deployment.sh",
         "patchSetId": 4
@@ -64,6 +100,24 @@
       "writtenOn": "2016-01-18T15:13:28Z",
       "side": 1,
       "message": "hm?",
+      "revId": "8885e5187d880fe994eea66d831215927367780e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba65a107_a42620b9",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 2187,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-01-18T15:19:53Z",
+      "side": 1,
+      "message": "just see:\n\npupper_rc\u003d0\n\"puppet agent --test --enable 30\" returns 2 -\u003e pupper_rc\u003d2\ncheck_puppet_rc -\u003e pass\n\npuppet agent --waitforcert 2\u003e\u00261 ... || pupper_rc\u003d$?  # returns 0, so || pupper_rc\u003d$?  skipped\ncheck_puppet_rc -\u003e pass as pupper_rc\u003d2 from --enable  #wrong\n\n\nActually, everything is much worth... we have tee in pipe... so we cannot use || at all, actually || true was useless there :-)",
+      "parentUuid": "ba65a107_3909d931",
       "revId": "8885e5187d880fe994eea66d831215927367780e",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
