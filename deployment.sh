@@ -2165,14 +2165,28 @@ ssl_client_verify_header=SSL_CLIENT_VERIFY
 environment=$PUPPET
 EOF
 
+check_puppet_rc () {
+  local _puppet_rc="$1"
+
+  if [ "${_puppet_rc}" != "2" ] ; then
+    # an exit code of '2' means there were changes,
+    # an exit code of '4' means there were failures during the transaction,
+    # an exit code of '6' means there were both changes and failures.
+    set_deploy_status "error"
+  fi
+}
+
   case "$DEBIAN_RELEASE" in
     squeeze|wheezy)
       chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
-      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || true
+      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
+      check_puppet_rc "${PIPESTATUS[0]}"
       ;;
     jessie|stretch)
-      grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log || true
-      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || true
+      grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log
+      check_puppet_rc "${PIPESTATUS[0]}"
+      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
+      check_puppet_rc "${PIPESTATUS[0]}"
       ;;
   esac
 fi
