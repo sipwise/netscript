@@ -121,6 +121,24 @@
       "revId": "8885e5187d880fe994eea66d831215927367780e",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba65a107_c4eeb422",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 2187,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-01-18T15:59:50Z",
+      "side": 1,
+      "message": "The \"pupper_rc\u003d0\" just inside the jessie|stretch case still doesn\u0027t make any sense to me, it should be initialised as such *before* and if at all then get unset, but the \"pupper_rc\u003d0\" here doesn\u0027t make any sense to me.",
+      "parentUuid": "ba65a107_a42620b9",
+      "revId": "8885e5187d880fe994eea66d831215927367780e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
