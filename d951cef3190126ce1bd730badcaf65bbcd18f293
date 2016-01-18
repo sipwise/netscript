@@ -16,6 +16,24 @@
       "revId": "d951cef3190126ce1bd730badcaf65bbcd18f293",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba65a107_5944cd73",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2171,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-01-18T15:09:26Z",
+      "side": 1,
+      "message": "we should not have failures here anymore ;-) for builder.mgm now. BTW when exit code 0 happens?",
+      "parentUuid": "ba65a107_b9cc0937",
+      "revId": "d951cef3190126ce1bd730badcaf65bbcd18f293",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
