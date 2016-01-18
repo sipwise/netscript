@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba65a107_b9cc0937",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2171,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-01-18T15:01:58Z",
+      "side": 1,
+      "message": "Nope, that\u0027s not so easy, depending on configuration and (IIRC also) puppet version it\u0027s:\n\n\"an exit code of \u00272\u0027 means there were changes, an exit code of \u00274\u0027 means there were failures during the transaction, and an exit code of \u00276\u0027 means there were both changes and failures.\"\n\nand that\u0027s what we currently have.",
+      "revId": "d951cef3190126ce1bd730badcaf65bbcd18f293",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
