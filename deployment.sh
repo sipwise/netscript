@@ -2168,11 +2168,11 @@ EOF
   case "$DEBIAN_RELEASE" in
     squeeze|wheezy)
       chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
-      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || true
+      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || set_deploy_status "error"
       ;;
     jessie|stretch)
-      grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log || true
-      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || true
+      grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log || set_deploy_status "error"
+      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log || set_deploy_status "error"
       ;;
   esac
 fi
