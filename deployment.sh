@@ -100,6 +100,14 @@ else # otherwise try to find sane default
 fi
 
 ### helper functions {{{
+get_deploy_status() {
+  if [ -r "${STATUS_DIRECTORY}/status" ] ; then
+    cat "${STATUS_DIRECTORY}/status"
+  else
+    echo 'error'
+  fi
+}
+
 set_deploy_status() {
   [ -n "$1" ] || return 1
   echo "$*" > "${STATUS_DIRECTORY}"/status
@@ -2152,7 +2160,7 @@ logdir=/var/log/puppet
 vardir=/var/lib/puppet
 ssldir=/var/lib/puppet/ssl
 rundir=/var/run/puppet
-factpath=$vardir/lib/facter
+factpath=\$vardir/lib/facter
 prerun_command=/etc/puppet/etckeeper-commit-pre
 postrun_command=/etc/puppet/etckeeper-commit-post
 server=${PUPPET_SERVER}
@@ -2245,7 +2253,9 @@ echo
 logit "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 echo "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 
-set_deploy_status "finished"
+if [ "$(get_deploy_status)" != "error" ] ; then
+  set_deploy_status "finished"
+fi
 
 # if ngcpstatus boot option is used wait for a specific so a
 # remote host has a chance to check for deploy status "finished",
