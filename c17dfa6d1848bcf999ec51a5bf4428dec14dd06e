@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a6a9dd7_e04ad3ab",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1326,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-01-26T11:11:26Z",
+      "side": 0,
+      "message": "is it no longer necessary?\nDid grml-debootstrap did format/mount partition itself?",
+      "revId": "c17dfa6d1848bcf999ec51a5bf4428dec14dd06e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a6a9dd7_2051ab62",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1360,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-01-26T11:11:26Z",
+      "side": 1,
+      "message": "swap?",
+      "range": {
+        "startLine": 1360,
+        "startChar": 18,
+        "endLine": 1360,
+        "endChar": 22
+      },
+      "revId": "f4b595e377d3b12db62a4f8a5f24f89f1e42566b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a6a9dd7_c04d4fc6",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1364,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-01-26T11:11:26Z",
+      "side": 1,
+      "message": "should we have noatime like for / ? (line 1349)",
+      "revId": "f4b595e377d3b12db62a4f8a5f24f89f1e42566b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
