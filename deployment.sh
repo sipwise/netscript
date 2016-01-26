@@ -234,46 +234,6 @@ install_apt_transport_https () {
     -y --no-install-recommends install apt-transport-https
 }
 
-# see MT#6253
-fai_upgrade() {
-  upgrade=false # upgrade only if needed
-
-  local required_version=4.2.4+0
-  local present_version=$(dpkg-query --show --showformat='${Version}' fai-setup-storage)
-
-  if dpkg --compare-versions $present_version lt $required_version ; then
-    echo "fai-setup-storage version $present_version is older than minimum required version $required_version - upgrading."
-    upgrade=true
-  fi
-
-  local required_version=0.17-2
-  local present_version=$(dpkg-query --show --showformat='${Version}' liblinux-lvm-perl)
-
-  if dpkg --compare-versions $present_version lt $required_version ; then
-    echo "liblinux-lvm-perl version $present_version is older than minimum required version $required_version - upgrading."
-    upgrade=true
-  fi
-
-  if ! "$upgrade" ; then
-    echo "fai-setup-storage and liblinux-lvm-perl are OK already, nothing to do about it."
-    return 0
-  fi
-
-  # use temporary apt database for speed reasons
-  local TMPDIR=$(mktemp -d)
-  mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
-  local debsrcfile=$(mktemp)
-  echo "deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/wheezy-backports wheezy-backports main" >> "$debsrcfile"
-
-  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
-    -o Dir::Etc::sourceparts=/dev/null update
-
-  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
-    -o Dir::Etc::sourceparts=/dev/null -y install fai-setup-storage liblinux-lvm-perl
-}
-
 grml_debootstrap_upgrade() {
   local required_version=0.67
   local present_version=$(dpkg-query --show --showformat='${Version}' grml-debootstrap)
@@ -770,9 +730,6 @@ install_apt_transport_https
 set_deploy_status "grml_debootstrap_upgrade"
 grml_debootstrap_upgrade
 
-set_deploy_status "fai_upgrade"
-fai_upgrade
-
 if "$NGCP_INSTALLER" ; then
   set_deploy_status "ensure_augtool_present"
   ensure_augtool_present
@@ -1106,6 +1063,75 @@ echo "root:sipwise" | chpasswd
 ## partition disk
 set_deploy_status "disksetup"
 
+create_partitions() {
+  local blockdevice memory
+  blockdevice="/dev/${DISK}"
+  memory=$(awk '/MemTotal:/ {print $2}' /proc/meminfo)
+
+  echo "* Wiping disk signatures from ${blockdevice}"
+  wipefs -a "${blockdevice}"
+
+  echo "* Creating partition table"
+  parted -a optimal -s "${blockdevice}" mklabel "${TABLE}"
+  parted -a optimal -s "${blockdevice}" mkpart primary "" 0% 100%
+  parted -a optimal -s "${blockdevice}" set 1 boot on
+  parted -a optimal -s "${blockdevice}" set 1 lvm on
+
+  if [ -x /etc/init.d/lvm2-lvmetad ] ; then
+    echo "* Starting lvmetad service"
+    service lvm2-lvmetad start
+  fi
+
+  echo "* Gettind rid of possibly existing VGs on blockdevice ${blockdevice}1"
+  existing_pvs=$(pvs "${blockdevice}1" -o vg_name --noheadings || true)
+  for pv in $existing_pvs ; do
+    vgremove -ff "$pv"
+  done
+
+  echo "* Creating PV + VG"
+  pvcreate -ff -y "${blockdevice}"1
+  vgcreate "${VG_NAME}" "${blockdevice}"1
+  vgchange -a y "${VG_NAME}"
+
+  # root1
+  local root1_size=20G
+  echo "* Creating LV root1 with ${root1_size}"
+  lvcreate --yes -n root1 -L "${root1_size}" "${VG_NAME}"
+
+  echo "* Creating ${FILESYSTEM} on /dev/${VG_NAME}/var"
+  mkfs."${FILESYSTEM}" -FF /dev/"${VG_NAME}"/root1
+
+  # root2
+  local root2_size=20G
+  echo "* Creating LV root2 with ${root2_size}"
+  lvcreate --yes -n root2 -L "${root1_size}" "${VG_NAME}"
+
+  echo "* Creating ${FILESYSTEM} on /dev/${VG_NAME}/root2"
+  mkfs."${FILESYSTEM}" -FF /dev/"${VG_NAME}"/root2
+
+  # swap
+  local swap_size=$(( memory / 2 / 1024)) # 50% of RAM in MB
+  echo "* Creating LV swap with ${swap_size}"
+  lvcreate --yes -n swap -L ${swap_size} "${VG_NAME}"
+
+  echo "* Creating swap on /dev/${VG_NAME}/swap"
+  mkswap /dev/"${VG_NAME}"/swap
+
+  # var
+  local vg_free var_size
+  vg_free=$(vgs ${VG_NAME} -o vg_free --noheadings --nosuffix --units B)
+  var_size=$(( vg_free * 19 / 20 / 1024 / 1024 )) # 95% of free space (in MB), remaining 5% is kept free
+  echo "* Creating LV var with ${var_size}M"
+  lvcreate --yes -n var -L "${var_size}M" "${VG_NAME}"
+
+  echo "* Creating ${FILESYSTEM} on /dev/${VG_NAME}/var"
+  mkfs."${FILESYSTEM}" -FF /dev/"${VG_NAME}"/var
+
+  echo "* Displaying partition table for reference:"
+  parted -s "${blockdevice}" unit TiB print
+  lsblk "${blockdevice}"
+}
+
 # 2000GB = 2097152000 blocks in /proc/partitions - so make a rough estimation
 if [ $(awk "/ ${DISK}$/ {print \$3}" /proc/partitions) -gt 2000000000 ] ; then
   TABLE=gpt
@@ -1114,62 +1140,24 @@ else
 fi
 
 if "$LVM" ; then
-  # make sure lvcreate understands the --yes option
-  lv_create_opts=''
-  lvm_version=$(dpkg-query -W -f='${Version}\n' lvm2) || die "Unknown package lvm2"
-  setupstorage_version=$(dpkg-query --show --showformat='${Version}' fai-setup-storage) || die "Unknown package fai-setup-storage"
-
-  if dpkg --compare-versions "$setupstorage_version" ge 5.0 ; then
-    logit "Installed fai-setup-storage version ${setupstorage_version} doesn't need the LVM '--yes' workaround."
-  elif dpkg --compare-versions "$lvm_version" lt 2.02.106 ; then
-    logit "Installed lvm2 version ${lvm_version} doesn't need the '--yes' workaround."
-  else
-    logit "Enabling '--yes' workaround for lvm2 version ${lvm_version}."
-    lv_create_opts='lvcreateopts="--yes"'
-  fi
-
   if "$NGCP_INSTALLER" ; then
     VG_NAME="ngcp"
   else
     VG_NAME="vg0"
   fi
 
-  cat > /tmp/partition_setup.txt << EOF
-disk_config ${DISK} disklabel:${TABLE} bootable:1
-primary -       4096-   -       -
-
-disk_config lvm
-vg ${VG_NAME}       ${DISK}1
-${VG_NAME}-root     /       -95%      ext3 rw
-${VG_NAME}-swap     swap    RAM:50%   swap sw $lv_create_opts
-EOF
-
-  # make sure setup-storage doesn't fail if LVM is already present
-  dd if=/dev/zero of=/dev/${DISK} bs=1M count=1
-  blockdev --rereadpt /dev/${DISK}
-
-  export LOGDIR='/tmp/setup-storage'
-  mkdir -p $LOGDIR
-
-  # /usr/lib/fai/fai-disk-info is available as of FAI 4.0,
-  # older versions shipped /usr/lib/fai/disk-info which doesn't
-  # support the partition setup syntax we use in our setup
-  if ! [ -x /usr/lib/fai/fai-disk-info ] ; then
-    die "You are using an outdated ISO, please update it to have fai-setup-storage >=4.0.6 available."
-  fi
-
-  export disklist=$(/usr/lib/fai/fai-disk-info | sort)
-  PATH=/usr/lib/fai:${PATH} setup-storage -f /tmp/partition_setup.txt -X || die "Failure during execution of setup-storage"
+  create_partitions
 
   # used later by installer
-  ROOT_FS="/dev/mapper/${VG_NAME}-root"
+  ROOT_FS="/dev/mapper/${VG_NAME}-root1"
   SWAP_PARTITION="/dev/mapper/${VG_NAME}-swap"
+  VAR_PARTITION="/dev/mapper/${VG_NAME}-var"
 
 else # no LVM
-  parted -s -a optimal /dev/${DISK} mktable "$TABLE" || die "Failed to set up partition table"
+  parted -s -a optimal/dev/${DISK} mktable "$TABLE" || die "Failed to set up partition table"
   # hw-raid with rootfs + swap partition
-  parted -s -a optimal /dev/${DISK} 'mkpart primary ext4 2048s 95%' || die "Failed to set up primary partition"
-  parted -s -a optimal /dev/${DISK} 'mkpart primary linux-swap 95% -1' || die "Failed to set up swap partition"
+  parted -s -a optimal/dev/${DISK} 'mkpart primary ext4 2048s 95%' || die "Failed to set up primary partition"
+  parted -s -a optimal/dev/${DISK} 'mkpart primary linux-swap 95% -1' || die "Failed to set up swap partition"
   sync
 
   # used later by installer
@@ -1319,26 +1307,29 @@ if [ "$DISK" = "vda" ] ; then
   esac
 fi
 
+mount "${ROOT_FS}" "${TARGET}"
+if [ -n "${VAR_PARTITION}" ] ; then
+  mkdir -p "${TARGET}/var"
+  mount "${VAR_PARTITION}" "${TARGET}"/var
+fi
+
 # install Debian
 echo y | grml-debootstrap \
   --arch "${ARCH}" \
   --grub /dev/${DISK} \
-  --filesystem "${FILESYSTEM}" \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
   --debopt "--keyring=${KEYRING}" $EXTRA_DEBOOTSTRAP_OPTS \
   --keep_src_list \
   --defaultinterfaces \
   -r "$DEBIAN_RELEASE" \
-  -t "$ROOT_FS" \
+  -t "$TARGET" \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
 
 if [ ${PIPESTATUS[1]} -ne 0 ]; then
   die "Error during installation of Debian ${DEBIAN_RELEASE}. Find details via: mount $ROOT_FS $TARGET ; ls $TARGET/debootstrap/*.log"
 fi
 
-sync
-mount "$ROOT_FS" "$TARGET"
 
 # MT#13711
 case "$DEBIAN_RELEASE" in
@@ -1365,6 +1356,14 @@ echo "Enabling swap partition $SWAP_PARTITION via /etc/fstab"
 cat >> "${TARGET}/etc/fstab" << EOF
 $SWAP_PARTITION                      none           swap       sw,pri=0  0  0
 EOF
+
+# provide useable /var partition
+if [ -n "$VAR_PARTITION" ] ; then
+  echo "Enabling var partition $VAR_PARTITION via /etc/fstab"
+  cat >> "${TARGET}/etc/fstab" << EOF
+$VAR_PARTITION /var                 auto           noatime               0  0
+EOF
+fi
 
 case "$DEBIAN_RELEASE" in
   lenny|squeeze|wheezy)
@@ -2222,6 +2221,9 @@ sync
 if "$CARRIER_EDITION"; then
   umount ${TARGET}/$PXE_IMAGES_PATH  2>/dev/null || true
 fi
+
+mountpoint "${TARGET}/var" >/dev/null 2>&1 && umount "${TARGET}/var" 2>/dev/null || true
+
 umount ${TARGET}/proc       2>/dev/null || true
 umount ${TARGET}/sys        2>/dev/null || true
 umount ${TARGET}/dev/pts    2>/dev/null || true
