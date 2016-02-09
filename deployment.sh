@@ -2195,6 +2195,8 @@ check_puppet_rc () {
     jessie|stretch)
       grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log
       check_puppet_rc "${PIPESTATUS[0]}" "0"
+      grml-chroot $TARGET puppet agent --test --tags core --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
+      check_puppet_rc "${PIPESTATUS[0]}" "2"
       grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
       check_puppet_rc "${PIPESTATUS[0]}" "2"
       ;;
