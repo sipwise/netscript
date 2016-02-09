@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a6a9dd7_bcb944eb",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2194,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-02-09T12:02:36Z",
+      "side": 1,
+      "message": "We probably should have it for wheezy too, but lets add it when we will have Puppet tests for wheezy server... \nWe anyway have to move all our server to jessie.",
+      "revId": "097a4de74391961d7873465470ff54c20917491e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
