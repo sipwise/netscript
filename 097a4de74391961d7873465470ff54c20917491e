@@ -16,6 +16,29 @@
       "revId": "097a4de74391961d7873465470ff54c20917491e",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a6a9dd7_7ccbac72",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2200,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-02-09T12:04:03Z",
+      "side": 1,
+      "message": "--waitforcert 30\nis probably useless here, while it is not harm AFAIK.",
+      "range": {
+        "startLine": 2200,
+        "startChar": 46,
+        "endLine": 2200,
+        "endChar": 62
+      },
+      "revId": "097a4de74391961d7873465470ff54c20917491e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
