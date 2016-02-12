@@ -45,6 +45,11 @@ CARRIER_EDITION=false
 NGCP_INSTALLER=false
 PUPPET=''
 PUPPET_SERVER=puppet.mgm.sipwise.com
+PUPPET_GIT_REPO=''
+PUPPET_GIT_BRANCH=master
+PUPPET_LOCAL_GIT="${TARGET}/tmp/puppet.git"
+PUPPET_RESCUE_DRIVE="/dev/cdrom"
+PUPPET_RESCUE_PATH="/mnt/cdrom"
 RESTART_NETWORK=true
 INTERACTIVE=false
 DHCP=false
@@ -471,6 +476,22 @@ fi
 
 if checkBootParam "puppetserver" ; then
   PUPPET_SERVER=$(getBootParam puppetserver)
+fi
+
+if checkBootParam "puppetgitrepo" ; then
+  PUPPET_GIT_REPO=$(getBootParam puppetgitrepo)
+fi
+
+if checkBootParam "puppetgitbranch" ; then
+  PUPPET_GIT_BRANCH=$(getBootParam puppetgitbranch)
+fi
+
+if checkBootParam "puppetrescuedrive" ; then
+  PUPPET_RESCUE_DRIVE=$(getBootParam puppetrescuedrive)
+fi
+
+if checkBootParam "puppetrescuepath" ; then
+  PUPPET_RESCUE_PATH=$(getBootParam puppetrescuepath)
 fi
 
 if checkBootParam "debianrelease" ; then
@@ -2132,6 +2153,80 @@ if "$VAGRANT" ; then
 fi
 
 if [ -n "$PUPPET" ] ; then
+
+check_puppet_rc () {
+  local _puppet_rc="$1"
+  local _expected_rc="$2"
+
+  if [ "${_puppet_rc}" != "${_expected_rc}" ] ; then
+    # an exit code of '0' happens for 'puppet agent --enable' only,
+    # an exit code of '2' means there were changes,
+    # an exit code of '4' means there were failures during the transaction,
+    # an exit code of '6' means there were both changes and failures.
+    set_deploy_status "error"
+  fi
+}
+
+puppet_install_from_git () {
+  : "${PUPPET_GIT_REPO?ERROR: variable 'PUPPET_GIT_REPO' is NOT defined, cannot continue.}"
+  : "${PUPPET_LOCAL_GIT?ERROR: variable 'PUPPET_LOCAL_GIT' is NOT defined, cannot continue.}"
+  : "${PUPPET_GIT_BRANCH?ERROR: variable 'PUPPET_GIT_BRANCH' is NOT defined, cannot continue.}"
+
+  echo "Cloning Puppet git repository from '${PUPPET_GIT_REPO}' to '${PUPPET_LOCAL_GIT}' (branch '${PUPPET_GIT_BRANCH}')"
+  if ! git clone --depth 1 -b "${PUPPET_GIT_BRANCH}" "${PUPPET_GIT_REPO}" "${PUPPET_LOCAL_GIT}" ; then
+    echo "ERROR: Cannot clone git repository, see the error above, cannot continue!" >&2
+    exit 1
+  fi
+
+  echo "Deploying Puppet config from Git repository to /etc/puppet/"
+  cp -a "${PUPPET_LOCAL_GIT}/manifests" /etc/puppet/
+  cp -a "${PUPPET_LOCAL_GIT}/modules" /etc/puppet/
+  rm -rf "${PUPPET_LOCAL_GIT}"
+
+  case "${PUPPET_RESCUE_DRIVE}" in
+    /dev/cdrom)
+      mkdir -p "${PUPPET_RESCUE_PATH}"
+      mount -t iso9660 -o ro "${PUPPET_RESCUE_DRIVE}" "${PUPPET_RESCUE_PATH}"
+      mkdir -m 0700 -p "${TARGET}/etc/puppet/hieradata/"
+      cp -a "${PUPPET_RESCUE_PATH}"/hieradata/* "${TARGET}/etc/puppet/hieradata/"
+      umount "${PUPPET_RESCUE_PATH}"
+      rmdir "${PUPPET_RESCUE_PATH}"
+      ;;
+    *)
+      echo "ERROR: Unsupported rescue drive '${PUPPET_RESCUE_DRIVE}', cannot continue!" >&2
+      exit 1
+  esac
+
+  case "${DEBIAN_RELEASE}" in
+    jessie|stretch)
+      #grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log
+      #check_puppet_rc "${PIPESTATUS[0]}" "0"
+      grml-chroot $TARGET puppet apply --test --tags core /etc/puppet/manifests/site.pp 2>&1 | tee -a /tmp/puppet.log
+      check_puppet_rc "${PIPESTATUS[0]}" "0"
+      grml-chroot $TARGET puppet apply --test /etc/puppet/manifests/site.pp 2>&1 | tee -a /tmp/puppet.log
+      check_puppet_rc "${PIPESTATUS[0]}" "0"
+      ;;
+  esac
+}
+
+puppet_install_from_puppet () {
+  case "${DEBIAN_RELEASE}" in
+    squeeze|wheezy)
+      chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
+      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
+      check_puppet_rc "${PIPESTATUS[0]}" "2"
+      ;;
+    jessie|stretch)
+      grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log
+      check_puppet_rc "${PIPESTATUS[0]}" "0"
+      grml-chroot $TARGET puppet agent --test --tags core --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
+      check_puppet_rc "${PIPESTATUS[0]}" "2"
+      grml-chroot $TARGET puppet agent --test 2>&1 | tee -a /tmp/puppet.log
+      check_puppet_rc "${PIPESTATUS[0]}" "2"
+      ;;
+  esac
+}
+
   set_deploy_status "puppet"
   echo "Rebuilding /etc/hosts"
   cat > $TARGET/etc/hosts << EOF
@@ -2173,35 +2268,15 @@ ssl_client_verify_header=SSL_CLIENT_VERIFY
 environment=$PUPPET
 EOF
 
-check_puppet_rc () {
-  local _puppet_rc="$1"
-  local _expected_rc="$2"
-
-  if [ "${_puppet_rc}" != "${_expected_rc}" ] ; then
-    # an exit code of '0' happens for 'puppet agent --enable' only,
-    # an exit code of '2' means there were changes,
-    # an exit code of '4' means there were failures during the transaction,
-    # an exit code of '6' means there were both changes and failures.
-    set_deploy_status "error"
+  if [ -n "${PUPPET_GIT_REPO}" ] ; then
+    echo "Installing from Puppet Git repository using 'puppet apply'"
+    puppet_install_from_git
+  else
+    echo "Installing from Puppet server '${PUPPET_SERVER}' using 'puppet agent'"
+    puppet_install_from_puppet
   fi
-}
 
-  case "$DEBIAN_RELEASE" in
-    squeeze|wheezy)
-      chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
-      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "2"
-      ;;
-    jessie|stretch)
-      grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "0"
-      grml-chroot $TARGET puppet agent --test --tags core --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "2"
-      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "2"
-      ;;
-  esac
-fi
+fi # if [ -n "$PUPPET" ] ; then
 
 # make sure we don't leave any running processes
 for i in asterisk atd collectd collectdmon dbus-daemon exim4 \
