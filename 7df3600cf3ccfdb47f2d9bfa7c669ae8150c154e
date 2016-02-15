@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a6a9dd7_4e614538",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2176,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2016-02-15T11:55:31Z",
+      "side": 1,
+      "message": "after cloning to PUPPET_LOCAL_GIT we should copy PUPPET_LOCAL_GIT/modules and PUPPET_LOCAL_GIT/manifests to /etc/puppet/",
+      "revId": "7df3600cf3ccfdb47f2d9bfa7c669ae8150c154e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a6a9dd7_8e4e7dc0",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2185,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2016-02-15T11:55:31Z",
+      "side": 1,
+      "message": "this is not needed if changes for the line below are applied",
+      "revId": "7df3600cf3ccfdb47f2d9bfa7c669ae8150c154e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a6a9dd7_ee513963",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2186,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2016-02-15T11:55:31Z",
+      "side": 1,
+      "message": "The content of rescue disk must be hiera.yaml file and hieradata/ folder. So here we need just to copy the whole content of disk to /etc/puppet/",
+      "revId": "7df3600cf3ccfdb47f2d9bfa7c669ae8150c154e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a6a9dd7_2e609131",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2199,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2016-02-15T11:55:31Z",
+      "side": 1,
+      "message": "TODO:\n1. remove --modulepath option\n2. Add /etc/puppet/manifests/site.pp after \u0027core\u0027 before \"2\u003e\u00261\"",
+      "revId": "7df3600cf3ccfdb47f2d9bfa7c669ae8150c154e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a6a9dd7_6e668953",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2200,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2016-02-15T11:55:31Z",
+      "side": 1,
+      "message": "for puppet apply success will be \u00270\u0027\nRight after this line we should check if script /etc/profile.d/puppet-agent.sh exists and execute it to catch up with PATH changes after puppet 4 installation. Otherwise next puppet run will fail with command not found.",
+      "revId": "7df3600cf3ccfdb47f2d9bfa7c669ae8150c154e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a6a9dd7_ce547556",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2201,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2016-02-15T11:55:31Z",
+      "side": 1,
+      "message": "TODO:\n1. remove --modulepath option\n2. Add /etc/puppet/manifests/site.pp after \u0027core\u0027 before \"2\u003e\u00261\"",
+      "revId": "7df3600cf3ccfdb47f2d9bfa7c669ae8150c154e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a6a9dd7_0e5b4d88",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2202,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2016-02-15T11:55:31Z",
+      "side": 1,
+      "message": "let\u0027s check for \u00270\u0027",
+      "revId": "7df3600cf3ccfdb47f2d9bfa7c669ae8150c154e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
