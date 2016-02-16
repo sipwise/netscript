@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a6a9dd7_4e7aa089",
+        "filename": "deployment.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 2211,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2016-02-16T16:11:25Z",
+      "side": 1,
+      "message": "We should check here for \u00272\u0027. \nIf --verbose --debug is used puppet returns \u00270\u0027 \nbut if --test is used then it returns \u00272\u0027. Magic :)",
+      "revId": "99343def7e891254660e9382975b6f0c16a210f7",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a6a9dd7_ee6e14c9",
+        "filename": "deployment.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 2214,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2016-02-16T16:11:25Z",
+      "side": 1,
+      "message": "We should check here for \u00272\u0027. See comment above",
+      "revId": "99343def7e891254660e9382975b6f0c16a210f7",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a6a9dd7_0e74a897",
+        "filename": "deployment.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 2216,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2016-02-16T16:11:25Z",
+      "side": 1,
+      "message": "We should check here for \u00272\u0027. See comment above",
+      "revId": "99343def7e891254660e9382975b6f0c16a210f7",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
