@@ -49,8 +49,9 @@ PUPPET_GIT_REPO=''
 PUPPET_GIT_BRANCH=master
 PUPPET_LOCAL_GIT="${TARGET}/tmp/puppet.git"
 PUPPET_INIT_HIERA=false
-PUPPET_RESCUE_DRIVE="/dev/null"
-PUPPET_RESCUE_PATH="/mnt/cdrom"
+PUPPET_RESCUE_DRIVE="none"
+PUPPET_RESCUE_PATH="/mnt/rescue_drive"
+PUPPET_RESCUE_LABEL="Sipwise Hiera Rescue *"
 RESTART_NETWORK=true
 INTERACTIVE=false
 DHCP=false
@@ -1730,8 +1731,7 @@ EOT
 
   NGCP_SERVICES_FILE="${TARGET}/usr/share/ngcp-system-tools/ngcp.inc"
   if ! [ -r "$NGCP_SERVICES_FILE" ]; then
-    echo "Error: File $NGCP_SERVICES_FILE not found. Exiting." >&2
-    exit 1
+    die "Error: File $NGCP_SERVICES_FILE not found. Exiting."
   fi
 
   # make sure services are stopped
@@ -2175,8 +2175,7 @@ puppet_install_from_git () {
 
   echo "Cloning Puppet git repository from '${PUPPET_GIT_REPO}' to '${PUPPET_LOCAL_GIT}' (branch '${PUPPET_GIT_BRANCH}')"
   if ! git clone --depth 1 -b "${PUPPET_GIT_BRANCH}" "${PUPPET_GIT_REPO}" "${PUPPET_LOCAL_GIT}" ; then
-    echo "ERROR: Cannot clone git repository, see the error above, cannot continue!" >&2
-    exit 1
+    die "ERROR: Cannot clone git repository, see the error above, cannot continue!"
   fi
 
   echo "Deploying Puppet config from Git repository to ${TARGET}/etc/puppet/"
@@ -2185,21 +2184,34 @@ puppet_install_from_git () {
   rm -rf "${PUPPET_LOCAL_GIT}"
 
   case "${PUPPET_RESCUE_DRIVE}" in
-    /dev/cdrom)
-      echo "Copying Hiera rescue data from drive '${PUPPET_RESCUE_DRIVE}' (mounted into '${PUPPET_RESCUE_PATH}')"
+    auto)
+      echo "Searching for Hiera rescue device by label '${PUPPET_RESCUE_LABEL}'..."
+      PUPPET_RESCUE_DRIVE=$(blkid | grep -E "LABEL=\"${PUPPET_RESCUE_LABEL}" | head -1 | awk -F: '{print $1}')
+
+      if [ ! -n "${PUPPET_RESCUE_DRIVE}" ] ; then
+        die "ERROR: No USB device found matching label '${PUPPET_RESCUE_LABEL}', cannot continue!"
+      fi
+
+      local device_type
+      device_type=$(blkid | grep -E "LABEL=\"${PUPPET_RESCUE_LABEL}" | head -1 | sed 's/.*TYPE="\(.*\)".*/\1/')
+
+      if [ ! -n "${device_type}" ] ; then
+        die "ERROR: Cannot detect device type for device '${PUPPET_RESCUE_LABEL}', cannot continue!"
+      fi
+
+      echo "Copying data from device '${PUPPET_RESCUE_DRIVE}' (mounted into '${PUPPET_RESCUE_PATH}', type '${device_type}')"
       mkdir -p "${PUPPET_RESCUE_PATH}"
-      mount -t iso9660 -o ro "${PUPPET_RESCUE_DRIVE}" "${PUPPET_RESCUE_PATH}"
+      mount -t "${device_type}" -o ro "${PUPPET_RESCUE_DRIVE}" "${PUPPET_RESCUE_PATH}"
       mkdir -m 0700 -p "${TARGET}/etc/puppet/hieradata/"
       cp -a "${PUPPET_RESCUE_PATH}"/hieradata/* "${TARGET}/etc/puppet/hieradata/"
       umount -f "${PUPPET_RESCUE_PATH}"
       rmdir "${PUPPET_RESCUE_PATH}"
       ;;
-    /dev/null)
+    none)
       echo "Hiera rescue drive has been skipped as requested."
       ;;
     *)
-      echo "ERROR: Unsupported rescue drive '${PUPPET_RESCUE_DRIVE}', cannot continue!" >&2
-      exit 1
+      die "ERROR: Unsupported rescue drive '${PUPPET_RESCUE_DRIVE}', cannot continue!"
       ;;
   esac
 
@@ -2221,8 +2233,7 @@ puppet_install_from_git () {
       check_puppet_rc "${PIPESTATUS[0]}" "2"
       ;;
     *)
-      echo "ERROR: Unsupported Debian release ${DEBIAN_RELEASE} detected, cannot continue!" >&2
-      exit 1
+      die "ERROR: Unsupported Debian release ${DEBIAN_RELEASE} detected, cannot continue!"
       ;;
   esac
 }
@@ -2245,8 +2256,7 @@ puppet_install_from_puppet () {
       check_puppet_rc "${PIPESTATUS[0]}" "2"
       ;;
     *)
-      echo "ERROR: Unsupported Debian release ${DEBIAN_RELEASE} detected, cannot continue!" >&2
-      exit 1
+      die "ERROR: Unsupported Debian release ${DEBIAN_RELEASE} detected, cannot continue!"
       ;;
   esac
 }
