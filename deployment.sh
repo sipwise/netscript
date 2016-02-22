@@ -282,7 +282,7 @@ fai_upgrade() {
 }
 
 grml_debootstrap_upgrade() {
-  local required_version=0.67
+  local required_version=0.74
   local present_version=$(dpkg-query --show --showformat='${Version}' grml-debootstrap)
 
   if dpkg --compare-versions $present_version lt $required_version ; then
