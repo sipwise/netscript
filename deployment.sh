@@ -212,7 +212,7 @@ install_apt_transport_https () {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb http://${DEBIAN_REPO_HOST}/debian/ wheezy main contrib non-free" > \
+  echo "deb http://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} main contrib non-free" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -223,46 +223,6 @@ install_apt_transport_https () {
     -o dir::etc="${TMPDIR}/etc" -o dir::state="${TMPDIR}/statedir" \
     -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" \
     -y --no-install-recommends install apt-transport-https
-}
-
-# see MT#6253
-fai_upgrade() {
-  upgrade=false # upgrade only if needed
-
-  local required_version=4.2.4+0
-  local present_version=$(dpkg-query --show --showformat='${Version}' fai-setup-storage)
-
-  if dpkg --compare-versions $present_version lt $required_version ; then
-    echo "fai-setup-storage version $present_version is older than minimum required version $required_version - upgrading."
-    upgrade=true
-  fi
-
-  local required_version=0.17-2
-  local present_version=$(dpkg-query --show --showformat='${Version}' liblinux-lvm-perl)
-
-  if dpkg --compare-versions $present_version lt $required_version ; then
-    echo "liblinux-lvm-perl version $present_version is older than minimum required version $required_version - upgrading."
-    upgrade=true
-  fi
-
-  if ! "$upgrade" ; then
-    echo "fai-setup-storage and liblinux-lvm-perl are OK already, nothing to do about it."
-    return 0
-  fi
-
-  # use temporary apt database for speed reasons
-  local TMPDIR=$(mktemp -d)
-  mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
-  local debsrcfile=$(mktemp)
-  echo "deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/wheezy-backports wheezy-backports main" >> "$debsrcfile"
-
-  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
-    -o Dir::Etc::sourceparts=/dev/null update
-
-  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
-    -o Dir::Etc::sourceparts=/dev/null -y install fai-setup-storage liblinux-lvm-perl
 }
 
 grml_debootstrap_upgrade() {
@@ -296,7 +256,7 @@ install_vbox_package() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ wheezy-backports non-free" > \
+  echo "deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} non-free" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -315,21 +275,7 @@ ensure_augtool_present() {
     return 0
   fi
   echo "augtool isn't present, installing augeas-tools package:"
-
-  local TMPDIR=$(mktemp -d)
-  mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
-    "${TMPDIR}/cachedir/archives/partial"
-  echo "deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ wheezy main" > \
-    "${TMPDIR}/etc/sources.list"
-
-  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::state="${TMPDIR}/statedir" -o dir::etc="${TMPDIR}/etc" \
-    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" update
-
-  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::etc="${TMPDIR}/etc" -o dir::state="${TMPDIR}/statedir" \
-    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" \
-    -y --no-install-recommends install augeas-tools
+  apt-get -y --no-install-recommends install augeas-tools
 }
 ### }}}
 
@@ -756,9 +702,6 @@ install_apt_transport_https
 
 set_deploy_status "grml_debootstrap_upgrade"
 grml_debootstrap_upgrade
-
-set_deploy_status "fai_upgrade"
-fai_upgrade
 
 if "$NGCP_INSTALLER" ; then
   set_deploy_status "ensure_augtool_present"
