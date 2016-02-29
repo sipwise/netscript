@@ -228,7 +228,7 @@ install_apt_transport_https () {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb http://${DEBIAN_REPO_HOST}/debian/ wheezy main contrib non-free" > \
+  echo "deb http://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} main contrib non-free" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -270,7 +270,7 @@ fai_upgrade() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
   local debsrcfile=$(mktemp)
-  echo "deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/wheezy-backports wheezy-backports main" >> "$debsrcfile"
+  echo "deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/${DEBIAN_RELEASE}-backports ${DEBIAN_RELEASE}-backports main" >> "$debsrcfile"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
     -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
@@ -312,7 +312,7 @@ install_vbox_package() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ wheezy-backports non-free" > \
+  echo "deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE}-backports non-free" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -335,7 +335,7 @@ ensure_augtool_present() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ wheezy main" > \
+  echo "deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} main" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
