@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a76adc5_e5a97825",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 273,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2016-02-29T11:29:24Z",
+      "side": 1,
+      "message": "fai-setup-storage and liblinux-lvm-perl from jessie is good enough!!",
+      "revId": "9be7cfd33377720f00af59ba559d1f6bcd9a8acd",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_45adcc30",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2016-02-29T11:29:24Z",
+      "side": 1,
+      "message": "there is no virtualbox-guest-additions-iso at jessie-backports",
+      "revId": "9be7cfd33377720f00af59ba559d1f6bcd9a8acd",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
