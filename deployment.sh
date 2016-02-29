@@ -77,8 +77,6 @@ DEBIAN_REPO_HOST="debian.sipwise.com"
 SIPWISE_REPO_HOST="deb.sipwise.com"
 SIPWISE_REPO_TRANSPORT="https"
 DPL_MYSQL_REPLICATION=true
-GRML_PXE_IMAGES_PATH="/lib/live/mount/medium"
-PXE_IMAGES_PATH="/tmp/grml_pxe"
 FILL_APPROX_CACHE=false
 VLAN_BOOT_INT=2
 VLAN_SSH_EXT=300
@@ -1541,7 +1539,6 @@ gen_installer_config () {
   if "$CARRIER_EDITION" ; then
     cat > ${TARGET}/etc/ngcp-installer/config_deploy.inc << EOF
 CROLE="${CROLE}"
-PXE_IMAGES_PATH="${PXE_IMAGES_PATH}"
 MANAGEMENT_IP="${MANAGEMENT_IP}"
 FILL_APPROX_CACHE="${FILL_APPROX_CACHE}"
 VLAN_BOOT_INT="${VLAN_BOOT_INT}"
@@ -1600,12 +1597,6 @@ if "$NGCP_INSTALLER" ; then
 
   # generate debian/sipwise repos
   set_repos
-
-  if "$CARRIER_EDITION"; then
-    logit "Mounting GRML image for ngcpcfg-api in ngcp-installer..."
-    mkdir -p "${TARGET}/$PXE_IMAGES_PATH"
-    mount --read-only --bind "$GRML_PXE_IMAGES_PATH" "${TARGET}/$PXE_IMAGES_PATH"
-  fi
 
   set_deploy_status "ngcp-installer"
 
@@ -2273,9 +2264,6 @@ fi
 
 # don't leave any mountpoints
 sync
-if "$CARRIER_EDITION"; then
-  umount ${TARGET}/$PXE_IMAGES_PATH  2>/dev/null || true
-fi
 umount ${TARGET}/proc       2>/dev/null || true
 umount ${TARGET}/sys        2>/dev/null || true
 umount ${TARGET}/dev/pts    2>/dev/null || true
