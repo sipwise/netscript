@@ -30,6 +30,7 @@ export LANG=C
 unset SHELL
 
 # defaults
+DEBUG_MODE=false
 DEFAULT_INSTALL_DEV=eth0
 DEFAULT_IP1=192.168.255.251
 DEFAULT_IP2=192.168.255.252
@@ -311,14 +312,14 @@ die() {
 }
 
 enable_trace() {
-  if checkBootParam debugmode ; then
+  if "${DEBUG_MODE}" ; then
     set -x
     PS4='+\t '
   fi
 }
 
 disable_trace() {
-  if checkBootParam debugmode ; then
+  if "${DEBUG_MODE}" ; then
     set +x
     PS4=''
   fi
@@ -336,7 +337,10 @@ enable_deploy_status_server
 
 set_deploy_status "checkBootParam"
 
-enable_trace
+if checkBootParam debugmode ; then
+  DEBUG_MODE=true
+  enable_trace
+fi
 
 if checkBootParam ngcpstatus ; then
   STATUS_WAIT=$(getBootParam ngcpstatus || true)
@@ -1551,6 +1555,7 @@ SIPWISE_REPO_HOST="${SIPWISE_REPO_HOST}"
 SIPWISE_REPO_TRANSPORT="${SIPWISE_REPO_TRANSPORT}"
 NAMESERVER="$(awk '/^nameserver/ {print $2}' /etc/resolv.conf)"
 NGCP_PPA="${NGCP_PPA}"
+DEBUG_MODE="${DEBUG_MODE}"
 EOF
 
   cat "${TARGET}/etc/ngcp-installer/config_deploy.inc" > /tmp/ngcp-installer-cmdline.log
