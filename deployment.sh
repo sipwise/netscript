@@ -1631,8 +1631,7 @@ EOT
 ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=\${PIPESTATUS[0]}
 if [ \$RC -ne 0 ] ; then
-  echo "Fatal error while running ngcp-installer:" >&2
-  tail -10 /tmp/ngcp-installer.log
+  echo "ERROR: Fatal error while running ngcp-installer!" >&2
   exit \$RC
 fi
 EOT
