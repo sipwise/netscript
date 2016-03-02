@@ -65,6 +65,7 @@ RETRIEVE_MGMT_CONFIG=false
 LINUX_HA3=false
 TRUNK_VERSION=false
 DEBIAN_RELEASE=jessie
+GRML_DEBIAN_RELEASE="$(lsb_release -c -s)"
 HALT=false
 REBOOT=false
 STATUS_DIRECTORY=/srv/deployment/
@@ -227,7 +228,7 @@ install_apt_transport_https () {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb http://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} main contrib non-free" > \
+  echo "deb http://${DEBIAN_REPO_HOST}/debian/ ${GRML_DEBIAN_RELEASE} main contrib non-free" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -296,7 +297,7 @@ ensure_augtool_present() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb http://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} main contrib non-free" > \
+  echo "deb http://${DEBIAN_REPO_HOST}/debian/ ${GRML_DEBIAN_RELEASE} main contrib non-free" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
