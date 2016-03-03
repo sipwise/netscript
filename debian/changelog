@@ -1,3 +1,17 @@
+ngcp-netscript (4.2.1.3+0~mr4.2.1.3) unstable; urgency=medium
+
+  [ Alexander Lutay ]
+  * [ef7f508] MT#17673 Set DEBIAN_RELEASE=jessie for deployment.sh (NGCP mr4.2+ is jessie based)
+  * [3487f3e] MT#17673 Switch deployment.sh self-updates to available  repositories
+  * [29d4539] MT#17673 Fix 9835b80: augeas-tools installation from ${DEBIAN_RELEASE}
+  * [fe3c39e] MT#17849 Remove PXE handling from deployment.sh, ngcp-installer cares about iPXE
+  * [63c862a] MT#17673 Stops mixing installer.log and deploymen debug log as it consuses often
+  * [a3be727] MT#17673 Bypass deployment.sh debug mode to ngcp-installer (if enabled)
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Thu, 03 Mar 2016 15:56:51 +0100
+
 ngcp-netscript (4.2.1.2+0~mr4.2.1.2) unstable; urgency=medium
 
   [ Michael Prokop ]
