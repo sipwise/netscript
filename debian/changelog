@@ -1,3 +1,37 @@
+ngcp-netscript (4.3.1.0+0~mr4.3.1.0) unstable; urgency=medium
+
+  [ Guillem Jover ]
+  * [a2a3847] MT#17077 Install ifenslave instead of ifenslave-2.6 on jessie+ systems
+  * [1c2e851] MT#16473 Convert debian/copyright to machine-readable format
+
+  [ Michael Prokop ]
+  * [78eae68] MT#17215 Skip LVM workaround if FAI's setup-storage >=5.0 is present
+  * [c17dfa6] MT#17529 Create partitions using optimal partition table alignment
+  * [8647e35] MT#16911 Depend on grml-debootstrap >=0.74, providing grub-pc/install_devices support
+  * [430f2a3] MT#17699 Bump Standards-Version to 3.9.7
+
+  [ Sergii Kipot ]
+  * [0eb92e5] MT#17213 Add puppet status for debug output
+  * [097a4de] MT#17213 Add two-staged puppet run
+
+  [ Alexander Lutay ]
+  * [0b32e55] MT#17213 Add GRML boot option 'puppetserver'
+  * [aa73619] MT#17213 Force deploy_status 'error' in case of non-success Puppet exit code
+  * [f4cc0e8] MT#17213 Do not overwrite 'error' deploy status + fix factpath value
+  * [4040bfe] MT#17213 Add Puppet install from Git repo and support of hiera rescue drive
+  * [44cda64] MT#17213 Add support of Sipwise Hiera Rescue drive on USB or CDROM
+  * [a9f3788] MT#17213 Rename default Sipwise Hiera rescue drive to 'SIPWRESCUE*'
+  * [f96b830] MT#17673 Set DEBIAN_RELEASE=jessie for deployment.sh (NGCP mr4.2+ is jessie based)
+  * [9835b80] MT#17673 Switch deployment.sh self-updates to available  repositories
+  * [ec8d6ea] MT#17673 Fix 9835b80: augeas-tools installation from ${DEBIAN_RELEASE}
+  * [e4100cd] MT#17849 Remove PXE handling from deployment.sh, ngcp-installer cares about iPXE
+  * [766b8d7] MT#17673 Stops mixing installer.log and deploymen debug log as it consuses often
+  * [fa36ee8] MT#17673 Bypass deployment.sh debug mode to ngcp-installer (if enabled)
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 21 Mar 2016 22:21:29 +0100
+
 ngcp-netscript (4.3.0.0+0~mr4.3.0.0) unstable; urgency=medium
 
   [ Alexander Lutay ]
