@@ -1259,7 +1259,7 @@ if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/packages << EOF
 # for interal use at sipwise
 openssh-server
-puppet
+puppet-agent
 EOF
 fi
 
@@ -1287,6 +1287,12 @@ deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
 deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
 deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 EOF
+
+if [ -n "$PUPPET" ] ; then
+  cat >> /etc/debootstrap/etc/apt/sources.list << EOF
+deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs-${DEBIAN_RELEASE}/ ${DEBIAN_RELEASE} main PC1 dependencies
+EOF
+fi
 
 # GRUB versions until Debian/wheezy generate an invalid device.map
 # entry if /dev/disk/by-id/lvm-pv-uuid-* is present, resulting in
@@ -2132,9 +2138,13 @@ puppet_install_from_git () {
     die "ERROR: Cannot clone git repository, see the error above, cannot continue!"
   fi
 
-  echo "Deploying Puppet config from Git repository to ${TARGET}/etc/puppet/"
-  cp -a "${PUPPET_LOCAL_GIT}/manifests" "${TARGET}/etc/puppet/"
-  cp -a "${PUPPET_LOCAL_GIT}/modules" "${TARGET}/etc/puppet/"
+  local PUPPET_CODE_PATH
+  PUPPET_CODE_PATH="${TARGET}/etc/puppetlabs/code/environments/${PUPPET}/"
+
+  echo "Deploying Puppet config from Git repository to ${PUPPET_CODE_PATH}"
+  mkdir -m 0755 -p "${PUPPET_CODE_PATH}"
+  cp -a "${PUPPET_LOCAL_GIT}/manifests" "${PUPPET_CODE_PATH}"
+  cp -a "${PUPPET_LOCAL_GIT}/modules" "${PUPPET_CODE_PATH}"
   rm -rf "${PUPPET_LOCAL_GIT}"
 
   case "${PUPPET_RESCUE_DRIVE}" in
@@ -2156,8 +2166,8 @@ puppet_install_from_git () {
       echo "Copying data from device '${PUPPET_RESCUE_DRIVE}' (mounted into '${PUPPET_RESCUE_PATH}', type '${device_type}')"
       mkdir -p "${PUPPET_RESCUE_PATH}"
       mount -t "${device_type}" -o ro "${PUPPET_RESCUE_DRIVE}" "${PUPPET_RESCUE_PATH}"
-      mkdir -m 0700 -p "${TARGET}/etc/puppet/hieradata/"
-      cp -a "${PUPPET_RESCUE_PATH}"/hieradata/* "${TARGET}/etc/puppet/hieradata/"
+      mkdir -m 0700 -p "${TARGET}/etc/puppetlabs/code/hieradata/"
+      cp -a "${PUPPET_RESCUE_PATH}"/hieradata/* "${TARGET}/etc/puppetlabs/code/hieradata/"
       umount -f "${PUPPET_RESCUE_PATH}"
       rmdir "${PUPPET_RESCUE_PATH}"
       ;;
@@ -2169,50 +2179,24 @@ puppet_install_from_git () {
       ;;
   esac
 
-  case "${DEBIAN_RELEASE}" in
-    jessie|stretch)
-      echo "Supported Debian release ${DEBIAN_RELEASE} detected, continue..."
-      if "${PUPPET_INIT_HIERA}" ; then
-        echo "Initializing Hiera config..."
-        grml-chroot $TARGET puppet apply --test -e "include puppet::hiera" 2>&1 | tee -a /tmp/puppet.log
-        check_puppet_rc "${PIPESTATUS[0]}" "2"
-      fi
-      grml-chroot $TARGET puppet apply --test --tags core /etc/puppet/manifests/site.pp 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "2"
-      if [ -f "${TARGET}/etc/profile.d/puppet-agent.sh" ] ; then
-          echo "Exporting Puppet 4 new PATH (otherwise /opt/puppetlabs/bin/puppet is not found)"
-          source "${TARGET}/etc/profile.d/puppet-agent.sh"
-      fi
-      grml-chroot $TARGET puppet apply --test /etc/puppet/manifests/site.pp 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "2"
-      ;;
-    *)
-      die "ERROR: Unsupported Debian release ${DEBIAN_RELEASE} detected, cannot continue!"
-      ;;
-  esac
+  echo "Supported Debian release ${DEBIAN_RELEASE} detected, continue..."
+  if "${PUPPET_INIT_HIERA}" ; then
+    echo "Initializing Hiera config..."
+    grml-chroot $TARGET puppet apply --test -e "include puppet::hiera" 2>&1 | tee -a /tmp/puppet.log
+    check_puppet_rc "${PIPESTATUS[0]}" "2"
+  fi
+  grml-chroot $TARGET puppet apply --test --tags core "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
+  check_puppet_rc "${PIPESTATUS[0]}" "2"
+  grml-chroot $TARGET puppet apply --test "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
+  check_puppet_rc "${PIPESTATUS[0]}" "2"
 }
 
 puppet_install_from_puppet () {
-  case "${DEBIAN_RELEASE}" in
-    squeeze|wheezy)
-      echo "Supported Debian release ${DEBIAN_RELEASE} detected, continue..."
-      chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
-      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "2"
-      ;;
-    jessie|stretch)
-      echo "Supported Debian release ${DEBIAN_RELEASE} detected, continue..."
-      grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "0"
-      grml-chroot $TARGET puppet agent --test --tags core --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "2"
-      grml-chroot $TARGET puppet agent --test 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "2"
-      ;;
-    *)
-      die "ERROR: Unsupported Debian release ${DEBIAN_RELEASE} detected, cannot continue!"
-      ;;
-  esac
+  echo "Supported Debian release ${DEBIAN_RELEASE} detected, continue..."
+  grml-chroot $TARGET puppet agent --test --tags core 2>&1 | tee -a /tmp/puppet.log
+  check_puppet_rc "${PIPESTATUS[0]}" "2"
+  grml-chroot $TARGET puppet agent --test 2>&1 | tee -a /tmp/puppet.log
+  check_puppet_rc "${PIPESTATUS[0]}" "2"
 }
 
   set_deploy_status "puppet"
@@ -2236,25 +2220,17 @@ EOF
 
   chroot $TARGET apt-get -y install resolvconf libnss-myhostname
 
-  cat > ${TARGET}/etc/puppet/puppet.conf << EOF
-# Deployed via deployment.sh
+  cat > ${TARGET}/etc/puppetlabs/puppet/puppet.conf<< EOF
+# This file has been created by deployment.sh
 [main]
-logdir=/var/log/puppet
-vardir=/var/lib/puppet
-ssldir=/var/lib/puppet/ssl
-rundir=/var/run/puppet
-factpath=\$vardir/lib/facter
-prerun_command=/etc/puppet/etckeeper-commit-pre
-postrun_command=/etc/puppet/etckeeper-commit-post
 server=${PUPPET_SERVER}
-
-[master]
-ssl_client_header=SSL_CLIENT_S_DN
-ssl_client_verify_header=SSL_CLIENT_VERIFY
-
-[agent]
-environment=$PUPPET
+environment=${PUPPET}
 EOF
+
+  if [ -f "${TARGET}/etc/profile.d/puppet-agent.sh" ] ; then
+    echo "Exporting Puppet 4 new PATH (otherwise /opt/puppetlabs/bin/puppet is not found)"
+    source "${TARGET}/etc/profile.d/puppet-agent.sh"
+  fi
 
   if [ -n "${PUPPET_GIT_REPO}" ] ; then
     echo "Installing from Puppet Git repository using 'puppet apply'"
