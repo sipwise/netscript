@@ -1259,7 +1259,7 @@ if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/packages << EOF
 # for interal use at sipwise
 openssh-server
-puppet
+puppet-agent
 EOF
 fi
 
@@ -1287,6 +1287,12 @@ deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
 deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
 deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 EOF
+
+if [ -n "$PUPPET" ] ; then
+  cat >> /etc/debootstrap/etc/apt/sources.list << EOF
+deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs-${DEBIAN_RELEASE}/ ${DEBIAN_RELEASE} main PC1 dependencies
+EOF
+fi
 
 # GRUB versions until Debian/wheezy generate an invalid device.map
 # entry if /dev/disk/by-id/lvm-pv-uuid-* is present, resulting in
@@ -2174,16 +2180,16 @@ puppet_install_from_git () {
       echo "Supported Debian release ${DEBIAN_RELEASE} detected, continue..."
       if "${PUPPET_INIT_HIERA}" ; then
         echo "Initializing Hiera config..."
-        grml-chroot $TARGET puppet apply --test -e "include puppet::hiera" 2>&1 | tee -a /tmp/puppet.log
+        grml-chroot $TARGET /opt/puppetlabs/bin/puppet apply --test -e "include puppet::hiera" 2>&1 | tee -a /tmp/puppet.log
         check_puppet_rc "${PIPESTATUS[0]}" "2"
       fi
-      grml-chroot $TARGET puppet apply --test --tags core /etc/puppet/manifests/site.pp 2>&1 | tee -a /tmp/puppet.log
+      grml-chroot $TARGET /opt/puppetlabs/bin/puppet apply --test --tags core /etc/puppet/manifests/site.pp 2>&1 | tee -a /tmp/puppet.log
       check_puppet_rc "${PIPESTATUS[0]}" "2"
       if [ -f "${TARGET}/etc/profile.d/puppet-agent.sh" ] ; then
           echo "Exporting Puppet 4 new PATH (otherwise /opt/puppetlabs/bin/puppet is not found)"
           source "${TARGET}/etc/profile.d/puppet-agent.sh"
       fi
-      grml-chroot $TARGET puppet apply --test /etc/puppet/manifests/site.pp 2>&1 | tee -a /tmp/puppet.log
+      grml-chroot $TARGET /opt/puppetlabs/bin/puppet apply --test /etc/puppet/manifests/site.pp 2>&1 | tee -a /tmp/puppet.log
       check_puppet_rc "${PIPESTATUS[0]}" "2"
       ;;
     *)
@@ -2194,19 +2200,13 @@ puppet_install_from_git () {
 
 puppet_install_from_puppet () {
   case "${DEBIAN_RELEASE}" in
-    squeeze|wheezy)
-      echo "Supported Debian release ${DEBIAN_RELEASE} detected, continue..."
-      chroot $TARGET sed -i 's/START=.*/START=yes/' /etc/default/puppet
-      grml-chroot $TARGET puppet agent --test --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
-      check_puppet_rc "${PIPESTATUS[0]}" "2"
-      ;;
     jessie|stretch)
       echo "Supported Debian release ${DEBIAN_RELEASE} detected, continue..."
-      grml-chroot $TARGET puppet agent --enable 2>&1 | tee -a /tmp/puppet.log
+      grml-chroot $TARGET /opt/puppetlabs/bin/puppet agent --enable 2>&1 | tee -a /tmp/puppet.log
       check_puppet_rc "${PIPESTATUS[0]}" "0"
-      grml-chroot $TARGET puppet agent --test --tags core --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
+      grml-chroot $TARGET /opt/puppetlabs/bin/puppet agent --test --tags core --waitforcert 30 2>&1 | tee -a /tmp/puppet.log
       check_puppet_rc "${PIPESTATUS[0]}" "2"
-      grml-chroot $TARGET puppet agent --test 2>&1 | tee -a /tmp/puppet.log
+      grml-chroot $TARGET /opt/puppetlabs/bin/puppet agent --test 2>&1 | tee -a /tmp/puppet.log
       check_puppet_rc "${PIPESTATUS[0]}" "2"
       ;;
     *)
@@ -2236,24 +2236,12 @@ EOF
 
   chroot $TARGET apt-get -y install resolvconf libnss-myhostname
 
-  cat > ${TARGET}/etc/puppet/puppet.conf << EOF
-# Deployed via deployment.sh
+  cat > ${TARGET}/etc/puppetlabs/puppet/puppet.conf<< EOF
+# HEADER: managed by puppet, do NOT edit manually!
+# This file has been created by deployment.sh
 [main]
-logdir=/var/log/puppet
-vardir=/var/lib/puppet
-ssldir=/var/lib/puppet/ssl
-rundir=/var/run/puppet
-factpath=\$vardir/lib/facter
-prerun_command=/etc/puppet/etckeeper-commit-pre
-postrun_command=/etc/puppet/etckeeper-commit-post
 server=${PUPPET_SERVER}
-
-[master]
-ssl_client_header=SSL_CLIENT_S_DN
-ssl_client_verify_header=SSL_CLIENT_VERIFY
-
-[agent]
-environment=$PUPPET
+environment=${PUPPET}
 EOF
 
   if [ -n "${PUPPET_GIT_REPO}" ] ; then
