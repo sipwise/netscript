@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "dad5f5cf_b333bbf5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-03-24T07:34:39Z",
+      "side": 1,
+      "message": "JFTR: a) we could *also* just upgrade mcollective \u0026 CO on mcollective.mgm and b) existing mcollective basically still works:\n\n  http://paste.mgm.sipwise.com/show/2315/\n\nSo I don\u0027t see how this change actually deprecates mcollective.mgm, but let\u0027s see how far we get with the mcollective.mgm replacement. :)",
+      "parentUuid": "dad5f5cf_d002f50a",
+      "revId": "0baeec07a925c291b5fb30e266f3e7ff3519ad92",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dad5f5cf_30e8217c",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -101,6 +119,41 @@
       "side": 1,
       "message": "Restored wheezy here, while still dropped squeezy as we have no puppet-agent for it.\n\nDo we really need it? It will increase code complexity here :-(",
       "parentUuid": "dad5f5cf_30e8217c",
+      "revId": "0baeec07a925c291b5fb30e266f3e7ff3519ad92",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dad5f5cf_d330bfea",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-03-24T07:34:39Z",
+      "side": 1,
+      "message": "There exists a squeeze package at http://apt.puppetlabs.com/ but I\u0027m not sure whether we have it on our mirrors. Anyway, as already stated I personally would just drop the DEBIAN_RELEASE check at all in the code.",
+      "parentUuid": "dad5f5cf_33090b2d",
+      "revId": "0baeec07a925c291b5fb30e266f3e7ff3519ad92",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dad5f5cf_133727e5",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2204,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-03-24T07:34:39Z",
+      "side": 1,
+      "message": "I\u0027d  really just drop the \"case \"${DEBIAN_RELEASE} ... \" completely, nothing of the code *here* is specific to any debian release when using puppetlabs\u0027 AIO puppet-agent packages.",
       "revId": "0baeec07a925c291b5fb30e266f3e7ff3519ad92",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
