@@ -90,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "dad5f5cf_f395c388",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-03-24T09:55:58Z",
+      "side": 1,
+      "message": "We already have mcollective integrated in Puppet 4 on puppet2.mgm\n\nWhy do you need separate host for it then?",
+      "parentUuid": "dad5f5cf_b333bbf5",
+      "revId": "0baeec07a925c291b5fb30e266f3e7ff3519ad92",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dad5f5cf_30e8217c",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -143,6 +161,24 @@
     },
     {
       "key": {
+        "uuid": "dad5f5cf_1393a7a4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-03-24T09:55:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dad5f5cf_d330bfea",
+      "revId": "0baeec07a925c291b5fb30e266f3e7ff3519ad92",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dad5f5cf_133727e5",
         "filename": "deployment.sh",
         "patchSetId": 1
@@ -154,6 +190,24 @@
       "writtenOn": "2016-03-24T07:34:39Z",
       "side": 1,
       "message": "I\u0027d  really just drop the \"case \"${DEBIAN_RELEASE} ... \" completely, nothing of the code *here* is specific to any debian release when using puppetlabs\u0027 AIO puppet-agent packages.",
+      "revId": "0baeec07a925c291b5fb30e266f3e7ff3519ad92",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dad5f5cf_13ac07ed",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 2204,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-03-24T09:55:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dad5f5cf_133727e5",
       "revId": "0baeec07a925c291b5fb30e266f3e7ff3519ad92",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
