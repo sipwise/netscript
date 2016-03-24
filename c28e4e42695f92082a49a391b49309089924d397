@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dad5f5cf_09961495",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-03-24T21:47:23Z",
+      "side": 1,
+      "message": "Drop this note now?",
+      "revId": "c28e4e42695f92082a49a391b49309089924d397",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dad5f5cf_497c1c73",
+        "filename": "deployment.sh",
+        "patchSetId": 6
+      },
+      "lineNbr": 2188,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-03-24T21:47:23Z",
+      "side": 1,
+      "message": "Drop this comment?",
+      "revId": "c28e4e42695f92082a49a391b49309089924d397",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dad5f5cf_6981e049",
+        "filename": "deployment.sh",
+        "patchSetId": 6
+      },
+      "lineNbr": 2209,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-03-24T21:47:23Z",
+      "side": 1,
+      "message": "Drop this comment now?",
+      "revId": "c28e4e42695f92082a49a391b49309089924d397",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
