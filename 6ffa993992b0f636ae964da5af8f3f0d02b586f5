@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dad5f5cf_88cf59b0",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 841,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2016-03-30T12:15:47Z",
+      "side": 1,
+      "message": "shouldn\u0027t this be IP_HA_SHARED?",
+      "range": {
+        "startLine": 841,
+        "startChar": 58,
+        "endLine": 841,
+        "endChar": 61
+      },
+      "revId": "6ffa993992b0f636ae964da5af8f3f0d02b586f5",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
