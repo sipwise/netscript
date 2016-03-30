@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dad5f5cf_f3a93a7c",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1732,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-03-30T18:09:33Z",
+      "side": 1,
+      "message": "The $MCASTADDR can \"just\" disappear?",
+      "revId": "07895a9045d1755896a8a912357cb7f254f375bb",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
