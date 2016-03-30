@@ -16,6 +16,24 @@
       "revId": "07895a9045d1755896a8a912357cb7f254f375bb",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dad5f5cf_33c7c247",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1732,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-03-30T18:23:06Z",
+      "side": 1,
+      "message": "improved installer commit message as discussed persocnaly.",
+      "parentUuid": "dad5f5cf_f3a93a7c",
+      "revId": "07895a9045d1755896a8a912357cb7f254f375bb",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
