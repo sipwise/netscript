@@ -22,6 +22,30 @@
       "revId": "6ffa993992b0f636ae964da5af8f3f0d02b586f5",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dad5f5cf_732b0a31",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 841,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-03-30T17:43:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dad5f5cf_88cf59b0",
+      "range": {
+        "startLine": 841,
+        "startChar": 58,
+        "endLine": 841,
+        "endChar": 61
+      },
+      "revId": "6ffa993992b0f636ae964da5af8f3f0d02b586f5",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
