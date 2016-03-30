@@ -34,6 +34,7 @@ DEBUG_MODE=false
 DEFAULT_INSTALL_DEV=eth0
 DEFAULT_IP1=192.168.255.251
 DEFAULT_IP2=192.168.255.252
+DEFAULT_IP_HA_SHARED=192.168.255.250
 DEFAULT_INTERNAL_NETMASK=255.255.255.248
 DEFAULT_MCASTADDR=226.94.1.1
 DEFAULT_EXT_IP=192.168.52.114
@@ -837,6 +838,7 @@ if "$PRO_EDITION" ; then
     wget --timeout=30 -O "/tmp/hosts" "${MANAGEMENT_IP}:3000/hostconfig/${TARGET_HOSTNAME}"
     IP1=$(awk '/sp1/ { print $1 }' /tmp/hosts) || IP1=$DEFAULT_IP1
     IP2=$(awk '/sp2/ { print $1 }' /tmp/hosts) || IP2=$DEFAULT_IP2
+    IP_HA_SHARED=$(awk '/sp/ { print $1 }' /tmp/hosts) || IP2=$DEFAULT_IP_HA_SHARED
 
     if [ -z "$INTERNAL_NETMASK" ]; then
       wget --timeout=30 -O "/tmp/interfaces" "http://${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
@@ -852,6 +854,7 @@ if "$PRO_EDITION" ; then
   [ -n "$EXT_GW" ] || EXT_GW=$DEFAULT_EXT_GW
   [ -n "$IP1" ] || IP1=$DEFAULT_IP1
   [ -n "$IP2" ] || IP2=$DEFAULT_IP2
+  [ -n "$IP_HA_SHARED" ] || IP_HA_SHARED=$DEFAULT_IP_HA_SHARED
   case "$ROLE" in
     sp1) INTERNAL_IP=$IP1 ;;
     sp2) INTERNAL_IP=$IP2 ;;
@@ -860,7 +863,7 @@ if "$PRO_EDITION" ; then
   [ -n "$EXTERNAL_NETMASK" ] || EXTERNAL_NETMASK=$DEFAULT_EXT_NETMASK
   [ -n "$MCASTADDR" ] || MCASTADDR=$DEFAULT_MCASTADDR
 
-  logit "ha_int sp1: $IP1 sp2: $IP2 netmask: $INTERNAL_NETMASK"
+  logit "ha_int sp1: $IP1 sp2: $IP2 shared sp: $IP_HA_SHARED netmask: $INTERNAL_NETMASK"
 fi
 
 [ -n "$EIFACE" ] || EIFACE=$INSTALL_DEV
@@ -930,6 +933,7 @@ if "$PRO_EDITION" ; then
   Internal NW iface: $INTERNAL_DEV
   Int sp1 host IP:   $IP1
   Int sp2 host IP:   $IP2
+  Int sp shared IP:  $IP_HA_SHARED
   Int netmask:       $INTERNAL_NETMASK
 " | tee -a /tmp/installer-settings.txt
 fi
@@ -1583,6 +1587,7 @@ EOF
 HNAME="${ROLE}"
 IP1="${IP1}"
 IP2="${IP2}"
+IP_HA_SHARED="${IP_HA_SHARED}"
 EIFACE="${EIFACE}"
 EADDR="${EADDR}"
 MCASTADDR="${MCASTADDR}"
@@ -1724,7 +1729,7 @@ EOT
   echo "# deployment.sh running on $(date)" > "${TARGET}"/var/log/deployment.log
   echo "SCRIPT_VERSION=${SCRIPT_VERSION}" >> "${TARGET}"/var/log/deployment.log
   echo "CMD_LINE=\"${CMD_LINE}\"" >> "${TARGET}"/var/log/deployment.log
-  echo "NGCP_INSTALLER_CMDLINE=\"TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $MCASTADDR\"" >> "${TARGET}"/var/log/deployment.log
+  echo "NGCP_INSTALLER_CMDLINE=\"TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $IP_HA_SHARED\"" >> "${TARGET}"/var/log/deployment.log
 
 fi
 
@@ -1919,6 +1924,7 @@ EOF
     cat >> $TARGET/etc/hosts << EOF
 $IP1 sp1
 $IP2 sp2
+$IP_HA_SHARED sp
 EOF
   else
     # otherwise 'hostname --fqdn' does not work and causes delays with exim4 startup
