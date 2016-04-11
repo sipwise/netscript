@@ -1264,6 +1264,7 @@ if [ -n "$PUPPET" ] ; then
 # for interal use at sipwise
 openssh-server
 puppet-agent
+lsb-release
 EOF
 fi
 
