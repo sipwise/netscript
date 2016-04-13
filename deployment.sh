@@ -2199,7 +2199,7 @@ puppet_install_from_git () {
     check_puppet_rc "${PIPESTATUS[0]}" "2"
   fi
 
-  grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" --tags core \
+  grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" --tags core,apt \
         "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
   check_puppet_rc "${PIPESTATUS[0]}" "2"
 
@@ -2211,7 +2211,7 @@ puppet_install_from_git () {
 }
 
 puppet_install_from_puppet () {
-  grml-chroot $TARGET puppet agent --test --tags core 2>&1 | tee -a /tmp/puppet.log
+  grml-chroot $TARGET puppet agent --test --tags core,apt 2>&1 | tee -a /tmp/puppet.log
   check_puppet_rc "${PIPESTATUS[0]}" "2"
 
   grml-chroot $TARGET puppet agent --test 2>&1 | tee -a /tmp/puppet.log
