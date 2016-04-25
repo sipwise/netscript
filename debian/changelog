@@ -1,3 +1,20 @@
+ngcp-netscript (4.2.2.1+0~mr4.2.2.1) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [c0a31cb] MT#17215 Skip LVM workaround if FAI's setup-storage >=5.0 is present
+
+  [ Alexander Lutay ]
+  * [e4009be] MT#17673 Set DEBIAN_RELEASE=jessie for deployment.sh (NGCP mr4.2+ is jessie based)
+  * [5a733b0] MT#17673 Switch deployment.sh self-updates to available  repositories
+  * [eb16a70] MT#17673 Fix 9835b80: augeas-tools installation from ${DEBIAN_RELEASE}
+  * [5283130] MT#17849 Remove PXE handling from deployment.sh, ngcp-installer cares about iPXE
+  * [10741e8] MT#17673 Stops mixing installer.log and deploymen debug log as it consuses often
+  * [5a80b32] MT#17673 Bypass deployment.sh debug mode to ngcp-installer (if enabled)
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 25 Apr 2016 09:24:13 +0200
+
 ngcp-netscript (4.2.2.0+0~mr4.2.2.0) unstable; urgency=medium
 
   * New release.
