@@ -88,24 +88,6 @@ VLAN_SIP_INT=1720
 VLAN_HA_INT=1721
 VLAN_RTP_EXT=1722
 
-# if TARGET_DISK environment variable is set accept it
-if [ -n "$TARGET_DISK" ] ; then
-  export DISK="${TARGET_DISK}"
-else # otherwise try to find sane default
-  if [ -L /sys/block/vda ] ; then
-    export DISK=vda # will be configured as /dev/vda
-  else
-    # in some cases, sda is not the HDD, but the CDROM,
-    # so better walk through all devices.
-    for i in /sys/block/sd*; do
-      if grep -q 0 ${i}/removable; then
-        export DISK=$(basename $i)
-        break
-      fi
-    done
-  fi
-fi
-
 ### helper functions {{{
 get_deploy_status() {
   if [ -r "${STATUS_DIRECTORY}/status" ] ; then
@@ -347,9 +329,6 @@ logit "host-IP: $(ip-screen)"
 logit "deployment-version: $SCRIPT_VERSION"
 # }}}
 
-test -z "${DISK}" \
-  && die "Error: No non-removable disk suitable for installation found"
-
 enable_deploy_status_server
 
 set_deploy_status "checkBootParam"
@@ -358,6 +337,30 @@ if checkBootParam debugmode ; then
   DEBUG_MODE=true
   enable_trace
 fi
+
+if checkBootParam targetdisk ; then
+  TARGET_DISK=$(getBootParam targetdisk)
+fi
+
+# if TARGET_DISK environment variable is set accept it
+if [ -n "$TARGET_DISK" ] ; then
+  export DISK="${TARGET_DISK}"
+else # otherwise try to find sane default
+  if [ -L /sys/block/vda ] ; then
+    export DISK=vda # will be configured as /dev/vda
+  else
+    # in some cases, sda is not the HDD, but the CDROM,
+    # so better walk through all devices.
+    for i in /sys/block/sd*; do
+      if grep -q 0 "${i}/removable"; then
+        export DISK=$(basename "$i")
+        break
+      fi
+    done
+  fi
+fi
+
+[ -z "${DISK}" ] && die "Error: No non-removable disk suitable for installation found"
 
 if checkBootParam ngcpstatus ; then
   STATUS_WAIT=$(getBootParam ngcpstatus || true)
