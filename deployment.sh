@@ -50,7 +50,6 @@ PUPPET_SERVER=puppet.mgm.sipwise.com
 PUPPET_GIT_REPO=''
 PUPPET_GIT_BRANCH=master
 PUPPET_LOCAL_GIT="${TARGET}/tmp/puppet.git"
-PUPPET_INIT_HIERA=false
 PUPPET_RESCUE_DRIVE="none"
 PUPPET_RESCUE_PATH="/mnt/rescue_drive"
 PUPPET_RESCUE_LABEL="SIPWRESCUE*"
@@ -458,10 +457,6 @@ fi
 
 if checkBootParam "puppetrescuedrive" ; then
   PUPPET_RESCUE_DRIVE=$(getBootParam puppetrescuedrive)
-fi
-
-if checkBootParam "puppetinithiera" ; then
-  PUPPET_INIT_HIERA=true
 fi
 
 if checkBootParam "debianrelease" ; then
@@ -2201,17 +2196,19 @@ puppet_install_from_git () {
       ;;
   esac
 
-  if "${PUPPET_INIT_HIERA}" ; then
+  if [ "${PUPPET_RESCUE_DRIVE}" != "none" ] ; then
     echo "Initializing Hiera config..."
     grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" \
         -e "include puppet::hiera" 2>&1 | tee -a /tmp/puppet.log
     check_puppet_rc "${PIPESTATUS[0]}" "2"
   fi
 
+  echo "Running Puppet core deployment..."
   grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" --tags core,apt \
         "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
   check_puppet_rc "${PIPESTATUS[0]}" "2"
 
+  echo "Running Puppet deployment..."
   grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" \
         "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
   check_puppet_rc "${PIPESTATUS[0]}" "2"
@@ -2220,9 +2217,11 @@ puppet_install_from_git () {
 }
 
 puppet_install_from_puppet () {
+  echo "Running Puppet core deployment..."
   grml-chroot $TARGET puppet agent --test --tags core,apt 2>&1 | tee -a /tmp/puppet.log
   check_puppet_rc "${PIPESTATUS[0]}" "2"
 
+  echo "Running Puppet deployment..."
   grml-chroot $TARGET puppet agent --test 2>&1 | tee -a /tmp/puppet.log
   check_puppet_rc "${PIPESTATUS[0]}" "2"
 }
