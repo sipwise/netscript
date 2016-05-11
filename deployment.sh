@@ -50,7 +50,6 @@ PUPPET_SERVER=puppet.mgm.sipwise.com
 PUPPET_GIT_REPO=''
 PUPPET_GIT_BRANCH=master
 PUPPET_LOCAL_GIT="${TARGET}/tmp/puppet.git"
-PUPPET_RESCUE_DRIVE="none"
 PUPPET_RESCUE_PATH="/mnt/rescue_drive"
 PUPPET_RESCUE_LABEL="SIPWRESCUE*"
 RESTART_NETWORK=true
@@ -453,10 +452,6 @@ fi
 
 if checkBootParam "puppetgitbranch" ; then
   PUPPET_GIT_BRANCH=$(getBootParam puppetgitbranch)
-fi
-
-if checkBootParam "puppetrescuedrive" ; then
-  PUPPET_RESCUE_DRIVE=$(getBootParam puppetrescuedrive)
 fi
 
 if checkBootParam "debianrelease" ; then
@@ -2160,48 +2155,41 @@ puppet_install_from_git () {
 
   local PUPPET_TMP_ENV
   PUPPET_TMP_ENV="${TARGET}/etc/puppetlabs/code/environments/${PUPPET}"
-
   echo "Creating empty Puppet environment '${PUPPET_TMP_ENV}'"
   mkdir -m 0755 -p "${PUPPET_TMP_ENV}"
 
-  case "${PUPPET_RESCUE_DRIVE}" in
-    auto)
-      echo "Searching for Hiera rescue device by label '${PUPPET_RESCUE_LABEL}'..."
-      PUPPET_RESCUE_DRIVE=$(blkid | grep -E "LABEL=\"${PUPPET_RESCUE_LABEL}" | head -1 | awk -F: '{print $1}')
+  echo "Searching for Hiera rescue device by label '${PUPPET_RESCUE_LABEL}'..."
+  local PUPPET_RESCUE_DRIVE
+  PUPPET_RESCUE_DRIVE=$(blkid | grep -E "LABEL=\"${PUPPET_RESCUE_LABEL}" | head -1 | awk -F: '{print $1}')
 
-      if [ ! -n "${PUPPET_RESCUE_DRIVE}" ] ; then
-        die "ERROR: No USB device found matching label '${PUPPET_RESCUE_LABEL}', cannot continue!"
-      fi
-
-      local device_type
-      device_type=$(blkid | grep -E "LABEL=\"${PUPPET_RESCUE_LABEL}" | head -1 | sed 's/.*TYPE="\(.*\)".*/\1/')
-
-      if [ ! -n "${device_type}" ] ; then
-        die "ERROR: Cannot detect device type for device '${PUPPET_RESCUE_LABEL}', cannot continue!"
-      fi
-
-      echo "Copying data from device '${PUPPET_RESCUE_DRIVE}' (mounted into '${PUPPET_RESCUE_PATH}', type '${device_type}')"
-      mkdir -p "${PUPPET_RESCUE_PATH}"
-      mount -t "${device_type}" -o ro "${PUPPET_RESCUE_DRIVE}" "${PUPPET_RESCUE_PATH}"
-      mkdir -m 0700 -p "${TARGET}/etc/puppetlabs/code/hieradata/"
-      cp -a "${PUPPET_RESCUE_PATH}"/hieradata/* "${TARGET}/etc/puppetlabs/code/hieradata/"
-      umount -f "${PUPPET_RESCUE_PATH}"
-      rmdir "${PUPPET_RESCUE_PATH}"
-      ;;
-    none)
-      echo "Hiera rescue drive has been skipped as requested."
-      ;;
-    *)
-      die "ERROR: Unsupported rescue drive '${PUPPET_RESCUE_DRIVE}', cannot continue!"
-      ;;
-  esac
-
-  if [ "${PUPPET_RESCUE_DRIVE}" != "none" ] ; then
-    echo "Initializing Hiera config..."
-    grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" \
-        -e "include puppet::hiera" 2>&1 | tee -a /tmp/puppet.log
-    check_puppet_rc "${PIPESTATUS[0]}" "2"
+  if [ -n "${PUPPET_RESCUE_DRIVE}" ] ; then
+    echo "Found Hiera rescue device: '${PUPPET_RESCUE_DRIVE}'"
+  else
+    die "ERROR: No USB device found matching label '${PUPPET_RESCUE_LABEL}', cannot continue!"
   fi
+
+  echo "Searching for Hiera rescue device type..."
+  local DEVICE_TYPE
+  DEVICE_TYPE=$(blkid | grep -E "LABEL=\"${PUPPET_RESCUE_LABEL}" | head -1 | sed 's/.*TYPE="\(.*\)".*/\1/')
+
+  if [ -n "${DEVICE_TYPE}" ] ; then
+    echo "Hiera rescue device type is:'${DEVICE_TYPE}'"
+  else
+    die "ERROR: Cannot detect device type for device '${PUPPET_RESCUE_LABEL}', cannot continue!"
+  fi
+
+  echo "Copying data from device '${PUPPET_RESCUE_DRIVE}' (mounted into '${PUPPET_RESCUE_PATH}', type '${DEVICE_TYPE}')"
+  mkdir -p "${PUPPET_RESCUE_PATH}"
+  mount -t "${DEVICE_TYPE}" -o ro "${PUPPET_RESCUE_DRIVE}" "${PUPPET_RESCUE_PATH}"
+  mkdir -m 0700 -p "${TARGET}/etc/puppetlabs/code/hieradata/"
+  cp -a "${PUPPET_RESCUE_PATH}"/hieradata/* "${TARGET}/etc/puppetlabs/code/hieradata/"
+  umount -f "${PUPPET_RESCUE_PATH}"
+  rmdir "${PUPPET_RESCUE_PATH}"
+
+  echo "Initializing Hiera config..."
+  grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" \
+        -e "include puppet::hiera" 2>&1 | tee -a /tmp/puppet.log
+  check_puppet_rc "${PIPESTATUS[0]}" "2"
 
   echo "Running Puppet core deployment..."
   grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" --tags core,apt \
