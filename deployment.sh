@@ -2145,18 +2145,14 @@ puppet_install_from_git () {
   fi
 
   local PUPPET_CODE_PATH
-  PUPPET_CODE_PATH="/tmp/puppet/"
+  PUPPET_CODE_PATH="/etc/puppetlabs/code/environments/${PUPPET}"
 
-  echo "Deploying Puppet config from Git repository to ${TARGET}/${PUPPET_CODE_PATH}"
+  echo "Creating empty Puppet environment ${TARGET}/${PUPPET_CODE_PATH}"
   mkdir -m 0755 -p "${TARGET}/${PUPPET_CODE_PATH}"
-  cp -a "${PUPPET_LOCAL_GIT}/manifests" "${TARGET}/${PUPPET_CODE_PATH}"
-  cp -a "${PUPPET_LOCAL_GIT}/modules" "${TARGET}/${PUPPET_CODE_PATH}"
-  rm -rf "${PUPPET_LOCAL_GIT}"
 
-  local PUPPET_TMP_ENV
-  PUPPET_TMP_ENV="${TARGET}/etc/puppetlabs/code/environments/${PUPPET}"
-  echo "Creating empty Puppet environment '${PUPPET_TMP_ENV}'"
-  mkdir -m 0755 -p "${PUPPET_TMP_ENV}"
+  echo "Deploying Puppet code from Git repository to ${TARGET}/${PUPPET_CODE_PATH}"
+  cp -a "${PUPPET_LOCAL_GIT}"/* "${TARGET}/${PUPPET_CODE_PATH}"
+  rm -rf "${PUPPET_LOCAL_GIT:?}"
 
   echo "Searching for Hiera rescue device by label '${PUPPET_RESCUE_LABEL}'..."
   local PUPPET_RESCUE_DRIVE
@@ -2201,7 +2197,10 @@ puppet_install_from_git () {
         "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
   check_puppet_rc "${PIPESTATUS[0]}" "2"
 
-  rm -rf "${TARGET}/${PUPPET_CODE_PATH}"
+  # We want to keep the folder itself (because some day it may be 'production' env passed as pappetenv which
+  # folder should be existent for normal puppet server startup) but just delete all puppet code from there
+  echo "Cleanup content from '${TARGET}/${PUPPET_CODE_PATH}', while keeping the folder for further Puppet/r10k usage"
+  rm -rf "${TARGET:?}/${PUPPET_CODE_PATH:?}"/*
 }
 
 puppet_install_from_puppet () {
