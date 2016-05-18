@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1acb0d3e_78f8b17c",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 2150,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-05-18T21:27:34Z",
+      "side": 1,
+      "message": "lets remove it completely as we use it on 2 places actually\nIMHO it only eats developers RAM to remember it :-)",
+      "range": {
+        "startLine": 2150,
+        "startChar": 8,
+        "endLine": 2150,
+        "endChar": 22
+      },
+      "revId": "73f32d44810a96cca71b1b71af039dfa08309410",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_d803e571",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 2156,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-05-18T21:27:34Z",
+      "side": 1,
+      "message": "-a provides -r",
+      "range": {
+        "startLine": 2156,
+        "startChar": 6,
+        "endLine": 2156,
+        "endChar": 7
+      },
+      "revId": "73f32d44810a96cca71b1b71af039dfa08309410",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_98f55d85",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 2202,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-05-18T21:27:34Z",
+      "side": 1,
+      "message": "lets make it a bit safer, I scare such commands A LOT!",
+      "range": {
+        "startLine": 2202,
+        "startChar": 0,
+        "endLine": 2202,
+        "endChar": 42
+      },
+      "revId": "73f32d44810a96cca71b1b71af039dfa08309410",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
