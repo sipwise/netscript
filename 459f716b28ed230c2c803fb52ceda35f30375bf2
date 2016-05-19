@@ -94,6 +94,30 @@
       "revId": "459f716b28ed230c2c803fb52ceda35f30375bf2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_be20419c",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 2200,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-05-19T14:45:26Z",
+      "side": 1,
+      "message": "Oh that wasn\u0027t obvious to me. Then I\u0027m fine with the \"/*\" of course, but maybe add a comment above then to clarify the situation. Feel free to assume +2 from me then (don\u0027t consider me a blocker for this change).",
+      "parentUuid": "1acb0d3e_7e13b95c",
+      "range": {
+        "startLine": 2200,
+        "startChar": 2,
+        "endLine": 2200,
+        "endChar": 46
+      },
+      "revId": "459f716b28ed230c2c803fb52ceda35f30375bf2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
