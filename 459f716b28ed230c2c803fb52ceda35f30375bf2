@@ -22,6 +22,30 @@
       "revId": "459f716b28ed230c2c803fb52ceda35f30375bf2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_a3934ea2",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 2200,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-05-19T11:31:22Z",
+      "side": 1,
+      "message": "it will abort execution if variable is NOT defined:\n\n13:31:09 ✔ taurus:/tmp$ rm -rf \"${TARGET:?}/${PUPPET_CODE_PATH:?}\"/*\nbash: TARGET: parameter null or not set\n13:31:12 ✘ taurus:/tmp$",
+      "parentUuid": "1acb0d3e_78b0b18b",
+      "range": {
+        "startLine": 2200,
+        "startChar": 2,
+        "endLine": 2200,
+        "endChar": 46
+      },
+      "revId": "459f716b28ed230c2c803fb52ceda35f30375bf2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
