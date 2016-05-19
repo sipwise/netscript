@@ -70,6 +70,30 @@
       "revId": "459f716b28ed230c2c803fb52ceda35f30375bf2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_7e13b95c",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 2200,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-05-19T14:21:20Z",
+      "side": 1,
+      "message": "This is the point. we must keep available \"${TARGET}/${PUPPET_CODE_PATH}\" but make it clean... this is why * appears here...\n\nmaybe IO would do\n\u003e rm -rf \"${TARGET:?}/${PUPPET_CODE_PATH:?}\"\n\u003e mkdir -m 0755 -p \"${TARGET}/${PUPPET_CODE_PATH}\"",
+      "parentUuid": "1acb0d3e_be09212e",
+      "range": {
+        "startLine": 2200,
+        "startChar": 2,
+        "endLine": 2200,
+        "endChar": 46
+      },
+      "revId": "459f716b28ed230c2c803fb52ceda35f30375bf2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
