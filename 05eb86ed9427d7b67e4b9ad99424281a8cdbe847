@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fab9d9a7_644d8672",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-05-31T17:04:19Z",
+      "side": 1,
+      "message": "who install the package ngcp-keyring-latest.deb here?\nI do not see why \"/etc/apt/trusted.gpg.d/sipwise*.gpg\" will exist later then.",
+      "range": {
+        "startLine": 178,
+        "startChar": 97,
+        "endLine": 178,
+        "endChar": 120
+      },
+      "revId": "05eb86ed9427d7b67e4b9ad99424281a8cdbe847",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
