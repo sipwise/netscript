@@ -156,15 +156,14 @@ debootstrap_sipwise_key() {
   cat > /etc/debootstrap/pre-scripts/install-sipwise-key.sh << EOF
 #!/bin/bash
 # installed via deployment.sh
-cp /etc/apt/trusted.gpg.d/sipwise.gpg "\${MNTPOINT}"/etc/apt/trusted.gpg.d/
+cp /etc/apt/trusted.gpg.d/sipwise*.gpg "\${MNTPOINT}"/etc/apt/trusted.gpg.d/
 EOF
   chmod 775 /etc/debootstrap/pre-scripts/install-sipwise-key.sh
 }
 
 install_sipwise_key() {
-  if [ -f "/etc/apt/trusted.gpg.d/sipwise.gpg" ]; then
-    md5sum_sipwise_key=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
-    echo "Sipwise keyring already installed (MD5: [${md5sum_sipwise_key}]), debootstrap sipwise key"
+  if dpkg -l ngcp-keyring | grep -q '^.i' ; then
+    echo "Sipwise keyring already installed, debootstrap sipwise key"
     debootstrap_sipwise_key
     return
   else
@@ -174,24 +173,11 @@ install_sipwise_key() {
   for x in 1 2 3; do
 
     if "$PRO_EDITION" ; then
-      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/sppro/sipwise.gpg
+      wget -O /tmp/ngcp-keyring-latest.deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/sppro/ngcp-keyring-latest.deb
     else
-      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/spce/sipwise.gpg
-    fi
-
-    md5sum_sipwise_key_expected=bcd09c9ad563b2d380152a97d5a0ea83
-    md5sum_sipwise_key_calculated=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
-
-    if [ "$md5sum_sipwise_key_calculated" != "$md5sum_sipwise_key_expected" ] ; then
-      echo "Sipwise keyring has wrong checksum (expected: [$md5sum_sipwise_key_expected] - got: [$md5sum_sipwise_key_calculated]), retry $x"
-    else
-      break
+      wget -O /tmp/ngcp-keyring-latest.deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/spce/ngcp-keyring-latest.deb
     fi
   done
-
-  if [ "$md5sum_sipwise_key_calculated" != "$md5sum_sipwise_key_expected" ] ; then
-    die "Error validating sipwise keyring for apt usage, aborting installation."
-  fi
 
   debootstrap_sipwise_key
 }
