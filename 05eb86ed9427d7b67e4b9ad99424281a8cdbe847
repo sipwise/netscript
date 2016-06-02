@@ -39,6 +39,30 @@
       "revId": "05eb86ed9427d7b67e4b9ad99424281a8cdbe847",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fab9d9a7_34449d73",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-06-02T14:22:38Z",
+      "side": 1,
+      "message": "I\u0027m also wondering whether it would make sense to verify that the package we received is actually the one we\u0027re expecting, or is the https usage behind SIPWISE_REPO_TRANSPORT enough for us?",
+      "parentUuid": "fab9d9a7_644d8672",
+      "range": {
+        "startLine": 178,
+        "startChar": 97,
+        "endLine": 178,
+        "endChar": 120
+      },
+      "revId": "05eb86ed9427d7b67e4b9ad99424281a8cdbe847",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
