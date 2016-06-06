@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "dabed58f_ec6e4396",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2016-06-06T08:43:32Z",
+      "side": 1,
+      "message": "Yes, each key was split into its own keyring to ease maintenance:\n\n$ dpkg -L ngcp-keyring|grep \u0027trusted\\.gpg.*\\.gpg$\u0027\n/etc/apt/trusted.gpg.d/sipwise-autobuilder-2011.gpg\n/etc/apt/trusted.gpg.d/sipwise-archive-2015.gpg\n/etc/apt/trusted.gpg.d/sipwise-archive-2010.gpg",
+      "parentUuid": "fab9d9a7_346d7d05",
+      "revId": "05eb86ed9427d7b67e4b9ad99424281a8cdbe847",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fab9d9a7_644d8672",
         "filename": "deployment.sh",
         "patchSetId": 1
@@ -54,6 +72,54 @@
       "side": 1,
       "message": "I\u0027m also wondering whether it would make sense to verify that the package we received is actually the one we\u0027re expecting, or is the https usage behind SIPWISE_REPO_TRANSPORT enough for us?",
       "parentUuid": "fab9d9a7_644d8672",
+      "range": {
+        "startLine": 178,
+        "startChar": 97,
+        "endLine": 178,
+        "endChar": 120
+      },
+      "revId": "05eb86ed9427d7b67e4b9ad99424281a8cdbe847",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dabed58f_ac684b88",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2016-06-06T08:43:32Z",
+      "side": 1,
+      "message": "No one is installing this yet, this was just a draft. :) I\u0027ll fix that for next iteration.",
+      "parentUuid": "fab9d9a7_644d8672",
+      "range": {
+        "startLine": 178,
+        "startChar": 97,
+        "endLine": 178,
+        "endChar": 120
+      },
+      "revId": "05eb86ed9427d7b67e4b9ad99424281a8cdbe847",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dabed58f_8c6b0785",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2016-06-06T08:43:32Z",
+      "side": 1,
+      "message": "While I also think it would be nice to verify the contents, as otherwise a MITM attack could probably be mounted. Having to hardcode the digests here seems a bit ugly. The most secure option would be to sign the contents and ship the signing key embedded here perhaps, but then we go back again to having some key all over the place which is a pain in case we have to revoke and regenerate another one. :/",
+      "parentUuid": "fab9d9a7_34449d73",
       "range": {
         "startLine": 178,
         "startChar": 97,
