@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "dabed58f_de39a1d9",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-06-08T12:34:49Z",
+      "side": 1,
+      "message": "Ah, thanks for clarifying.",
+      "parentUuid": "dabed58f_ec6e4396",
+      "revId": "05eb86ed9427d7b67e4b9ad99424281a8cdbe847",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fab9d9a7_644d8672",
         "filename": "deployment.sh",
         "patchSetId": 1
@@ -120,6 +138,30 @@
       "side": 1,
       "message": "While I also think it would be nice to verify the contents, as otherwise a MITM attack could probably be mounted. Having to hardcode the digests here seems a bit ugly. The most secure option would be to sign the contents and ship the signing key embedded here perhaps, but then we go back again to having some key all over the place which is a pain in case we have to revoke and regenerate another one. :/",
       "parentUuid": "fab9d9a7_34449d73",
+      "range": {
+        "startLine": 178,
+        "startChar": 97,
+        "endLine": 178,
+        "endChar": 120
+      },
+      "revId": "05eb86ed9427d7b67e4b9ad99424281a8cdbe847",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dabed58f_fe36e5e6",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-06-08T12:34:49Z",
+      "side": 1,
+      "message": "ACK, if you\u0027re fine with that I\u0027m fine as well :)",
+      "parentUuid": "dabed58f_8c6b0785",
       "range": {
         "startLine": 178,
         "startChar": 97,
