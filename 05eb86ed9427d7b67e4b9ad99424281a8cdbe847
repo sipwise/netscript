@@ -171,6 +171,30 @@
       "revId": "05eb86ed9427d7b67e4b9ad99424281a8cdbe847",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dabed58f_deae81e7",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2016-06-08T12:50:12Z",
+      "side": 1,
+      "message": "Well, I\u0027d prefer something more secure, but in any case while the previous check was very well-intentioned it probably did not give much security anyway. It\u0027s using md5sum (which is known to be weak), and w/o a size check, so preparing a new keyring padded with junk should be pretty easy I guess. :)\n\nOne possibility could be to pass wget --ca-certificate with a bundle of the CA we use for the sipwise.com certs, this way we avoid much of the problem with a MITM.",
+      "parentUuid": "dabed58f_fe36e5e6",
+      "range": {
+        "startLine": 178,
+        "startChar": 97,
+        "endLine": 178,
+        "endChar": 120
+      },
+      "revId": "05eb86ed9427d7b67e4b9ad99424281a8cdbe847",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
