@@ -837,7 +837,7 @@ if "$PRO_EDITION" ; then
     wget --timeout=30 -O "/tmp/hosts" "${MANAGEMENT_IP}:3000/hostconfig/${TARGET_HOSTNAME}"
     IP1=$(awk '/sp1/ { print $1 }' /tmp/hosts) || IP1=$DEFAULT_IP1
     IP2=$(awk '/sp2/ { print $1 }' /tmp/hosts) || IP2=$DEFAULT_IP2
-    IP_HA_SHARED=$(awk '/sp/ { print $1 }' /tmp/hosts) || IP_HA_SHARED=$DEFAULT_IP_HA_SHARED
+    IP_HA_SHARED=$(awk '/sp(\s|$)/ { print $1 }' /tmp/hosts) || IP_HA_SHARED=$DEFAULT_IP_HA_SHARED
 
     if [ -z "$INTERNAL_NETMASK" ]; then
       wget --timeout=30 -O "/tmp/interfaces" "http://${MANAGEMENT_IP}:3000/nwconfig/${TARGET_HOSTNAME}"
