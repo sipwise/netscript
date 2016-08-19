@@ -1660,32 +1660,6 @@ EOT
     die "Error during installation of ngcp. Find details at: $TARGET/tmp/ngcp-installer.log $TARGET/tmp/ngcp-installer-debug.log"
   fi
 
-  if "$RETRIEVE_MGMT_CONFIG" ; then
-    if [ "$ROLE" = "sp1" ] ; then
-      password=sipwise
-
-      logit "Retrieving sipwise.cnf from management server (using password ${password})"
-      wget --timeout=30 -O "${TARGET}"/etc/mysql/sipwise.cnf "${MANAGEMENT_IP}:3000/dbconfig/sipwise_cnf?password=${password}"
-      logit "Copying sipwise.cnf to /mnt/glusterfs/shared_config"
-      chroot $TARGET cp /etc/mysql/sipwise.cnf /mnt/glusterfs/shared_config/sipwise.cnf
-
-      logit "Sync constants"
-      chroot $TARGET ngcp-sync-constants -r
-    fi
-  fi
-
-  case "$CROLE" in
-     proxy)
-        if grml-chroot $TARGET /etc/init.d/mysql start 2 ; then
-          logit "Configuring MySQL second instance"
-          chroot $TARGET /usr/share/ngcp-ngcpcfg/helper/check-for-mysql 10 2
-          chroot $TARGET ngcp-sync-constants -r -s --local-repl
-        else
-          logit "Can't start MySQL second instance"
-        fi
-        ;;
-  esac
-
   # upload db dump only if we're deploying a trunk version
   if $TRUNK_VERSION && checkBootParam ngcpupload ; then
     set_deploy_status "upload_data"
