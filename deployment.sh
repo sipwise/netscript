@@ -1966,9 +1966,6 @@ EOF
 }
 
 vagrant_configuration() {
-  # make sure we use the most recent package versions, including apt-key setup
-  grml-chroot "${TARGET}" apt-get update
-
   # bzip2, linux-headers-amd64 and make are required for VirtualBox Guest Additions installer
   # less + sudo are required for Vagrant itself
   echo "Installing software for VirtualBox Guest Additions installer"
@@ -1977,8 +1974,7 @@ vagrant_configuration() {
     squeeze) local linux_headers_package="linux-headers-2.6-amd64" ;;
           *) local linux_headers_package="linux-headers-amd64"     ;;
   esac
-  chroot "$TARGET" apt-get -y install bzip2 less ${linux_headers_package} make sudo
-  if [ $? -ne 0 ] ; then
+  if ! chroot "$TARGET" apt-get -y install bzip2 less ${linux_headers_package} make sudo ; then
     die "Error: failed to install 'bzip2 less ${linux_headers_package} make sudo' packages."
   fi
 
@@ -2030,7 +2026,6 @@ vagrant_configuration() {
   install_vbox_package
 
   # required for fake_uname and VBoxLinuxAdditions.run
-  grml-chroot $TARGET apt-get update
   grml-chroot $TARGET apt-get -y install libc6-dev gcc
   fake_uname
 
