@@ -2030,7 +2030,7 @@ vagrant_configuration() {
   install_vbox_package
 
   # required for fake_uname and VBoxLinuxAdditions.run
-  grml-chroot $TARGET apt-get update
+  #grml-chroot $TARGET apt-get update
   grml-chroot $TARGET apt-get -y install libc6-dev gcc
   fake_uname
 
