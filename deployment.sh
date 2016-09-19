@@ -46,7 +46,7 @@ CE_EDITION=false
 CARRIER_EDITION=false
 NGCP_INSTALLER=false
 PUPPET=''
-PUPPET_SERVER=puppet.mgm.sipwise.com
+PUPPET_SERVER=puppet1.mgm.sipwise.com
 PUPPET_GIT_REPO=''
 PUPPET_GIT_BRANCH=master
 PUPPET_LOCAL_GIT="${TARGET}/tmp/puppet.git"
@@ -73,9 +73,9 @@ VAGRANT=false
 ADJUST_FOR_LOW_PERFORMANCE=false
 ENABLE_VM_SERVICES=false
 FILESYSTEM="ext4"
-DEBIAN_REPO_HOST="debian.sipwise.com"
+DEBIAN_REPO_HOST="ftp.at.debian.org"
 SIPWISE_REPO_HOST="deb.sipwise.com"
-SIPWISE_REPO_TRANSPORT="https"
+SIPWISE_REPO_TRANSPORT="http"
 DPL_MYSQL_REPLICATION=true
 FILL_APPROX_CACHE=false
 VLAN_BOOT_INT=2
@@ -174,9 +174,9 @@ install_sipwise_key() {
   for x in 1 2 3; do
 
     if "$PRO_EDITION" ; then
-      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/sppro/sipwise.gpg
+      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://builder2.mgm.sipwise.com/vmbuilder/sipwise.gpg
     else
-      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/spce/sipwise.gpg
+      wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://builder2.mgm.sipwise.com/vmbuilder/sipwise.gpg
     fi
 
     md5sum_sipwise_key_expected=bcd09c9ad563b2d380152a97d5a0ea83
@@ -232,7 +232,7 @@ grml_debootstrap_upgrade() {
     local TMPDIR=$(mktemp -d)
     mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
     local debsrcfile=$(mktemp)
-    echo "deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/grml.org grml-testing main" >> "$debsrcfile"
+    echo "deb ${SIPWISE_REPO_TRANSPORT}://deb.grml.org/ grml-testing main" >> "$debsrcfile"
 
     DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
       -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
@@ -1262,7 +1262,6 @@ if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/packages << EOF
 # for interal use at sipwise
 openssh-server
-puppet-agent
 lsb-release
 EOF
 fi
@@ -1277,9 +1276,9 @@ fi
 # NOTE: we use the debian.sipwise.com CNAME by intention here
 # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
 # over official Debian
-MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/"
-SEC_MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian-security/"
-KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
+MIRROR="http://${DEBIAN_REPO_HOST}/debian/"
+SEC_MIRROR="http:///etc/apt/trusted.gpg.d/debian-archive-jessie-stable.gpg"
+KEYRING='/etc/apt/trusted.gpg.d/debian-archive-jessie-stable.gpg'
 
 set_deploy_status "debootstrap"
 
@@ -1288,13 +1287,13 @@ logit "Setting up /etc/debootstrap/etc/apt/sources.list"
 cat > /etc/debootstrap/etc/apt/sources.list << EOF
 # Set up via deployment.sh for grml-debootstrap usage
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
-deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
+deb http://security.debian.org/ jessie/updates main contrib non-free
 deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 EOF
 
 if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/etc/apt/sources.list << EOF
-deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs-${DEBIAN_RELEASE}/ ${DEBIAN_RELEASE} main PC1 dependencies
+deb http://apt.puppetlabs.com/ jessie main PC1 dependencies
 EOF
 fi
 
@@ -2202,6 +2201,9 @@ EOF
   grml-chroot $TARGET /etc/init.d/hostname.sh
 
   chroot $TARGET apt-get -y install resolvconf libnss-myhostname
+
+  # TODO: remove --force-yes / replace with proper gpg key for apt.puppetlabs.com
+  chroot $TARGET apt-get -y --force-yes install puppet-agent=1.3.5-1jessie
 
   cat > ${TARGET}/etc/puppetlabs/puppet/puppet.conf<< EOF
 # This file has been created by deployment.sh
