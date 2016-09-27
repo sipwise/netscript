@@ -1,3 +1,13 @@
+ngcp-netscript (5.0.0.0+0~mr5.0.0.0) unstable; urgency=medium
+
+  [ Kirill Solomko ]
+  * [42447d5] MT#21439 remove sipwise.cnf retreival and ngcp-sync-constants invoke
+
+  [ Alexander Lutay ]
+  * [360825c] MT#22131 Do not call 'apt-get update' inside chroot on virtualbox installation stage
+
+ -- Alexander Lutay <alutay@sipwise.com>  Tue, 27 Sep 2016 15:38:58 +0200
+
 ngcp-netscript (4.6.0.0+0~mr5.0.0.0) unstable; urgency=medium
 
   [ Alexander Lutay ]
