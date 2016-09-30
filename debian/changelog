@@ -1,3 +1,15 @@
+ngcp-netscript (4.4.3.0+0~mr4.4.3.0) unstable; urgency=medium
+
+  [ Alexander Lutay ]
+  * [6163137] MT#18723 Fix shared IP parsing logic for carrier
+
+  [ Kirill Solomko ]
+  * [e7eda52] MT#21439 remove sipwise.cnf retreival and ngcp-sync-constants invoke
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Fri, 30 Sep 2016 13:12:34 +0200
+
 ngcp-netscript (4.4.2.0+0~mr4.4.2.0) unstable; urgency=medium
 
   * New release.
