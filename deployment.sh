@@ -1294,7 +1294,7 @@ EOF
 
 if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/etc/apt/sources.list << EOF
-deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs-${DEBIAN_RELEASE}/ ${DEBIAN_RELEASE} main PC1 dependencies
+deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ ${DEBIAN_RELEASE} main PC1 dependencies
 EOF
 fi
 
