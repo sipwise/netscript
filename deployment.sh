@@ -1664,7 +1664,10 @@ EOT
   if $TRUNK_VERSION && checkBootParam ngcpupload ; then
     set_deploy_status "upload_data"
     grml-chroot $TARGET apt-get -y install ngcp-dev-tools
-    grml-chroot $TARGET ngcp-dumps-upload-to-sipwise
+    if ! grml-chroot $TARGET ngcp-dumps-upload-to-sipwise ; then
+      set_deploy_status "error"
+      die "Error: Failed to upload dumps to sipwise. Exiting."
+    fi
     set_deploy_status "ngcp-installer"
   fi
 
