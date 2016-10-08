@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a3f45e8_c6f838c7",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1666,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-10-08T08:19:08Z",
+      "side": 1,
+      "message": "Mika, do you recall why we install ngcp-dev-tools here?\nngcp-dumps-upload-to-sipwise is comming from ngcp-system-tools",
+      "range": {
+        "startLine": 1666,
+        "startChar": 4,
+        "endLine": 1666,
+        "endChar": 57
+      },
+      "revId": "92db066ace96149bb3735f9af05442ae7495683b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
