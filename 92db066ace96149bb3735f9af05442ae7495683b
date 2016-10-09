@@ -22,6 +22,30 @@
       "revId": "92db066ace96149bb3735f9af05442ae7495683b",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a3f45e8_c6e67816",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1666,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-10-09T08:45:29Z",
+      "side": 1,
+      "message": "You did that change in commit f91923675 (Change-Id: Id797534378aa42e99681c0da48a598aa7654d531), seems like it was by accident back then? :)",
+      "parentUuid": "5a3f45e8_c6f838c7",
+      "range": {
+        "startLine": 1666,
+        "startChar": 4,
+        "endLine": 1666,
+        "endChar": 57
+      },
+      "revId": "92db066ace96149bb3735f9af05442ae7495683b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
