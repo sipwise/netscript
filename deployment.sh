@@ -1667,6 +1667,9 @@ EOT
     if ! grml-chroot $TARGET ngcp-dumps-upload-to-sipwise ; then
       die "Error: Failed to upload dumps to sipwise. Exiting."
     fi
+    if ! grml-chroot $TARGET ngcp-prepare-translations ; then
+      die "Error: Failed to prepare ngcp-panel translations. Exiting."
+    fi
     set_deploy_status "ngcp-installer"
   fi
 
