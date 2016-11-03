@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a4c51b2_c3092c97",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1669,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-11-03T12:17:33Z",
+      "side": 1,
+      "message": "drop it, it does nothing currently.",
+      "range": {
+        "startLine": 1667,
+        "startChar": 0,
+        "endLine": 1669,
+        "endChar": 6
+      },
+      "revId": "6586188fef2314c8fe8631639cf1c4a723450b2b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
