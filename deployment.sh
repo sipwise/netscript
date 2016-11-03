@@ -1662,10 +1662,10 @@ EOT
 
   # upload db dump only if we're deploying a trunk version
   if $TRUNK_VERSION && checkBootParam ngcpupload ; then
-    set_deploy_status "upload_data"
+    set_deploy_status "prepare_translations"
     grml-chroot $TARGET apt-get -y install ngcp-dev-tools
-    if ! grml-chroot $TARGET ngcp-dumps-upload-to-sipwise ; then
-      die "Error: Failed to upload dumps to sipwise. Exiting."
+    if ! grml-chroot $TARGET ngcp-prepare-translations ; then
+      die "Error: Failed to prepare ngcp-panel translations. Exiting."
     fi
     set_deploy_status "ngcp-installer"
   fi
