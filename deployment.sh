@@ -643,6 +643,10 @@ fi
 if checkBootParam sipwiserepotransport ; then
   SIPWISE_REPO_TRANSPORT=$(getBootParam sipwiserepotransport)
 fi
+
+if checkBootParam debootstrapkey ; then
+  GPG_KEYRING=$(getBootParam debootstrapkey)
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -1287,7 +1291,23 @@ fi
 # over official Debian
 MIRROR="${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/"
 SEC_MIRROR="${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian-security/"
-KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
+
+if [ -z "${GPG_KEYRING}" ] ; then
+  KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
+else
+  KEYRING='/etc/apt/trusted.gpg'
+
+  echo "Fetching debootstrap keyring as GPG key '${GPG_KEYRING}'..."
+  logit "Fetching debootstrap keyring as GPG key '${GPG_KEYRING}'..."
+
+  if ! gpg --keyserver pool.sks-keyservers.net --recv-keys "${GPG_KEYRING}" ; then
+    die "Failed to fetch GPG key '${GPG_KEYRING}'"
+  fi
+
+  if ! gpg -a --export "${GPG_KEYRING}" | apt-key add - ; then
+    die "Failed to import GPG key '${GPG_KEYRING}' as apt-key"
+  fi
+fi
 
 set_deploy_status "debootstrap"
 
