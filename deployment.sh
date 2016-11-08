@@ -74,6 +74,7 @@ ADJUST_FOR_LOW_PERFORMANCE=false
 ENABLE_VM_SERVICES=false
 FILESYSTEM="ext4"
 DEBIAN_REPO_HOST="debian.sipwise.com"
+DEBIAN_REPO_TRANSPORT="https"
 SIPWISE_REPO_HOST="deb.sipwise.com"
 SIPWISE_REPO_TRANSPORT="https"
 DPL_MYSQL_REPLICATION=true
@@ -252,7 +253,7 @@ install_vbox_package() {
   local TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
-  echo "deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} non-free" > \
+  echo "deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} non-free" > \
     "${TMPDIR}/etc/sources.list"
 
   DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -633,6 +634,10 @@ fi
 
 if checkBootParam ngcpppainstaller ; then
   NGCP_PPA_INSTALLER=$(getBootParam ngcpppainstaller)
+fi
+
+if checkBootParam debianrepotransport ; then
+  DEBIAN_REPO_TRANSPORT=$(getBootParam debianrepotransport)
 fi
 
 if checkBootParam sipwiserepotransport ; then
@@ -1277,8 +1282,8 @@ fi
 # NOTE: we use the debian.sipwise.com CNAME by intention here
 # to avoid conflicts with apt-pinning, preferring deb.sipwise.com
 # over official Debian
-MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/"
-SEC_MIRROR="${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian-security/"
+MIRROR="${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/"
+SEC_MIRROR="${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian-security/"
 KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
 
 set_deploy_status "debootstrap"
@@ -1294,7 +1299,7 @@ EOF
 
 if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/etc/apt/sources.list << EOF
-deb ${SIPWISE_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ ${DEBIAN_RELEASE} main PC1 dependencies
+deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ ${DEBIAN_RELEASE} main PC1 dependencies
 EOF
 fi
 
@@ -1622,6 +1627,7 @@ SKIP_SOURCES_LIST="${SKIP_SOURCES_LIST}"
 ADJUST_FOR_LOW_PERFORMANCE="${ADJUST_FOR_LOW_PERFORMANCE}"
 ENABLE_VM_SERVICES="${ENABLE_VM_SERVICES}"
 SIPWISE_REPO_HOST="${SIPWISE_REPO_HOST}"
+DEBIAN_REPO_TRANSPORT="${DEBIAN_REPO_TRANSPORT}"
 SIPWISE_REPO_TRANSPORT="${SIPWISE_REPO_TRANSPORT}"
 NAMESERVER="$(awk '/^nameserver/ {print $2}' /etc/resolv.conf)"
 NGCP_PPA="${NGCP_PPA}"
