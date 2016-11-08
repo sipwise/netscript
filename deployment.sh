@@ -1293,9 +1293,17 @@ logit "Setting up /etc/debootstrap/etc/apt/sources.list"
 cat > /etc/debootstrap/etc/apt/sources.list << EOF
 # Set up via deployment.sh for grml-debootstrap usage
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
-deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
-deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 EOF
+
+# drop this once Debian/stretch has security support (AKA released as stable)
+if [ "$DEBIAN_RELEASE" = "stretch" ] ; then
+  echo  "Warning: not enabling security repository for $DEBIAN_RELEASE"
+  logit "Warning: not enabling security repository for $DEBIAN_RELEASE"
+else
+  echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
+fi
+
+echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
 
 if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/etc/apt/sources.list << EOF
