@@ -1329,6 +1329,11 @@ if [ "$DISK" = "vda" ] ; then
   esac
 fi
 
+if [ "$DEBIAN_RELEASE" = "stretch" ] && [ ! -r /usr/share/debootstrap/scripts/stretch ] ; then
+  echo  "Enabling stretch support for debootstrap via symlink to sid"
+  ln -s /usr/share/debootstrap/scripts/sid /usr/share/debootstrap/scripts/stretch
+fi
+
 # install Debian
 echo y | grml-debootstrap \
   --arch "${ARCH}" \
