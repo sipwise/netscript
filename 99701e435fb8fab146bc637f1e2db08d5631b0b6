@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a494da4_61b952e9",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1319,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T11:51:14Z",
+      "side": 1,
+      "message": "why the tmp_path? We just have another variable in the environment then? If that would be inside a function then it for sure would be fine as local variable, but for this oneline this is overkill, nor?",
+      "revId": "99701e435fb8fab146bc637f1e2db08d5631b0b6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
