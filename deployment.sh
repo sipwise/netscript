@@ -1932,12 +1932,10 @@ vagrant_configuration() {
     die "Error: failed to install 'bzip2 less ${linux_headers_package} make sudo' packages."
   fi
 
-  ngcp_vmbuilder='/tmp/ngcp-vmbuilder/'
-  if [ -d "${ngcp_vmbuilder}" ] ; then
-    echo "Checkout of ngcp-vmbuilder exists already, nothing to do"
-  else
-    echo "Checking out ngcp-vmbuilder git repository"
-    git clone git://git.mgm.sipwise.com/vmbuilder "${ngcp_vmbuilder}"
+  vagrant_ssh_pub_key='/var/tmp/id_rsa_sipwise.pub'
+  echo "Checking out ngcp-vmbuilder git repository"
+  if ! wget -O "${vagrant_ssh_pub_key}" http://builder.mgm.sipwise.com/vagrant-ngcp/id_rsa_sipwise.pub ; then
+    die "Error: failed to wget public Sipwise SSH key for Vagrant boxes"
   fi
 
   if "$NGCP_INSTALLER" ; then
@@ -1952,13 +1950,13 @@ vagrant_configuration() {
 
     echo "Adjusting ssh configuration for user sipwise (add Vagrant SSH key)"
     mkdir -p "${TARGET}/${SIPWISE_HOME}/.ssh/"
-    cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/${SIPWISE_HOME}/.ssh/authorized_keys"
-    chroot "${TARGET}" chown sipwise:sipwise ${SIPWISE_HOME}/.ssh ${SIPWISE_HOME}/.ssh/authorized_keys
+    cat "${vagrant_ssh_pub_key}" >> "${TARGET}/${SIPWISE_HOME}/.ssh/authorized_keys"
+    chroot "${TARGET}" chown sipwise:sipwise "${SIPWISE_HOME}/.ssh" "${SIPWISE_HOME}/.ssh/authorized_keys"
   fi
 
   echo "Adjusting ssh configuration for user root"
   mkdir -p "${TARGET}/root/.ssh/"
-  cat $ngcp_vmbuilder/config/id_rsa_sipwise.pub >> "${TARGET}/root/.ssh/authorized_keys"
+  cat "${vagrant_ssh_pub_key}" >> "${TARGET}/root/.ssh/authorized_keys"
 
   # see https://github.com/mitchellh/vagrant/issues/1673
   # and https://bugs.launchpad.net/ubuntu/+source/xen-3.1/+bug/1167281
