@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a494da4_be941545",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T10:40:58Z",
+      "side": 1,
+      "message": "I\u0027d rename that to: \"Support http-only Debian mirrors via debianrepotransport boot option\"",
+      "revId": "d177b77a99839ab03e49d6830454103597a65c9a",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_1e8d4932",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T10:40:58Z",
+      "side": 1,
+      "message": "We could switch to:\n\n  deb https://deb.debian.org/debian $release main\n\nas an alternative.\n\n(Why SSL for a public mirror infrastructure like Debian\u0027s isn\u0027t entirely easy see the recent discussions at https://lists.debian.org/debian-devel/2016/10/msg00281.html)\n\nThough I\u0027d like to avoid the \"even in 2016\" blaming in a commit message here ;)",
+      "revId": "d177b77a99839ab03e49d6830454103597a65c9a",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
