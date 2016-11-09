@@ -1424,7 +1424,7 @@ if [[ $(chroot $TARGET dpkg --list | awk '/^rc/ {print $2}') != "" ]] ; then
 fi
 
 # make sure `hostname` and `hostname --fqdn` return data from chroot
-grml-chroot $TARGET /etc/init.d/hostname.sh
+grml-chroot $TARGET hostname -F /etc/hostname
 
 # make sure installations of packages works, will be overriden later again
 cat > $TARGET/etc/hosts << EOF
