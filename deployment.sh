@@ -2201,7 +2201,7 @@ EOF
 
   echo "Setting hostname to $TARGET_HOSTNAME"
   echo "$TARGET_HOSTNAME" > ${TARGET}/etc/hostname
-  grml-chroot $TARGET /etc/init.d/hostname.sh
+  grml-chroot $TARGET hostname -F /etc/hostname
 
   chroot $TARGET apt-get -y install resolvconf libnss-myhostname
 
