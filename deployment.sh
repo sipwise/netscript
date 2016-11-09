@@ -1635,6 +1635,14 @@ if "$NGCP_INSTALLER" ; then
   # install ngcp-installer
   logit "ngcp-installer: $INSTALLER"
   cat << EOT | grml-chroot $TARGET /bin/bash
+# ca-certificates is required to be able to fetch the installer
+# package from our TLS enabled mirror, though not necessarily available
+# on Debian stretch and newer
+if ! dpkg-query -s ca-certificates &>/dev/null ; then
+  echo "Missing Debian package ca-certificates, installing now."
+  apt-get -y install ca-certificates
+fi
+
 wget ${INSTALLER_PATH}/${INSTALLER}
 dpkg -i $INSTALLER
 EOT
