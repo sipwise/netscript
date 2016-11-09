@@ -1561,9 +1561,16 @@ EOF
 
 # Debian repositories
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
-deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
-deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 EOF
+
+if [ "$DEBIAN_RELEASE" = "stretch" ] ; then
+  echo  "Warning: not enabling security repository for $DEBIAN_RELEASE"
+  logit "Warning: not enabling security repository for $DEBIAN_RELEASE"
+else
+  echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> "$TARGET"/etc/apt/sources.list.d/debian.list
+fi
+
+echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free" >> "$TARGET"/etc/apt/sources.list.d/debian.list
 
   # support testing rc releases without providing an according installer package ahead
   if [ -n "$AUTOBUILD_RELEASE" ] ; then
