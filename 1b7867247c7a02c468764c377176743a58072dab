@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a494da4_c1c9465c",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 648,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T11:55:58Z",
+      "side": 1,
+      "message": "We\u0027re fetching a single key, not a keyring, nor?\nI think the wording is wrong then, it should be \"debootstrapkey\" or so?",
+      "revId": "1b7867247c7a02c468764c377176743a58072dab",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_81fe1e6a",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1295,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T11:55:58Z",
+      "side": 1,
+      "message": "Shouldn\u0027t we always use sipwise.gpg as base?\nThen we could use the same $KEYRING and just add \"--keyring $KEYRING\" to the apt-key add cmdline?",
+      "revId": "1b7867247c7a02c468764c377176743a58072dab",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_81e73ee4",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1301,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T11:55:58Z",
+      "side": 1,
+      "message": "s/for/to/",
+      "revId": "1b7867247c7a02c468764c377176743a58072dab",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_c1d026fa",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1305,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T11:55:58Z",
+      "side": 1,
+      "message": "s/for/to/",
+      "revId": "1b7867247c7a02c468764c377176743a58072dab",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
