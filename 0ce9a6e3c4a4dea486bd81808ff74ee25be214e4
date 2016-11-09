@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a494da4_a436c8e5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T12:11:11Z",
+      "side": 1,
+      "message": "s/debootstrapkeyring/debootstrapkey/",
+      "revId": "0ce9a6e3c4a4dea486bd81808ff74ee25be214e4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
