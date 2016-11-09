@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a494da4_a10fda2d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-11-09T11:34:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a494da4_be941545",
+      "revId": "d177b77a99839ab03e49d6830454103597a65c9a",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a494da4_1e8d4932",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2016-11-09T10:40:58Z",
       "side": 1,
       "message": "We could switch to:\n\n  deb https://deb.debian.org/debian $release main\n\nas an alternative.\n\n(Why SSL for a public mirror infrastructure like Debian\u0027s isn\u0027t entirely easy see the recent discussions at https://lists.debian.org/debian-devel/2016/10/msg00281.html)\n\nThough I\u0027d like to avoid the \"even in 2016\" blaming in a commit message here ;)",
+      "revId": "d177b77a99839ab03e49d6830454103597a65c9a",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_e119e27a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-11-09T11:34:48Z",
+      "side": 1,
+      "message": "removed \"even\"\n\n\u003e We could switch to\n\nYes we could, while IMHO we should merge the code here as it improves flexibility.\n\nP.S. I would like to be in sync with your code in puppet:\n\n commit 4e886485556ec4a73ca95e08000885e1f73f8db4\nAuthor: Michael Prokop \u003cmprokop@sipwise.com\u003e\nDate:   Tue Nov 8 09:21:24 2016 +0100\n\n    TT#5547 Add custom stretch-cowbuilder-sources.list for bootstrapping stretch",
+      "parentUuid": "1a494da4_1e8d4932",
       "revId": "d177b77a99839ab03e49d6830454103597a65c9a",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
