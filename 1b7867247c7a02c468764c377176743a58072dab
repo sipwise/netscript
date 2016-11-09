@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a494da4_411256b5",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 648,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-11-09T12:03:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a494da4_c1c9465c",
+      "revId": "1b7867247c7a02c468764c377176743a58072dab",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a494da4_81fe1e6a",
         "filename": "deployment.sh",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2016-11-09T11:55:58Z",
       "side": 1,
       "message": "Shouldn\u0027t we always use sipwise.gpg as base?\nThen we could use the same $KEYRING and just add \"--keyring $KEYRING\" to the apt-key add cmdline?",
+      "revId": "1b7867247c7a02c468764c377176743a58072dab",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_611152ac",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1295,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-11-09T12:03:20Z",
+      "side": 1,
+      "message": "discussed personally, better keep them separately to do not confuse the users here (which may see debian jessie key into sipwise.gpg)",
+      "parentUuid": "1a494da4_81fe1e6a",
       "revId": "1b7867247c7a02c468764c377176743a58072dab",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "1a494da4_21174aa5",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1301,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-11-09T12:03:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a494da4_81e73ee4",
+      "revId": "1b7867247c7a02c468764c377176743a58072dab",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a494da4_c1d026fa",
         "filename": "deployment.sh",
         "patchSetId": 2
@@ -64,6 +118,24 @@
       "writtenOn": "2016-11-09T11:55:58Z",
       "side": 1,
       "message": "s/for/to/",
+      "revId": "1b7867247c7a02c468764c377176743a58072dab",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_810c5e96",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1305,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-11-09T12:03:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a494da4_c1d026fa",
       "revId": "1b7867247c7a02c468764c377176743a58072dab",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
