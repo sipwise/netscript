@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a494da4_fb050f15",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T10:06:00Z",
+      "side": 1,
+      "message": "I\u0027d change the wording to:\n\"Enable support for bootstrapping stretch with older debootstrap versions\" or so, so it\u0027s clear why this change is needed at all.",
+      "revId": "11a4a737a4de405197026759a4b1de61faedde6b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_5b408356",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1318,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T10:06:00Z",
+      "side": 1,
+      "message": "I\u0027d rename that to something like:\n\"Enabling stretch support for debootstrap via symlink to sid\"",
+      "revId": "11a4a737a4de405197026759a4b1de61faedde6b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_3b181784",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1319,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2016-11-09T10:06:00Z",
+      "side": 1,
+      "message": "This will fail as soon as the debootstrap version is recent enough and shipping /usr/share/debootstrap/scripts/stretch on its own. We either use \"ln -sf\" or test for the existing file/symlink.",
+      "revId": "11a4a737a4de405197026759a4b1de61faedde6b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
