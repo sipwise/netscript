@@ -1211,6 +1211,9 @@ vlan
 # MT#13637 support https in sources.list
 apt-transport-https
 
+# TT#5444 ca-certificates is necessary to wget ngcp-installer over https
+ca-certificates
+
 # packages d-i installs but we ignore/skip:
 #discover
 #gettext-base
