@@ -1,3 +1,28 @@
+ngcp-netscript (5.1.0.0+0~mr5.1.0.0) unstable; urgency=medium
+
+  [ Alexander Lutay ]
+  * [e7fac3a] TT#3961 Switch deployment.sh to new puppetlabs mirror
+  * [92db066] TT#4166 Fail deployment.sh if ngcp-dumps-upload-to-sipwise has failed
+  * [6a04bd7] TT#3961 Switch deployment.sh to puppet2.mgm
+  * [d8b5094] TT#5444 Support http-only Debian mirrors via debianrepotransport boot option
+  * [24852d0] TT#5444 Debian stretch doesn't have security support (yet)
+  * [f10ee99] TT#5444 Ensure ca-certificates is available for TLS support
+  * [9cd97db] TT#5444 Enable support for bootstrapping stretch with older debootstrap versions
+  * [7518fc8] TT#5444 Add boot option debootstrapkey to fetch remote GPG key
+  * [cee7feb] TT#5851 Stops using git deamon on git.mgm (wget it from builder.mgm)
+
+  [ Sergii Kipot ]
+  * [ba06d2b] TT#4166 Add step to prepare translations
+
+  [ Michael Prokop ]
+  * [af44f36] TT#5444 hostname.sh init script no longer exists with stretch, adjust
+  * [efe1466] TT#5444 Fix another instance of /etc/init.d/hostname.sh for stretch
+  * [ba081be] TT#5444 Debian stretch doesn't have security support (yet)
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Thu, 17 Nov 2016 23:16:19 +0100
+
 ngcp-netscript (5.0.0.0+0~mr5.0.0.0) unstable; urgency=medium
 
   [ Kirill Solomko ]
