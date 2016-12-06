@@ -2,6 +2,52 @@
   "comments": [
     {
       "key": {
+        "uuid": "ba51214e_e0c99a7a",
+        "filename": "debian/control",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-12-06T13:38:14Z",
+      "side": 1,
+      "message": "should it be \"all\" (as package \u0027ngcp-netscript\u0027 provides only one bash files)?",
+      "range": {
+        "startLine": 11,
+        "startChar": 14,
+        "endLine": 11,
+        "endChar": 17
+      },
+      "revId": "fe7390d638b85cafc041e9c00166dd19612fca13",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba51214e_e077da39",
+        "filename": "debian/control",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-12-06T13:38:14Z",
+      "side": 1,
+      "message": "ACK, while it changes nothing, as package ngcp-netscript is installed on PRO and carrier only and ngcp-keyring is already installed there too from the beginning.",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 14
+      },
+      "revId": "fe7390d638b85cafc041e9c00166dd19612fca13",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a96c907_dd4f6e91",
         "filename": "deployment.sh",
         "patchSetId": 2
