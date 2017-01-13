@@ -2222,13 +2222,33 @@ puppet_install_from_git () {
 }
 
 puppet_install_from_puppet () {
-  echo "Running Puppet core deployment..."
-  grml-chroot $TARGET puppet agent --test --tags core,apt 2>&1 | tee -a /tmp/puppet.log
-  check_puppet_rc "${PIPESTATUS[0]}" "2"
+  local repeat=true
 
-  echo "Running Puppet deployment..."
-  grml-chroot $TARGET puppet agent --test 2>&1 | tee -a /tmp/puppet.log
-  check_puppet_rc "${PIPESTATUS[0]}" "2"
+  while $repeat; do
+    echo "Running Puppet core deployment..."
+    grml-chroot $TARGET puppet agent --test --tags core,apt 2>&1 | tee -a /tmp/puppet.log
+    check_puppet_rc "${PIPESTATUS[0]}" "2"
+
+    echo "Running Puppet deployment..."
+    grml-chroot $TARGET puppet agent --test 2>&1 | tee -a /tmp/puppet.log
+    check_puppet_rc "${PIPESTATUS[0]}" "2"
+
+    repeat=false
+    if ! checkBootParam nopuppetrepeat && [ "$(get_deploy_status)" = "error" ] ; then
+      echo "Do you want to [r]epeat puppet run? (Press any other key to continue without repeating.)"
+      unset a
+      read a
+      case "$a" in
+        r)
+          echo "Repeating puppet run."
+          repeat=true
+          ;;
+        *)
+          echo "Continue without repeating puppet run."
+          ;;
+      esac
+    fi
+  done
 }
 
   set_deploy_status "puppet"
