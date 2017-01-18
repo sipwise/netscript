@@ -2225,6 +2225,8 @@ puppet_install_from_puppet () {
   local repeat=true
 
   while $repeat ; do
+    repeat=false
+
     echo "Running Puppet core deployment..."
     grml-chroot $TARGET puppet agent --test --tags core,apt 2>&1 | tee -a /tmp/puppet.log
     check_puppet_rc "${PIPESTATUS[0]}" "2"
@@ -2243,7 +2245,6 @@ puppet_install_from_puppet () {
           ;;
         *)
           echo "Continue without repeating puppet run."
-          repeat=false
           ;;
       esac
       unset a
