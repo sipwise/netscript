@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a682502_5587ac0f",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 2227,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-01-18T11:39:34Z",
+      "side": 1,
+      "message": "IMHO, while true ; do\n\n + \"brake\" in like 2248 will be 3 lines shorted and better readable",
+      "range": {
+        "startLine": 2227,
+        "startChar": 0,
+        "endLine": 2227,
+        "endChar": 19
+      },
+      "revId": "13bd3c34ce662872d2af836b311efe25aefe3ead",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
