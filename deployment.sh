@@ -61,7 +61,6 @@ VLAN=false
 VLANID=''
 VLANIF=''
 RETRIEVE_MGMT_CONFIG=false
-LINUX_HA3=false
 TRUNK_VERSION=false
 DEBIAN_RELEASE=jessie
 HALT=false
@@ -106,7 +105,7 @@ enable_deploy_status_server() {
 
   # get rid of already running process
   PID=$(pgrep -f 'python.*SimpleHTTPServer') || true
-  [ -n "$PID" ] && kill $PID
+  [ -n "$PID" ] && kill "$PID"
 
   (
     cd "${STATUS_DIRECTORY}"
@@ -206,7 +205,8 @@ install_apt_transport_https () {
   fi
 
   # use temporary apt database for speed reasons
-  local TMPDIR=$(mktemp -d)
+  local TMPDIR
+  TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
   echo "deb http://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} main contrib non-free" > \
@@ -224,15 +224,19 @@ install_apt_transport_https () {
 
 grml_debootstrap_upgrade() {
   local required_version=0.74
-  local present_version=$(dpkg-query --show --showformat='${Version}' grml-debootstrap)
+  local present_version
 
-  if dpkg --compare-versions $present_version lt $required_version ; then
+  present_version=$(dpkg-query --show --showformat="\${Version}" grml-debootstrap)
+
+  if dpkg --compare-versions "${present_version}" lt "${required_version}" ; then
     echo "grml-deboostrap version $present_version is older than minimum required version $required_version - upgrading."
 
     # use temporary apt database for speed reasons
-    local TMPDIR=$(mktemp -d)
+    local TMPDIR
+    TMPDIR=$(mktemp -d)
     mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
-    local debsrcfile=$(mktemp)
+    local debsrcfile
+    debsrcfile=$(mktemp)
     echo "deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/grml.org grml-testing main" >> "$debsrcfile"
 
     DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
@@ -250,7 +254,8 @@ install_vbox_package() {
   echo "Installing virtualbox-guest-additions-iso"
 
   # use temporary apt database for speed reasons
-  local TMPDIR=$(mktemp -d)
+  local TMPDIR
+  TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
   echo "deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} non-free" > \
@@ -275,7 +280,8 @@ ensure_augtool_present() {
   echo "augtool isn't present, installing augeas-tools package:"
 
   # use temporary apt database for speed reasons
-  local TMPDIR=$(mktemp -d)
+  local TMPDIR
+  TMPDIR=$(mktemp -d)
   mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
     "${TMPDIR}/cachedir/archives/partial"
   echo "deb http://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} main contrib non-free" > \
@@ -352,7 +358,8 @@ else # otherwise try to find sane default
     # so better walk through all devices.
     for i in /sys/block/sd*; do
       if grep -q 0 "${i}/removable"; then
-        export DISK=$(basename "$i")
+        DISK=$(basename "$i")
+        export DISK
         break
       fi
     done
@@ -373,11 +380,6 @@ fi
 
 if checkBootParam nocolorlogo ; then
   LOGO=false
-fi
-
-if checkBootParam ngcphav3 ; then
-  LINUX_HA3=true
-  PRO_EDITION=true
 fi
 
 if checkBootParam ngcpnobonding ; then
@@ -705,30 +707,28 @@ Usage examples:
 "
 }
 
-for param in $* ; do
+for param in "$@" ; do
   case $param in
     *-h*|*--help*|*help*) usage ; exit 0;;
     *ngcpsp1*) ROLE=sp1 ; TARGET_HOSTNAME=sp1; PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
     *ngcpsp2*) ROLE=sp2 ; TARGET_HOSTNAME=sp2; PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
     *ngcppro*) PRO_EDITION=true; CE_EDITION=false ; NGCP_INSTALLER=true ;;
     *ngcpce*) PRO_EDITION=false; CE_EDITION=true ; TARGET_HOSTNAME=spce ; ROLE='' ; NGCP_INSTALLER=true ;;
-    *ngcpvers=*) SP_VERSION=$(echo $param | sed 's/ngcpvers=//');;
+    *ngcpvers=*) SP_VERSION="${param//ngcpvers=/}";;
     *nongcp*) NGCP_INSTALLER=false;;
-    *nodebian*) DEBIAN_INSTALLER=false;; # TODO
-    *noinstall*) NGCP_INSTALLER=false; DEBIAN_INSTALLER=false;;
+    *noinstall*) NGCP_INSTALLER=false;;
     *ngcpinst*) NGCP_INSTALLER=true;;
-    *ngcphostname=*) TARGET_HOSTNAME=$(echo $param | sed 's/ngcphostname=//');;
-    *ngcpeiface=*) EIFACE=$(echo $param | sed 's/ngcpeiface=//');;
-    *ngcpeaddr=*) EADDR=$(echo $param | sed 's/ngcpeaddr=//');;
-    *ngcpip1=*) IP1=$(echo $param | sed 's/ngcpip1=//');;
-    *ngcpip2=*) IP2=$(echo $param | sed 's/ngcpip2=//');;
-    *ngcpipshared=*) IP_HA_SHARED=$(echo $param | sed 's/ngcpipshared=//');;
-    *ngcpnetmask=*) INTERNAL_NETMASK=$(echo $param | sed 's/ngcpnetmask=//');;
-    *ngcpextnetmask=*) EXTERNAL_NETMASK=$(echo $param | sed 's/ngcpextnetmask=//');;
-    *ngcpmcast=*) MCASTADDR=$(echo $param | sed 's/ngcpmcast=//');;
-    *ngcpcrole=*) CARRIER_EDITION=true; CROLE=$(echo $param | sed 's/ngcpcrole=//');;
+    *ngcphostname=*) TARGET_HOSTNAME="${param//ngcphostname=/}";;
+    *ngcpeiface=*) EIFACE="${param//ngcpeiface=/}";;
+    *ngcpeaddr=*) EADDR="${param//ngcpeaddr=/}";;
+    *ngcpip1=*) IP1="${param//ngcpip1=/}";;
+    *ngcpip2=*) IP2="${param//ngcpip2=/}";;
+    *ngcpipshared=*) IP_HA_SHARED="${param//ngcpipshared=/}";;
+    *ngcpnetmask=*) INTERNAL_NETMASK="${param//ngcpnetmask=/}";;
+    *ngcpextnetmask=*) EXTERNAL_NETMASK="${param//ngcpextnetmask=/}";;
+    *ngcpmcast=*) MCASTADDR="${param//ngcpmcast=/}";;
+    *ngcpcrole=*) CARRIER_EDITION=true; CROLE="${param//ngcpcrole=/}";;
     *ngcpnw.dhcp*) DHCP=true;;
-    *ngcphav3*) LINUX_HA3=true; PRO_EDITION=true;;
     *ngcpnobonding*) BONDING=false;;
     *ngcpbonding*) BONDING=true;;
     *ngcphalt*) HALT=true;;
@@ -737,15 +737,15 @@ for param in $* ; do
     *lowperformance*) ADJUST_FOR_LOW_PERFORMANCE=true;;
     *enablevmservices*) ENABLE_VM_SERVICES=true;;
     *ngcpfillcache*) FILL_APPROX_CACHE=true;;
-    *ngcpvlanbootint*) VLAN_BOOT_INT=$(echo $param | sed 's/ngcpvlanbootint=//');;
-    *ngcpvlansshext*) VLAN_SSH_EXT=$(echo $param | sed 's/ngcpvlansshext=//');;
-    *ngcpvlanwebext*) VLAN_WEB_EXT=$(echo $param | sed 's/ngcpvlanwebext=//');;
-    *ngcpvlansipext*) VLAN_SIP_EXT=$(echo $param | sed 's/ngcpvlansipext=//');;
-    *ngcpvlansipint*) VLAN_SIP_INT=$(echo $param | sed 's/ngcpvlansipint=//');;
-    *ngcpvlanhaint*) VLAN_HA_INT=$(echo $param | sed 's/ngcpvlanhaint=//');;
-    *ngcpvlanrtpext*) VLAN_RTP_EXT=$(echo $param | sed 's/ngcpvlanrtpext=//');;
-    *ngcpppainstaller*) NGCP_PPA_INSTALLER=$(echo $param | sed 's/ngcpppainstaller=//');;
-    *ngcpppa*) NGCP_PPA=$(echo $param | sed 's/ngcpppa=//');;
+    *ngcpvlanbootint*) VLAN_BOOT_INT="${param//ngcpvlanbootint=/}";;
+    *ngcpvlansshext*) VLAN_SSH_EXT="${param//ngcpvlansshext=/}";;
+    *ngcpvlanwebext*) VLAN_WEB_EXT="${param//ngcpvlanwebext=/}";;
+    *ngcpvlansipext*) VLAN_SIP_EXT="${param//ngcpvlansipext=/}";;
+    *ngcpvlansipint*) VLAN_SIP_INT="${param//ngcpvlansipint=/}";;
+    *ngcpvlanhaint*) VLAN_HA_INT="${param//ngcpvlanhaint=/}";;
+    *ngcpvlanrtpext*) VLAN_RTP_EXT="${param//ngcpvlanrtpext=/}";;
+    *ngcpppainstaller*) NGCP_PPA_INSTALLER="${param//ngcpppainstaller=/}";;
+    *ngcpppa*) NGCP_PPA="${param//ngcpppa=/}";;
   esac
   shift
 done
@@ -1020,31 +1020,31 @@ set_deploy_status "diskverify"
 
 # TODO - hardcoded for now, to avoid data damage
 check_for_supported_disk() {
-  if grep -q 'ServeRAID' /sys/block/${DISK}/device/model ; then
+  if grep -q 'ServeRAID' "/sys/block/${DISK}/device/model" ; then
     return 0
   fi
 
   # IBM System x3250 M3
-  if grep -q 'Logical Volume' /sys/block/${DISK}/device/model && \
-    grep -q "LSILOGIC" /sys/block/${DISK}/device/vendor ; then
+  if grep -q 'Logical Volume' "/sys/block/${DISK}/device/model" && \
+    grep -q "LSILOGIC" "/sys/block/${DISK}/device/vendor" ; then
     return 0
   fi
 
   # IBM System HS23 LSISAS2004
-  if grep -q 'Logical Volume' /sys/block/${DISK}/device/model && \
-    grep -q "LSI" /sys/block/${DISK}/device/vendor ; then
+  if grep -q 'Logical Volume' "/sys/block/${DISK}/device/model" && \
+    grep -q "LSI" "/sys/block/${DISK}/device/vendor" ; then
     return 0
   fi
 
   # PERC H700, PERC H710,...
-  if grep -q 'PERC' /sys/block/${DISK}/device/model && \
-    grep -q "DELL" /sys/block/${DISK}/device/vendor ; then
+  if grep -q 'PERC' "/sys/block/${DISK}/device/model" && \
+    grep -q "DELL" "/sys/block/${DISK}/device/vendor" ; then
     return 0
   fi
 
   # proxmox on blade, internal system
-  if grep -q 'COMSTAR' /sys/block/${DISK}/device/model && \
-    grep -q "OI" /sys/block/${DISK}/device/vendor ; then
+  if grep -q 'COMSTAR' "/sys/block/${DISK}/device/model" && \
+    grep -q "OI" "/sys/block/${DISK}/device/vendor" ; then
     FIRMWARE_PACKAGES="$FIRMWARE_PACKAGES firmware-qlogic"
     return 0
   fi
@@ -1086,13 +1086,13 @@ else
 
   else
     # make sure it runs only within qemu/kvm
-    if [[ "$DISK" == "vda" ]] && readlink -f /sys/block/vda/device | grep -q 'virtio' ; then
+    if [[ "${DISK}" == "vda" ]] && readlink -f /sys/block/vda/device | grep -q 'virtio' ; then
       echo "Looks like a virtio disk, ok."
-    elif grep -q 'QEMU HARDDISK' /sys/block/${DISK}/device/model ; then
+    elif grep -q 'QEMU HARDDISK' "/sys/block/${DISK}/device/model" ; then
       echo "Looks like a QEMU harddisk, ok."
-    elif grep -q 'VBOX HARDDISK' /sys/block/${DISK}/device/model ; then
+    elif grep -q 'VBOX HARDDISK' "/sys/block/${DISK}/device/model" ; then
       echo "Looks like a VBOX harddisk, ok."
-    elif grep -q 'Virtual disk' /sys/block/${DISK}/device/model && [[ $(imvirt) == "VMware ESX Server" ]] ; then
+    elif grep -q 'Virtual disk' "/sys/block/${DISK}/device/model" && [[ $(imvirt) == "VMware ESX Server" ]] ; then
       echo "Looks like a VMware ESX Server harddisk, ok."
     else
       die "Error: /dev/${DISK} does not look like a virtual disk. Exiting to avoid possible data damage. Note: imvirt output is $(imvirt)"
@@ -1124,7 +1124,7 @@ echo "root:sipwise" | chpasswd
 set_deploy_status "disksetup"
 
 # 2000GB = 2097152000 blocks in /proc/partitions - so make a rough estimation
-if [ $(awk "/ ${DISK}$/ {print \$3}" /proc/partitions) -gt 2000000000 ] ; then
+if [ "$(awk "/ ${DISK}$/ {print \$3}" /proc/partitions)" -gt 2000000000 ] ; then
   TABLE=gpt
 else
   TABLE=msdos
@@ -1133,8 +1133,8 @@ fi
 if "$LVM" ; then
   # make sure lvcreate understands the --yes option
   lv_create_opts=''
-  lvm_version=$(dpkg-query -W -f='${Version}\n' lvm2) || die "Unknown package lvm2"
-  setupstorage_version=$(dpkg-query --show --showformat='${Version}' fai-setup-storage) || die "Unknown package fai-setup-storage"
+  lvm_version=$(dpkg-query -W -f="\${Version}\n" lvm2) || die "Unknown package lvm2"
+  setupstorage_version=$(dpkg-query --show --showformat="\${Version}" fai-setup-storage) || die "Unknown package fai-setup-storage"
 
   if dpkg --compare-versions "$setupstorage_version" ge 5.0 ; then
     logit "Installed fai-setup-storage version ${setupstorage_version} doesn't need the LVM '--yes' workaround."
@@ -1162,8 +1162,8 @@ ${VG_NAME}-swap     swap    RAM:50%   swap sw $lv_create_opts
 EOF
 
   # make sure setup-storage doesn't fail if LVM is already present
-  dd if=/dev/zero of=/dev/${DISK} bs=1M count=1
-  blockdev --rereadpt /dev/${DISK}
+  dd if=/dev/zero of="/dev/${DISK}" bs=1M count=1
+  blockdev --rereadpt "/dev/${DISK}"
 
   export LOGDIR='/tmp/setup-storage'
   mkdir -p $LOGDIR
@@ -1175,7 +1175,8 @@ EOF
     die "You are using an outdated ISO, please update it to have fai-setup-storage >=4.0.6 available."
   fi
 
-  export disklist=$(/usr/lib/fai/fai-disk-info | sort)
+  disklist=$(/usr/lib/fai/fai-disk-info | sort)
+  export disklist
   PATH=/usr/lib/fai:${PATH} setup-storage -f /tmp/partition_setup.txt -X || die "Failure during execution of setup-storage"
 
   # used later by installer
@@ -1183,10 +1184,10 @@ EOF
   SWAP_PARTITION="/dev/mapper/${VG_NAME}-swap"
 
 else # no LVM
-  parted -s -a optimal /dev/${DISK} mktable "$TABLE" || die "Failed to set up partition table"
+  parted -s -a optimal "/dev/${DISK}" mktable "$TABLE" || die "Failed to set up partition table"
   # hw-raid with rootfs + swap partition
-  parted -s -a optimal /dev/${DISK} 'mkpart primary ext4 2048s 95%' || die "Failed to set up primary partition"
-  parted -s -a optimal /dev/${DISK} 'mkpart primary linux-swap 95% -1' || die "Failed to set up swap partition"
+  parted -s -a optimal "/dev/${DISK}" 'mkpart primary ext4 2048s 95%' || die "Failed to set up primary partition"
+  parted -s -a optimal "/dev/${DISK}" 'mkpart primary linux-swap 95% -1' || die "Failed to set up swap partition"
   sync
 
   # used later by installer
@@ -1360,7 +1361,7 @@ fi
 # a GRUB installation failing with "error: no such disk" during boot.
 # This is only a problem if we're using a virtio disk and deploying
 # from a system running lvm2 v2.02.106 or newer.
-if [ "$DISK" = "vda" ] ; then
+if [ "${DISK}" = "vda" ] ; then
   case "$DEBIAN_RELEASE" in
     lenny|squeeze|wheezy)
       echo  "Applying /dev/disk/by-id/lvm-pv-uuid-* workaround for virtio disk and Debian release <= wheezy"
@@ -1378,7 +1379,7 @@ fi
 # install Debian
 echo y | grml-debootstrap \
   --arch "${ARCH}" \
-  --grub /dev/${DISK} \
+  --grub "/dev/${DISK}" \
   --filesystem "${FILESYSTEM}" \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
@@ -1389,7 +1390,7 @@ echo y | grml-debootstrap \
   -t "$ROOT_FS" \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
 
-if [ ${PIPESTATUS[1]} -ne 0 ]; then
+if [ "${PIPESTATUS[1]}" != "0" ]; then
   die "Error during installation of Debian ${DEBIAN_RELEASE}. Find details via: mount $ROOT_FS $TARGET ; ls $TARGET/debootstrap/*.log"
 fi
 
@@ -1559,7 +1560,8 @@ get_installer_path() {
   wget --timeout=30 -O Packages.gz "${repos_base_path}Packages.gz"
   # sed: display paragraphs matching the "Package: ..." string, then grab string "^Version: " and display the actual version via awk
   # sort -u to avoid duplicates in repositories shipping the ngcp-installer-pro AND ngcp-installer-pro-ha-v3 debs
-  local version=$(zcat Packages.gz | sed "/./{H;\$!d;};x;/Package: ${installer_package}/b;d" | awk '/^Version: / {print $2}' | sort -u)
+  local version
+  version=$(zcat Packages.gz | sed "/./{H;\$!d;};x;/Package: ${installer_package}/b;d" | awk '/^Version: / {print $2}' | sort -u)
 
   [ -n "$version" ] || die "Error: installer version for ngcp ${SP_VERSION}, Debian release $DEBIAN_RELEASE with installer package $installer_package could not be detected."
 
@@ -1629,7 +1631,7 @@ gen_installer_config () {
       GW="$EXT_GW"
     else
       echo "Last resort, guesting gateway for external IP as first IP in EADDR"
-      GW=$(echo $EADDR | awk -F. '{print $1"."$2"."$3".1"}')
+      GW=$(echo "$EADDR" | awk -F. '{print $1"."$2"."$3".1"}')
     fi
   else
     GW="$(ip route show dev $DEFAULT_INSTALL_DEV | awk '/^default via/ {print $3}')"
@@ -1748,9 +1750,9 @@ EOT
   # make sure services are stopped
   . "$NGCP_SERVICES_FILE"
   for service in ${HA_NGCP_SERVICES} ${NGCP_SERVICES} ${NON_NGCP_SERVICES} ; do
-    if [ -f "${TARGET}/etc/init.d/$service" ] ; then
-      echo "Stopping $service ..."
-      grml-chroot $TARGET /etc/init.d/$service stop || true
+    if [ -f "${TARGET}/etc/init.d/${service}" ] ; then
+      echo "Stopping ${service} ..."
+      grml-chroot ${TARGET} "/etc/init.d/${service}" stop || true
     fi
   done
 
@@ -1772,10 +1774,12 @@ EOT
     cp /tmp/grml-debootstrap.log "${TARGET}"/var/log/
   fi
 
-  echo "# deployment.sh running on $(date)" > "${TARGET}"/var/log/deployment.log
-  echo "SCRIPT_VERSION=${SCRIPT_VERSION}" >> "${TARGET}"/var/log/deployment.log
-  echo "CMD_LINE=\"${CMD_LINE}\"" >> "${TARGET}"/var/log/deployment.log
-  echo "NGCP_INSTALLER_CMDLINE=\"TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $IP_HA_SHARED\"" >> "${TARGET}"/var/log/deployment.log
+  {
+    echo "# deployment.sh running on $(date)"
+    echo "SCRIPT_VERSION=${SCRIPT_VERSION}"
+    echo "CMD_LINE=\"${CMD_LINE}\""
+    echo "NGCP_INSTALLER_CMDLINE=\"TRUNK_VERSION=$TRUNK_VERSION SKIP_SOURCES_LIST=$SKIP_SOURCES_LIST ngcp-installer $ROLE $IP1 $IP2 $EADDR $EIFACE $IP_HA_SHARED\""
+  } > "${TARGET}"/var/log/deployment.log
 
 fi
 
@@ -2351,8 +2355,8 @@ if "$LVM" ; then
 fi
 
 # make sure /etc/fstab is up2date
-if ! blockdev --rereadpt /dev/$DISK ; then
-  echo "Something on disk /dev/$DISK (mountpoint $TARGET) seems to be still active, debugging output follows:"
+if ! blockdev --rereadpt "/dev/${DISK}" ; then
+  echo "Something on disk /dev/${DISK} (mountpoint $TARGET) seems to be still active, debugging output follows:"
   ps auxwww || true
 fi
 
@@ -2361,7 +2365,7 @@ echo "Installation finished. \o/"
 echo
 echo
 
-[ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
+[ -n "$start_seconds" ] && SECONDS="$(( $(cut -d . -f 1 /proc/uptime) - start_seconds))" || SECONDS="unknown"
 logit "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 echo "Successfully finished deployment process [$(date) - running ${SECONDS} seconds]"
 
