@@ -1049,6 +1049,27 @@ check_for_supported_disk() {
     return 0
   fi
 
+  local disk_model
+  disk_model=$(cat "/sys/block/${DISK}/device/model") || true
+  local disk_vendor
+  disk_vendor=$(cat "/sys/block/${DISK}/device/vendor") || true
+
+  echo "WARNING: Cannot detect supported device vendor/model." >&2
+  echo "(Disk: ${DISK}  Vendor: ${disk_vendor}  Model: ${disk_model})" >&2
+  echo "Would you like to continue anyway? (yes/NO)" >&2
+  read a
+  case "$a" in
+    y|Y|yes|YES)
+      echo "Continue anyway as requested."
+      return 0
+      ;;
+    *)
+      echo "Aborting installation using disk '${DISK}'" >&2
+      return 1
+      ;;
+  esac
+  unset a
+
   # no match so far?
   return 1
 }
