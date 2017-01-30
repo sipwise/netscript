@@ -146,7 +146,7 @@ loadNfsIpArray() {
   local ind=(client-ip server-ip gw-ip netmask hostname device autoconf)
   local i
   for i in $2 ; do
-    eval $1[${ind[n++]}]=$i
+    eval "$1[${ind[n++]}]=$i"
   done
   [ "$n" == "7" ] && return 0 || return 1
 }
@@ -800,7 +800,7 @@ fi
 # get install device from "ip=<client-ip:<srv-ip>:..." boot arg
 if checkBootParam ip ; then
   declare -A IP_ARR
-  if loadNfsIpArray IP_ARR $(getBootParam ip) ; then
+  if loadNfsIpArray IP_ARR "$(getBootParam ip)" ; then
     INSTALL_DEV=${IP_ARR[device]}
     EXT_GW=${IP_ARR[gw-ip]}
   fi
@@ -1377,6 +1377,7 @@ if [ "$DEBIAN_RELEASE" = "stretch" ] && [ ! -r /usr/share/debootstrap/scripts/st
 fi
 
 # install Debian
+# shellcheck disable=SC2086
 echo y | grml-debootstrap \
   --arch "${ARCH}" \
   --grub "/dev/${DISK}" \
@@ -1441,8 +1442,9 @@ fi
 chroot $TARGET apt-get --purge -y autoremove
 
 # purge removed packages
-if [[ $(chroot $TARGET dpkg --list | awk '/^rc/ {print $2}') != "" ]] ; then
-  chroot $TARGET dpkg --purge $(chroot $TARGET dpkg --list | awk '/^rc/ {print $2}')
+removed_packages=( $(chroot $TARGET dpkg --list | awk '/^rc/ {print $2}') )
+if [ ${#removed_packages[@]} -ne 0 ]; then
+  chroot "$TARGET" dpkg --purge "${removed_packages[@]}"
 fi
 
 # make sure `hostname` and `hostname --fqdn` return data from chroot
@@ -1511,10 +1513,10 @@ if "$RETRIEVE_MGMT_CONFIG" && "$RESTART_NETWORK" ; then
     # note: we do NOT modify the /e/n/i file from $TARGET here by intention
     sed -i "s/vlan-raw-device .*/vlan-raw-device eth0/" /etc/network/interfaces
 
-    for interface in $(awk '/^auto vlan/ {print $2}' /etc/network/interfaces) ; do
-      echo "Bringing up VLAN interface $interface"
-      ifup "$interface"
-    done
+    while IFS= read -r interface ; do
+      echo "Bringing up VLAN interface ${interface}"
+      ifup "${interface}"
+    done < <(awk '/^auto vlan/ {print $2}' /etc/network/interfaces)
   fi # toram
 fi
 
@@ -1757,9 +1759,7 @@ EOT
   done
 
   # nuke files
-  for i in $(find "$TARGET/var/log" -type f -size +0 -not -name \*.ini 2>/dev/null); do
-    :> "$i"
-  done
+  find "${TARGET}/var/log" -type f -size +0 -not -name \*.ini -exec sh -c ':> ${1}' sh {} \;
   :>$TARGET/var/run/utmp
   :>$TARGET/var/run/wtmp
 
@@ -2103,7 +2103,8 @@ vagrant_configuration() {
   grml-chroot $TARGET apt-get -y install libc6-dev gcc
   fake_uname
 
-  KERNELHEADERS=$(basename $(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r -V | head -1))
+  # shellcheck disable=SC2010
+  KERNELHEADERS=$(basename "$(ls -d ${TARGET}/usr/src/linux-headers*amd64 | grep -v -- -rt-amd64 | sort -u -r -V | head -1)")
   if [ -z "$KERNELHEADERS" ] ; then
     die "Error: no kernel headers found for building the VirtualBox Guest Additions kernel module."
   fi
