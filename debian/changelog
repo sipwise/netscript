@@ -1,3 +1,17 @@
+ngcp-netscript (5.1.1.0+0~mr5.1.1.0) unstable; urgency=medium
+
+  [ Sergii Kipot ]
+  * [40345a6] TT#8883 Add puppet repeat dialog
+
+  [ Alexander Lutay ]
+  * [d960d6b] TT#8883 Fix 40345a: fix while condition exit cause
+  * [ba7c8ff] TT#7473 Ask user confirmation to use 'unsupported' disk
+  * [3221d72] TT#9718 Decrease amount of shellcheck warnings, part 1
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Fri, 03 Feb 2017 00:36:29 +0100
+
 ngcp-netscript (5.1.0.0+0~mr5.1.0.0) unstable; urgency=medium
 
   [ Alexander Lutay ]
