@@ -16,6 +16,24 @@
       "revId": "9bd1ac3a92284c8d8e46aa13c1939dcb13514609",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da01753e_0df4edf0",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1447,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-02-17T11:46:07Z",
+      "side": 1,
+      "message": "to do not have # shellcheck disable\u003dSC2010\notherwise list of packages cannot be quoted\n\nwhat means \"leak the $package variable\" here?\ndo you mean the last value will be inside variable when loop is over?",
+      "parentUuid": "da01753e_2d3e11b9",
+      "revId": "9bd1ac3a92284c8d8e46aa13c1939dcb13514609",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
