@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da01753e_2d3e11b9",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1447,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-02-17T10:45:31Z",
+      "side": 1,
+      "message": "Hm, why the for loop?\n(We leak the $package variable here BTW now)",
+      "revId": "9bd1ac3a92284c8d8e46aa13c1939dcb13514609",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
