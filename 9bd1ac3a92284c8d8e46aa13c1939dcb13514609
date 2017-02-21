@@ -52,6 +52,24 @@
       "revId": "9bd1ac3a92284c8d8e46aa13c1939dcb13514609",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da01753e_aa949a37",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1447,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-02-21T16:51:38Z",
+      "side": 1,
+      "message": "Update, thank you!.\n\n\u003e The $package variable is set outside the for loop:\n\nsure but we do not use it... yet.\nanyway sure your way is better, uploaded.",
+      "parentUuid": "da01753e_6c765240",
+      "revId": "9bd1ac3a92284c8d8e46aa13c1939dcb13514609",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
