@@ -81,6 +81,24 @@
       "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba068154_e8cd295f",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2017-03-02T14:49:03Z",
+      "side": 1,
+      "message": "Or just a backport? at least that allows us to control the versions?",
+      "parentUuid": "ba068154_a8b041f5",
+      "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
