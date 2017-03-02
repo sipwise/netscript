@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba068154_e8d7e9bd",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-03-02T15:21:23Z",
+      "side": 1,
+      "message": "I\u0027d appreciate if the commit message includes the actual issue shellcheck is complaining about.",
+      "revId": "55ac69e02ff3132b6a833971d9af1f4ccdf4c300",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
