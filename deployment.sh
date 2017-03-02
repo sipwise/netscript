@@ -1750,6 +1750,7 @@ EOT
   done
 
   # nuke files
+  # shellcheck disable=SC2016
   find "${TARGET}/var/log" -type f -size +0 -not -name \*.ini -exec sh -c ':> ${1}' sh {} \;
   :>$TARGET/var/run/utmp
   :>$TARGET/var/run/wtmp
