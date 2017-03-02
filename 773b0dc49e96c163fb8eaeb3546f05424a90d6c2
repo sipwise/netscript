@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "ba068154_a8b961eb",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 266,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-03-02T14:45:20Z",
+      "side": 1,
+      "message": "indeed, fixed in new patchset",
+      "parentUuid": "ba068154_281731ef",
+      "range": {
+        "startLine": 265,
+        "startChar": 0,
+        "endLine": 266,
+        "endChar": 33
+      },
+      "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba068154_a8e20101",
         "filename": "deployment.sh",
         "patchSetId": 3
@@ -36,6 +60,24 @@
       "writtenOn": "2017-03-02T14:41:57Z",
       "side": 1,
       "message": "This is good for integrity purposes, but are there no signatures for this stuff? This means we are downloading an opaque binary blob and running that :( which seems like a regression to me.",
+      "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba068154_a8b041f5",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-03-02T14:45:20Z",
+      "side": 1,
+      "message": "correct, there\u0027s no better option if we rely on upstream stuff here. Best alternative might be to use debian unstable as a source, but that might be quite too dynamic stuff for our purposes. Maybe we need to come up with our own mirror or something like that.",
+      "parentUuid": "ba068154_a8e20101",
       "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
