@@ -117,6 +117,24 @@
       "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba068154_68093995",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-03-02T14:51:43Z",
+      "side": 1,
+      "message": "There won\u0027t be a backport for stretch nor will the package appear in stretch-*: https://lists.debian.org/debian-backports/2016/12/msg00042.html",
+      "parentUuid": "ba068154_28d8d11c",
+      "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
