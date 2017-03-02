@@ -39,6 +39,24 @@
       "revId": "6693d9eba9c06196a760b25388a7b1a6e3472554",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba068154_4bdb8f1b",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-03-02T16:23:21Z",
+      "side": 1,
+      "message": "I was unsure whether that\u0027s a feature or not, so using your input to give my undecided opinion an opinion: adjusted in new patchset :)",
+      "parentUuid": "ba068154_eb9fe34e",
+      "revId": "6693d9eba9c06196a760b25388a7b1a6e3472554",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
