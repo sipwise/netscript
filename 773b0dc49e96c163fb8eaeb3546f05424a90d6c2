@@ -99,6 +99,24 @@
       "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba068154_28d8d11c",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-03-02T14:49:23Z",
+      "side": 1,
+      "message": "can we put the version to deb.sipwise.com and stuck on it for a while. I believe the package will appears in stretch-something when stretch will be close to use... I do not believe virtualbox will be completely dropped from Debian.",
+      "parentUuid": "ba068154_a8b041f5",
+      "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
