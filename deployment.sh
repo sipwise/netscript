@@ -1750,7 +1750,7 @@ EOT
   done
 
   # nuke files
-  find "${TARGET}/var/log" -type f -size +0 -not -name \*.ini -exec sh -c ':> ${1}' sh {} \;
+  find "${TARGET}/var/log" -type f -size +0 -not -name \*.ini -exec sh -c ":> \${1}" sh {} \;
   :>$TARGET/var/run/utmp
   :>$TARGET/var/run/wtmp
 
