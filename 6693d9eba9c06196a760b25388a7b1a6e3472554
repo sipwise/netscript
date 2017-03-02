@@ -16,6 +16,29 @@
       "revId": "6693d9eba9c06196a760b25388a7b1a6e3472554",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba068154_2baa8b70",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-03-02T16:20:53Z",
+      "side": 1,
+      "message": "we are silently drop all the default grub options here...\nis it what we want? IMHO risky, while you knows better.",
+      "range": {
+        "startLine": 267,
+        "startChar": 40,
+        "endLine": 267,
+        "endChar": 42
+      },
+      "revId": "6693d9eba9c06196a760b25388a7b1a6e3472554",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
