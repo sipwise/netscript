@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba068154_eb9fe34e",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2017-03-02T16:19:45Z",
+      "side": 1,
+      "message": "This will discard any previous setting, which might not be a future proof behavior?",
+      "revId": "6693d9eba9c06196a760b25388a7b1a6e3472554",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
