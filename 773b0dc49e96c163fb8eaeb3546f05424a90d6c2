@@ -135,6 +135,24 @@
       "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba068154_a8032172",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-03-02T14:53:25Z",
+      "side": 1,
+      "message": "A backport means that we have to update the package for all present releases then, since the virtualbox guest additions should (at least kind of) match the version on the running system, and we won\u0027t have those (very) old versions on our hosts when running older ngcp releases, IMO.",
+      "parentUuid": "ba068154_e8cd295f",
+      "revId": "773b0dc49e96c163fb8eaeb3546f05424a90d6c2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
