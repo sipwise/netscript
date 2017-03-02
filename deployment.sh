@@ -262,6 +262,19 @@ install_vbox_iso() {
   echo "${vbox_checksum} ${vbox_isofile}" | sha256sum --check || die "Error: failed to compute checksum for Virtualbox ISO. Exiting."
 }
 
+set_custom_grub_boot_options() {
+  echo "Adjusting default GRUB boot options (enabling net.ifnames=0)"
+  sed -ie 's/^GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 net.ifnames=0"/' "${TARGET}/etc/default/grub"
+
+  echo "Invoking update-grub"
+  grml-chroot $TARGET update-grub
+
+  if [ -d "${TARGET}/etc/.git" ]; then
+    echo "Commit /etc/default/grub changes using etckeeper"
+    chroot "$TARGET" etckeeper commit "/etc/default/grub changes"
+  fi
+}
+
 ensure_augtool_present() {
   if [ -x /usr/bin/augtool ] ; then
     echo "/usr/bin/augtool is present, nothing to do"
@@ -1773,6 +1786,12 @@ EOT
   } > "${TARGET}"/var/log/deployment.log
 
 fi
+
+case "$DEBIAN_RELEASE" in
+  stretch)
+    set_custom_grub_boot_options
+    ;;
+esac
 
 if "$CARRIER_EDITION" ; then
   echo "Nothing to do on Carrier, /etc/network/interfaces was already set up."
