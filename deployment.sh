@@ -262,6 +262,14 @@ install_vbox_iso() {
   echo "${vbox_checksum} ${vbox_isofile}" | sha256sum --check || die "Error: failed to compute checksum for Virtualbox ISO. Exiting."
 }
 
+set_custom_grub_boot_options() {
+  echo "Adjusting default GRUB boot options (enabling net.ifnames=0)"
+  sed -ie 's/^GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 net.ifnames=0"/' "${TARGET}/etc/default/grub"
+
+  echo "Invoking update-grub"
+  grml-chroot $TARGET update-grub
+}
+
 ensure_augtool_present() {
   if [ -x /usr/bin/augtool ] ; then
     echo "/usr/bin/augtool is present, nothing to do"
@@ -2134,6 +2142,8 @@ vagrant_configuration() {
   # see http://ablecoder.com/b/2012/04/09/vagrant-broken-networking-when-packaging-ubuntu-boxes/
   echo "Removing /etc/udev/rules.d/70-persistent-net.rules"
   rm -f "${TARGET}/etc/udev/rules.d/70-persistent-net.rules"
+
+  set_custom_grub_boot_options
 
   if [ -d "${TARGET}/etc/.git" ]; then
     echo "Commit /etc/* changes using etckeeper"
