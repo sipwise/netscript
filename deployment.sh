@@ -249,26 +249,26 @@ grml_debootstrap_upgrade() {
   fi
 }
 
-# we need version >=4.3.14-1~bpo70+1 for usage with recent kernel versions
-install_vbox_package() {
-  echo "Installing virtualbox-guest-additions-iso"
+install_vbox_iso() {
+  echo "Downloading virtualbox-guest-additions ISO"
 
-  # use temporary apt database for speed reasons
-  local TMPDIR
-  TMPDIR=$(mktemp -d)
-  mkdir -p "${TMPDIR}/etc/preferences.d" "${TMPDIR}/statedir/lists/partial" \
-    "${TMPDIR}/cachedir/archives/partial"
-  echo "deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/ ${DEBIAN_RELEASE} non-free" > \
-    "${TMPDIR}/etc/sources.list"
+  local vbox_version
+  vbox_version=$(curl -L -s http://download.virtualbox.org/virtualbox/LATEST.TXT)
+  if [ -z "$vbox_version" ] ; then
+    die "Error: Failed to identify VirtualBox version (no network access to http://download.virtualbox.org/?). Exiting."
+  fi
 
-  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::state="${TMPDIR}/statedir" -o dir::etc="${TMPDIR}/etc" \
-    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" update
+  local vbox_iso
+  vbox_iso="$(curl -L -s "http://download.virtualbox.org/virtualbox/${vbox_version}/SHA256SUMS" | grep 'iso$')"
+  vbox_iso="${vbox_iso//* *VBoxGuestAdditions/VBoxGuestAdditions}"
 
-  DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
-    -o dir::etc="${TMPDIR}/etc" -o dir::state="${TMPDIR}/statedir" \
-    -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" \
-    -y --no-install-recommends install virtualbox-guest-additions-iso
+  local vbox_checksum="${vbox_iso/ */}"
+
+  mkdir -p "/usr/share/virtualbox/"
+  vbox_isofile="/usr/share/virtualbox/${vbox_iso}"
+  wget -c -O "$vbox_isofile" "http://download.virtualbox.org/virtualbox/${vbox_version}/${vbox_iso}"
+
+  echo "${vbox_checksum} ${vbox_isofile}" | sha256sum --check || die "Error: failed to compute checksum for Virtualbox ISO. Exiting."
 }
 
 ensure_augtool_present() {
@@ -2097,7 +2097,7 @@ vagrant_configuration() {
     sed -ri -e "s/mesg\s+n/# adjusted for Vagrant\ntty -s \&\& mesg n/" "${TARGET}/root/.profile"
   fi
 
-  install_vbox_package
+  install_vbox_iso
 
   # required for fake_uname and VBoxLinuxAdditions.run
   grml-chroot $TARGET apt-get -y install libc6-dev gcc
@@ -2113,7 +2113,6 @@ vagrant_configuration() {
     die "Error: no kernel version could be identified."
   fi
 
-  vbox_isofile="/usr/share/virtualbox/VBoxGuestAdditions.iso"
   if [ ! -r "$vbox_isofile" ] ; then
     die "Error: could not find $vbox_isofile"
   fi
