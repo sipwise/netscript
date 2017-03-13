@@ -2228,20 +2228,40 @@ puppet_install_from_git () {
   umount -f "${PUPPET_RESCUE_PATH}"
   rmdir "${PUPPET_RESCUE_PATH}"
 
-  echo "Initializing Hiera config..."
-  grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" \
-        -e "include puppet::hiera" 2>&1 | tee -a /tmp/puppet.log
-  check_puppet_rc "${PIPESTATUS[0]}" "2"
+  while $repeat ; do
+    repeat=false
 
-  echo "Running Puppet core deployment..."
-  grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" --tags core,apt \
-        "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
-  check_puppet_rc "${PIPESTATUS[0]}" "2"
+    echo "Initializing Hiera config..."
+    grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" \
+          -e "include puppet::hiera" 2>&1 | tee -a /tmp/puppet.log
+    check_puppet_rc "${PIPESTATUS[0]}" "2"
 
-  echo "Running Puppet deployment..."
-  grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" \
-        "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
-  check_puppet_rc "${PIPESTATUS[0]}" "2"
+    echo "Running Puppet core deployment..."
+    grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" --tags core,apt \
+          "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
+    check_puppet_rc "${PIPESTATUS[0]}" "2"
+
+    echo "Running Puppet deployment..."
+    grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" \
+          "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
+    check_puppet_rc "${PIPESTATUS[0]}" "2"
+
+    if ! checkBootParam nopuppetrepeat && [ "$(get_deploy_status)" = "error" ] ; then
+      echo "Do you want to [r]epeat puppet run? (Press any other key to continue without repeating.)"
+      read a
+      case "$a" in
+        r)
+          echo "Repeating puppet run."
+          repeat=true
+          set_deploy_status "puppet"
+          ;;
+        *)
+          echo "Continue without repeating puppet run."
+          ;;
+      esac
+      unset a
+    fi
+  done
 
   # We want to keep the folder itself (because some day it may be 'production' env passed as pappetenv which
   # folder should be existent for normal puppet server startup) but just delete all puppet code from there
@@ -2270,6 +2290,7 @@ puppet_install_from_puppet () {
         r)
           echo "Repeating puppet run."
           repeat=true
+          set_deploy_status "puppet"
           ;;
         *)
           echo "Continue without repeating puppet run."
