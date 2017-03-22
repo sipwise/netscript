@@ -1,3 +1,19 @@
+ngcp-netscript (5.2.1.0+0~mr5.2.1.0) unstable; urgency=medium
+
+  [ Alexander Lutay ]
+  * [34b219a] TT#9718 Decrease amount of shellcheck warnings, part 2
+  * [6aa501a] TT#9718 Fix shellcheck v.0.3.4-3 warning
+  * [bb5afae] TT#8883 Add puppet repeat dialog for recovering from Git
+
+  [ Michael Prokop ]
+  * [df1e2e0] TT#11028 Use virtualbox-guest-additions-iso from VirtualBox upstream
+  * [d539011] TT#12206 Set custom boot option "net.ifnames=0" in GRUB in Vagrant boxes
+  * [8b8a339] TT#5444 Revert "TT#5444 Debian stretch doesn't have security support (yet)"
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Wed, 22 Mar 2017 10:56:30 +0100
+
 ngcp-netscript (5.2.0.0+0~mr5.2.0.0) unstable; urgency=medium
 
   [ Sergii Kipot ]
