@@ -2340,9 +2340,9 @@ EOF
 fi # if [ -n "$PUPPET" ] ; then
 
 # make sure we don't leave any running processes
-for i in asterisk atd collectd collectdmon dbus-daemon exim4 \
+for i in asterisk atd cgmanager collectd collectdmon dbus-daemon exim4 \
          glusterd glusterfs glusterfsd glusterfs-server haveged monit nscd \
-	 redis-server snmpd voisniff-ng ; do
+         redis-server snmpd voisniff-ng ; do
   killall -9 $i >/dev/null 2>&1 || true
 done
 
