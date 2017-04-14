@@ -1714,13 +1714,20 @@ EOT
   gen_installer_config
 
   # execute ngcp-installer
-  cat << EOT | grml-chroot $TARGET /bin/bash
+  cat << "EOT" | grml-chroot $TARGET /bin/bash
+set -x
+set +e
+echo "test tee message" | tee -a /tmp/ngcp-installer-debug.log
 ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
-RC=\${PIPESTATUS[0]}
-if [ \$RC -ne 0 ] ; then
-  echo "ERROR: Fatal error while running ngcp-installer!" >&2
-  exit \$RC
+CHECK=(${PIPESTATUS[@]})
+echo "array CHECK=${CHECK[@]}" | tee -a /tmp/ngcp-installer-debug.log
+RC=${CHECK[0]:-42}
+echo "RC=${RC:-43}" | tee -a /tmp/ngcp-installer-debug.log
+if [ "${RC}" != "0" ] ; then
+  echo "ERROR: Fatal error while running ngcp-installer (exit code '${RC}')!" | tee -a /tmp/ngcp-installer-debug.log >&2
+  exit ${RC}
 fi
+echo "All OK, ngcp-installer finished with exit code '${RC}', continue netscript deployment." | tee -a /tmp/ngcp-installer-debug.log
 EOT
 
   # baby, something went wrong!
