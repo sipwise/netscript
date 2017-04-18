@@ -2262,11 +2262,6 @@ puppet_install_from_git () {
       unset a
     fi
   done
-
-  # We want to keep the folder itself (because some day it may be 'production' env passed as pappetenv which
-  # folder should be existent for normal puppet server startup) but just delete all puppet code from there
-  echo "Cleanup content from '${TARGET}/${PUPPET_CODE_PATH}', while keeping the folder for further Puppet/r10k usage"
-  rm -rf "${TARGET:?}/${PUPPET_CODE_PATH:?}"/*
 }
 
 puppet_install_from_puppet () {
