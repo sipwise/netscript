@@ -1302,6 +1302,7 @@ if [ -n "$PUPPET" ] ; then
 openssh-server
 puppet-agent
 lsb-release
+ntpdate
 EOF
 fi
 
@@ -2270,8 +2271,18 @@ puppet_install_from_puppet () {
   local repeat=true
 
   while $repeat ; do
-    repeat=false
+    offset=$(ntpdate -q "$PUPPET_SERVER" | sed -n '1s/.*offset \(.*\),.*/\1/p' | tr -d -)
+    seconds=${offset%.*}
+    echo "Time offset between $PUPPET_SERVER and current server is $seconds seconds."
+    if (( seconds > 10 )) && checkBootParam nopuppetrepeat; then
+      echo "Time difference between the current server and $PUPPET_SERVER is bigger than \
+        10 seconds. Please synchronize time and press any key to retry puppet run."
+      read a
+      unset a
+      continue
+    fi
 
+    repeat=false
     echo "Running Puppet core deployment..."
     grml-chroot $TARGET puppet agent --test --tags core,apt 2>&1 | tee -a /tmp/puppet.log
     check_puppet_rc "${PIPESTATUS[0]}" "2"
