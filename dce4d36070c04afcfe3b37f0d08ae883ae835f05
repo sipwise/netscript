@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a166590_da8f51cb",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 1305,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-05-07T09:31:55Z",
+      "side": 1,
+      "message": "PuppetOn point here. We should ensure somewhere in a module \"base\" those packages are installed. Otherwise the servers installed fom deployment.sh and servers installed from plain debian ISO and started puppet manually can be different.",
+      "range": {
+        "startLine": 1302,
+        "startChar": 0,
+        "endLine": 1305,
+        "endChar": 7
+      },
+      "revId": "dce4d36070c04afcfe3b37f0d08ae883ae835f05",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_3abca56c",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 2274,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-05-07T09:31:55Z",
+      "side": 1,
+      "message": "I believe it can be done shorted with awk and without tr at all. Please show me command/output tomorrow.",
+      "range": {
+        "startLine": 2274,
+        "startChar": 2,
+        "endLine": 2274,
+        "endChar": 89
+      },
+      "revId": "dce4d36070c04afcfe3b37f0d08ae883ae835f05",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_1ac1e9e4",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 2277,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-05-07T09:31:55Z",
+      "side": 1,
+      "message": "AFAIK, puppet will fail to sing cert if local time is smaller then puppet time. like in ticket new server time was 1 day earlier then time on puppet server.\n\nI regret 10 seconds check will be not enough to sing puppet cert. :-( while sure good to test it.",
+      "range": {
+        "startLine": 2277,
+        "startChar": 7,
+        "endLine": 2277,
+        "endChar": 25
+      },
+      "revId": "dce4d36070c04afcfe3b37f0d08ae883ae835f05",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
