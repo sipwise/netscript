@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "5a166590_6e877e10",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 1305,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2017-05-08T12:01:07Z",
+      "side": 1,
+      "message": "Done in review 13112. Three first packages are already covered by puppet.",
+      "parentUuid": "5a166590_da8f51cb",
+      "range": {
+        "startLine": 1302,
+        "startChar": 0,
+        "endLine": 1305,
+        "endChar": 7
+      },
+      "revId": "dce4d36070c04afcfe3b37f0d08ae883ae835f05",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a166590_3abca56c",
         "filename": "deployment.sh",
         "patchSetId": 3
@@ -59,6 +83,30 @@
       "writtenOn": "2017-05-07T09:31:55Z",
       "side": 1,
       "message": "AFAIK, puppet will fail to sing cert if local time is smaller then puppet time. like in ticket new server time was 1 day earlier then time on puppet server.\n\nI regret 10 seconds check will be not enough to sing puppet cert. :-( while sure good to test it.",
+      "range": {
+        "startLine": 2277,
+        "startChar": 7,
+        "endLine": 2277,
+        "endChar": 25
+      },
+      "revId": "dce4d36070c04afcfe3b37f0d08ae883ae835f05",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_ae78562c",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 2277,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2017-05-08T12:01:07Z",
+      "side": 1,
+      "message": "puppet cert will be created with puppet server date. If the date for server being installed is somewhere in past then it\u0027s possible that certificate will be treated as invalid. With 10 sec window that is possible only in case when certificate is checked less than 10 sec after it was generated. It should be enough because in our case certificate is regenerated at the beginning of installation while deployment.sh time check will happen only after debian installation which takes more than 10 sec.",
+      "parentUuid": "5a166590_1ac1e9e4",
       "range": {
         "startLine": 2277,
         "startChar": 7,
