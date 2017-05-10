@@ -1165,7 +1165,12 @@ ${VG_NAME}-root     /       -95%      ext3 rw
 ${VG_NAME}-swap     swap    RAM:50%   swap sw $lv_create_opts
 EOF
 
-  # make sure setup-storage doesn't fail if LVM is already present
+  # make sure setup-storage/parted doesn't fail if LVM is already present
+  blockdev --rereadpt "/dev/${DISK}"
+  for disk in "/dev/${DISK}"* ; do
+    logit "Removing possibly existing LVM/PV label from $disk"
+    pvremove "$disk" --force --force --yes || true
+  done
   dd if=/dev/zero of="/dev/${DISK}" bs=1M count=1
   blockdev --rereadpt "/dev/${DISK}"
 
