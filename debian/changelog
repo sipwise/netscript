@@ -1,3 +1,19 @@
+ngcp-netscript (5.4.0.0+0~mr5.4.0.0) unstable; urgency=medium
+
+  [ Sergii Kipot ]
+  * [b3ad534] TT#14583 Do not remove puppet code after installation
+  * [dce4d36] TT#4916 Check time sync between installed server and puppet
+
+  [ Alexander Lutay ]
+  * [459cef9] TT#14516 Add more debug for ngcp-installer execution section from grml-chroot
+
+  [ Michael Prokop ]
+  * [c02a3ab] TT#15829 Wipe any possibly existing LVM/PV label from target disk
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Tue, 16 May 2017 21:38:33 +0200
+
 ngcp-netscript (5.3.0.0+0~mr5.3.0.0) unstable; urgency=medium
 
   [ Alexander Lutay ]
