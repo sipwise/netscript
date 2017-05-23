@@ -46,6 +46,30 @@
       "revId": "a684a00b8621def4dd1b0ae261a81290435a4ddf",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_9778142d",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1357,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-05-23T15:03:26Z",
+      "side": 1,
+      "message": "Nope... just my $0.01\nyou can submit it AS IS, while we might forget to enable it for sid+ as it the code here will silently work without -debug repo enabling.",
+      "parentUuid": "1a106d94_b7cd5089",
+      "range": {
+        "startLine": 1357,
+        "startChar": 3,
+        "endLine": 1357,
+        "endChar": 36
+      },
+      "revId": "a684a00b8621def4dd1b0ae261a81290435a4ddf",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
