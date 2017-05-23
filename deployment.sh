@@ -1323,6 +1323,7 @@ fi
 # over official Debian
 MIRROR="${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian/"
 SEC_MIRROR="${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian-security/"
+DBG_MIRROR="${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/debian-debug/"
 
 if [ -z "${GPG_KEY}" ] ; then
   KEYRING='/etc/apt/trusted.gpg.d/sipwise.gpg'
@@ -1352,6 +1353,10 @@ EOF
 
 echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
 echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
+
+if [ "$DEBIAN_RELEASE" = "stretch" ] ; then
+  echo "deb ${DBG_MIRROR} ${DEBIAN_RELEASE}-debug main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
+fi
 
 if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/etc/apt/sources.list << EOF
@@ -1592,6 +1597,10 @@ deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
 deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
 deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
 EOF
+
+  if [ "$DEBIAN_RELEASE" = "stretch" ] ; then
+    echo "deb ${DBG_MIRROR} ${DEBIAN_RELEASE}-debug main contrib non-free" >> "$TARGET/etc/apt/sources.list.d/debian.list"
+  fi
 
   # support testing rc releases without providing an according installer package ahead
   if [ -n "$AUTOBUILD_RELEASE" ] ; then
