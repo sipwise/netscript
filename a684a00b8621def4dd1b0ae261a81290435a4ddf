@@ -22,6 +22,30 @@
       "revId": "a684a00b8621def4dd1b0ae261a81290435a4ddf",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_b7cd5089",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1357,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-05-23T14:47:29Z",
+      "side": 1,
+      "message": "We don\u0027t have buster (\u003d Debian v10) on our mirrors yet, would you prefer to enable it anyway?",
+      "parentUuid": "1a106d94_971c9415",
+      "range": {
+        "startLine": 1357,
+        "startChar": 3,
+        "endLine": 1357,
+        "endChar": 36
+      },
+      "revId": "a684a00b8621def4dd1b0ae261a81290435a4ddf",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
