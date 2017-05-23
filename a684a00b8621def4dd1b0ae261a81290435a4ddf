@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_971c9415",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1357,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-05-23T14:27:51Z",
+      "side": 1,
+      "message": "maybe:\n\u003e if [ \"$DEBIAN_RELEASE\" !\u003d \"jessie\" ] ; then\n\nto support sid+ here?",
+      "range": {
+        "startLine": 1357,
+        "startChar": 3,
+        "endLine": 1357,
+        "endChar": 36
+      },
+      "revId": "a684a00b8621def4dd1b0ae261a81290435a4ddf",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
