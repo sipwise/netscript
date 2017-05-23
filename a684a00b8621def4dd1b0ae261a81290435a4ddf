@@ -70,6 +70,30 @@
       "revId": "a684a00b8621def4dd1b0ae261a81290435a4ddf",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_57b5fccb",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1357,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-05-23T15:07:06Z",
+      "side": 1,
+      "message": "I don\u0027t mind, so if you prefer to fail it that\u0027s absolutely fine, new patchset takes care of that. :)",
+      "parentUuid": "1a106d94_9778142d",
+      "range": {
+        "startLine": 1357,
+        "startChar": 3,
+        "endLine": 1357,
+        "endChar": 36
+      },
+      "revId": "a684a00b8621def4dd1b0ae261a81290435a4ddf",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
