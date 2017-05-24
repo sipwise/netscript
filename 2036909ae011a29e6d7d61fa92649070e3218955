@@ -129,6 +129,30 @@
       "revId": "2036909ae011a29e6d7d61fa92649070e3218955",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_f2199623",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1733,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-05-24T11:34:21Z",
+      "side": 1,
+      "message": "That might be true, though it doesn\u0027t explain what\u0027s going wrong :) thx4testing, looking forward to the results",
+      "parentUuid": "1a106d94_f20236b3",
+      "range": {
+        "startLine": 1733,
+        "startChar": 0,
+        "endLine": 1733,
+        "endChar": 12
+      },
+      "revId": "2036909ae011a29e6d7d61fa92649070e3218955",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
