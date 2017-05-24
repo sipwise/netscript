@@ -81,6 +81,30 @@
       "revId": "2036909ae011a29e6d7d61fa92649070e3218955",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_b2f8bec5",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1733,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-05-24T11:21:34Z",
+      "side": 1,
+      "message": "I fail to understand that. Did you test this change and it\u0027s returning the \"42\"?",
+      "parentUuid": "1a106d94_926e6295",
+      "range": {
+        "startLine": 1733,
+        "startChar": 0,
+        "endLine": 1733,
+        "endChar": 12
+      },
+      "revId": "2036909ae011a29e6d7d61fa92649070e3218955",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
