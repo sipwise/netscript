@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a106d94_d268da89",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-05-24T11:14:34Z",
+      "side": 1,
+      "message": "replied in deployment.sh",
+      "parentUuid": "1a106d94_325e8eea",
+      "revId": "2036909ae011a29e6d7d61fa92649070e3218955",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a106d94_525d0ae9",
         "filename": "deployment.sh",
         "patchSetId": 1
@@ -30,6 +48,30 @@
       "writtenOn": "2017-05-24T11:12:53Z",
       "side": 1,
       "message": "Guillem because here we have:\n\u003e exit\nwhich is the same as \n\u003e exit 0\n\n\nso in line 1737 we have $? \u003d\u003d 0",
+      "range": {
+        "startLine": 1733,
+        "startChar": 0,
+        "endLine": 1733,
+        "endChar": 12
+      },
+      "revId": "2036909ae011a29e6d7d61fa92649070e3218955",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_926e6295",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1733,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-05-24T11:14:34Z",
+      "side": 1,
+      "message": "With a changes in review we will do exit 42 in no PIPESTATUS[0] are available for some reason.\n\nWhich should be noticed by deployment.sh in line 1737",
+      "parentUuid": "1a106d94_525d0ae9",
       "range": {
         "startLine": 1733,
         "startChar": 0,
