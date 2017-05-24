@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_325e8eea",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2017-05-24T11:11:30Z",
+      "side": 1,
+      "message": "The fix/workaround does not make sense to me, given that here you do have a 0! What\u0027s going on?",
+      "revId": "2036909ae011a29e6d7d61fa92649070e3218955",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
