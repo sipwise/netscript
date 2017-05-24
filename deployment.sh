@@ -1725,7 +1725,7 @@ EOT
   cat << "EOT" | grml-chroot $TARGET /bin/bash
 echo "Running ngcp-installer via grml-chroot." | tee -a /tmp/ngcp-installer-debug.log
 ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
-RC=${PIPESTATUS[0]}
+RC=${PIPESTATUS[0]:-42}
 if [ "${RC}" = "0" ] ; then
   echo "OK, ngcp-installer finished with exit code '${RC}', continue netscript deployment." | tee -a /tmp/ngcp-installer-debug.log
 else
