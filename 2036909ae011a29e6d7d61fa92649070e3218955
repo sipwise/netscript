@@ -105,6 +105,30 @@
       "revId": "2036909ae011a29e6d7d61fa92649070e3218955",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_f20236b3",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1733,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-05-24T11:23:41Z",
+      "side": 1,
+      "message": "No, I didn\u0027t test honestly, while I am strongly believe we will see 42... because of this like:\n\u003e ERROR: Fatal error while running ngcp-installer (exit code \u0027\u0027)!\nfrom https://paste.mgm.sipwise.com/show/2683/\n\nsee \"exit code \u0027\u0027\"\n\nI am going to test it and public results.",
+      "parentUuid": "1a106d94_b2f8bec5",
+      "range": {
+        "startLine": 1733,
+        "startChar": 0,
+        "endLine": 1733,
+        "endChar": 12
+      },
+      "revId": "2036909ae011a29e6d7d61fa92649070e3218955",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
