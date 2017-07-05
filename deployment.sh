@@ -2195,21 +2195,6 @@ puppet_install_from_git () {
   : "${PUPPET_LOCAL_GIT?ERROR: variable 'PUPPET_LOCAL_GIT' is NOT defined, cannot continue.}"
   : "${PUPPET_GIT_BRANCH?ERROR: variable 'PUPPET_GIT_BRANCH' is NOT defined, cannot continue.}"
 
-  echo "Cloning Puppet git repository from '${PUPPET_GIT_REPO}' to '${PUPPET_LOCAL_GIT}' (branch '${PUPPET_GIT_BRANCH}')"
-  if ! git clone --depth 1 -b "${PUPPET_GIT_BRANCH}" "${PUPPET_GIT_REPO}" "${PUPPET_LOCAL_GIT}" ; then
-    die "ERROR: Cannot clone git repository, see the error above, cannot continue!"
-  fi
-
-  local PUPPET_CODE_PATH
-  PUPPET_CODE_PATH="/etc/puppetlabs/code/environments/${PUPPET}"
-
-  echo "Creating empty Puppet environment ${TARGET}/${PUPPET_CODE_PATH}"
-  mkdir -m 0755 -p "${TARGET}/${PUPPET_CODE_PATH}"
-
-  echo "Deploying Puppet code from Git repository to ${TARGET}/${PUPPET_CODE_PATH}"
-  cp -a "${PUPPET_LOCAL_GIT}"/* "${TARGET}/${PUPPET_CODE_PATH}"
-  rm -rf "${PUPPET_LOCAL_GIT:?}"
-
   echo "Searching for Hiera rescue device by label '${PUPPET_RESCUE_LABEL}'..."
   local PUPPET_RESCUE_DRIVE
   PUPPET_RESCUE_DRIVE=$(blkid | grep -E "LABEL=\"${PUPPET_RESCUE_LABEL}" | head -1 | awk -F: '{print $1}')
@@ -2235,8 +2220,29 @@ puppet_install_from_git () {
   mount -t "${DEVICE_TYPE}" -o ro "${PUPPET_RESCUE_DRIVE}" "${PUPPET_RESCUE_PATH}"
   mkdir -m 0700 -p "${TARGET}/etc/puppetlabs/code/hieradata/"
   cp -a "${PUPPET_RESCUE_PATH}"/hieradata/* "${TARGET}/etc/puppetlabs/code/hieradata/"
+  mkdir -p ~/.ssh
+  cp "${PUPPET_RESCUE_PATH}"/hieradata/defaults.d/id_rsa_r10k ~/.ssh/
+  chmod 600 ~/.ssh/id_rsa_r10k
   umount -f "${PUPPET_RESCUE_PATH}"
   rmdir "${PUPPET_RESCUE_PATH}"
+
+  echo "Cloning Puppet git repository from '${PUPPET_GIT_REPO}' to '${PUPPET_LOCAL_GIT}' (branch '${PUPPET_GIT_BRANCH}')"
+  echo 'ssh -i ~/.ssh/id_rsa_r10k -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $*' > ssh
+  chmod +x ssh
+  if ! GIT_SSH="$PWD/ssh" git clone --depth 1 -b "${PUPPET_GIT_BRANCH}" "${PUPPET_GIT_REPO}" "${PUPPET_LOCAL_GIT}" ; then
+    die "ERROR: Cannot clone git repository, see the error above, cannot continue!"
+  fi
+  rm $PWD/ssh
+
+  local PUPPET_CODE_PATH
+  PUPPET_CODE_PATH="/etc/puppetlabs/code/environments/${PUPPET}"
+
+  echo "Creating empty Puppet environment ${TARGET}/${PUPPET_CODE_PATH}"
+  mkdir -m 0755 -p "${TARGET}/${PUPPET_CODE_PATH}"
+
+  echo "Deploying Puppet code from Git repository to ${TARGET}/${PUPPET_CODE_PATH}"
+  cp -a "${PUPPET_LOCAL_GIT}"/* "${TARGET}/${PUPPET_CODE_PATH}"
+  rm -rf "${PUPPET_LOCAL_GIT:?}"
 
   while $repeat ; do
     repeat=false
