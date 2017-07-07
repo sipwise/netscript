@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "7adec928_6d09212c",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 2224,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2017-07-07T15:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7adec928_12035c10",
+      "range": {
+        "startLine": 2224,
+        "startChar": 0,
+        "endLine": 2224,
+        "endChar": 78
+      },
+      "revId": "6ca4b9c2e9cc5830f38d32b5fed03d65512789e8",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7adec928_f2051015",
         "filename": "deployment.sh",
         "patchSetId": 2
@@ -36,6 +60,30 @@
       "writtenOn": "2017-07-07T15:08:02Z",
       "side": 1,
       "message": "export GIT_SSH\u003d\"ssh -o UserKnownHostsFile\u003d/dev/null -o StrictHostKeyChecking\u003dno $*\"\n\n+\n\nunset GIT_SSH\n\nafter git clone",
+      "range": {
+        "startLine": 2231,
+        "startChar": 2,
+        "endLine": 2231,
+        "endChar": 14
+      },
+      "revId": "6ca4b9c2e9cc5830f38d32b5fed03d65512789e8",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_8d0e6d33",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 2231,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2017-07-07T15:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7adec928_f2051015",
       "range": {
         "startLine": 2231,
         "startChar": 2,
