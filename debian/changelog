@@ -1,3 +1,16 @@
+ngcp-netscript (5.5.0.0+0~mr5.5.0.0) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [7ab7651] TT#16679 Enable stretch-security mirror in sources.list, now being available
+  * [7c8b874] TT#16679 Enable debian-debug repository for Debian/stretch
+
+  [ Sergii Kipot ]
+  * [447f7f6] TT#5851 Use authentication for gerrit access
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 17 Jul 2017 22:44:29 +0200
+
 ngcp-netscript (5.4.0.0+0~mr5.4.0.0) unstable; urgency=medium
 
   [ Sergii Kipot ]
