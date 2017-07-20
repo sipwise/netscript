@@ -1359,9 +1359,16 @@ if [ "$DEBIAN_RELEASE" != "jessie" ] ; then
 fi
 
 if [ -n "$PUPPET" ] ; then
-  cat >> /etc/debootstrap/etc/apt/sources.list << EOF
+  # puppetlabs hasn't provided packages for Debian Stretch yet
+  if [ "$DEBIAN_RELEASE" = "stretch" ] ; then
+    cat >> /etc/debootstrap/etc/apt/sources.list << EOF
+deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ jessie main PC1 dependencies
+EOF
+  else
+    cat >> /etc/debootstrap/etc/apt/sources.list << EOF
 deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ ${DEBIAN_RELEASE} main PC1 dependencies
 EOF
+  fi
 fi
 
 # GRUB versions until Debian/wheezy generate an invalid device.map
