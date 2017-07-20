@@ -1305,7 +1305,6 @@ if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/packages << EOF
 # for interal use at sipwise
 openssh-server
-puppet-agent
 lsb-release
 ntpdate
 EOF
@@ -2332,6 +2331,9 @@ puppet_install_from_puppet () {
 }
 
   set_deploy_status "puppet"
+
+  apt-get -y install puppet-agent
+
   echo "Rebuilding /etc/hosts"
   cat > $TARGET/etc/hosts << EOF
 # Generated via deployment.sh
