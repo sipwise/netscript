@@ -1305,7 +1305,6 @@ if [ -n "$PUPPET" ] ; then
   cat >> /etc/debootstrap/packages << EOF
 # for interal use at sipwise
 openssh-server
-puppet-agent
 lsb-release
 ntpdate
 EOF
@@ -2330,6 +2329,14 @@ puppet_install_from_puppet () {
 }
 
   set_deploy_status "puppet"
+
+  # puppetlabs doesn't provide puppet-agent packages for debian stretch, using jessie one.
+  if [ "$DEBIAN_RELEASE" = "stretch" ] ; then
+    chroot ${TARGET} wget http://ftp.us.debian.org/debian/pool/main/r/readline6/libreadline6_6.3-8+b3_amd64.deb -O /tmp/libreadline6_6.3-8+b3_amd64.deb
+    chroot ${TARGET} dpkg -i /tmp/libreadline6_6.3-8+b3_amd64.deb
+    chroot ${TARGET} apt-get -y --allow-unauthenticated install puppet-agent
+  fi
+
   echo "Rebuilding /etc/hosts"
   cat > $TARGET/etc/hosts << EOF
 # Generated via deployment.sh
