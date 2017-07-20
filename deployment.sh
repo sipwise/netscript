@@ -1301,16 +1301,6 @@ lvm2
 EOF
 fi
 
-if [ -n "$PUPPET" ] ; then
-  cat >> /etc/debootstrap/packages << EOF
-# for interal use at sipwise
-openssh-server
-puppet-agent
-lsb-release
-ntpdate
-EOF
-fi
-
 if [ -n "$FIRMWARE_PACKAGES" ] ; then
   cat >> /etc/debootstrap/packages << EOF
 # firmware packages for hardware specific needs
@@ -1356,19 +1346,6 @@ echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free" >> /etc/deb
 
 if [ "$DEBIAN_RELEASE" != "jessie" ] ; then
   echo "deb ${DBG_MIRROR} ${DEBIAN_RELEASE}-debug main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
-fi
-
-if [ -n "$PUPPET" ] ; then
-  # puppetlabs hasn't provided packages for Debian Stretch yet
-  if [ "$DEBIAN_RELEASE" = "stretch" ] ; then
-    cat >> /etc/debootstrap/etc/apt/sources.list << EOF
-deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ jessie main PC1 dependencies
-EOF
-  else
-    cat >> /etc/debootstrap/etc/apt/sources.list << EOF
-deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ ${DEBIAN_RELEASE} main PC1 dependencies
-EOF
-  fi
 fi
 
 # GRUB versions until Debian/wheezy generate an invalid device.map
@@ -2332,6 +2309,7 @@ puppet_install_from_puppet () {
 }
 
   set_deploy_status "puppet"
+
   echo "Rebuilding /etc/hosts"
   cat > $TARGET/etc/hosts << EOF
 # Generated via deployment.sh
@@ -2351,6 +2329,25 @@ EOF
   grml-chroot $TARGET hostname -F /etc/hostname
 
   chroot $TARGET apt-get -y install resolvconf libnss-myhostname
+
+  echo "Installing 'puppet-agent' with dependencies"
+
+  # puppetlabs hasn't provided packages for Debian Stretch yet
+  if [ "$DEBIAN_RELEASE" = "stretch" ] ; then
+    cat >> ${TARGET}/etc/apt/sources.list.d/puppetlabs.list << EOF
+deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ jessie main PC1 dependencies
+EOF
+  else
+    cat >> ${TARGET}/etc/apt/sources.list.d/puppetlabs.list << EOF
+deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ ${DEBIAN_RELEASE} main PC1 dependencies
+EOF
+  fi
+
+  # F438280EF8D349F is a key for: https://deb.sipwise.com/puppetlabs jessie main PC1 dependencies
+  chroot ${TARGET} apt-key adv --recv-keys --keyserver pool.sks-keyservers.net 6F6B15509CF8E59E6E469F327F438280EF8D349F
+
+  chroot ${TARGET} apt-get update
+  chroot ${TARGET} apt-get -y install puppet-agent openssh-server lsb-release ntpdate
 
   cat > ${TARGET}/etc/puppetlabs/puppet/puppet.conf<< EOF
 # This file has been created by deployment.sh
