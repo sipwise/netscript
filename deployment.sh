@@ -122,7 +122,10 @@ stringInString() {
 }
 
 checkBootParam() {
-  stringInString " $1" "$CMD_LINE"
+  # searching for all possible boot options:
+  # "ngcpoption" or "ngcpoption " or " ngcpoption " or " ngcpoption"
+  # also same as above for " ngcpoption=value "
+  stringInString " $1=" " ${CMD_LINE} " || stringInString " $1 " " ${CMD_LINE} "
   return "$?"
 }
 
