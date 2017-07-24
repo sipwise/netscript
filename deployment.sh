@@ -1721,8 +1721,9 @@ EOT
   # generate installer configs
   gen_installer_config
 
-  # execute ngcp-installer
-  cat << "EOT" | grml-chroot $TARGET /bin/bash
+  # generate ngcp-installer run script
+  cat > "${TARGET}/tmp/ngcp-installer-deployment.sh" << "EOT"
+#!/bin/bash
 echo "Running ngcp-installer via grml-chroot." | tee -a /tmp/ngcp-installer-debug.log
 ngcp-installer 2>&1 | tee -a /tmp/ngcp-installer-debug.log
 RC=${PIPESTATUS[0]}
@@ -1734,11 +1735,12 @@ else
 fi
 EOT
 
-  if [ $? -eq 0 ] ; then
+  # execute ngcp-installer
+  if grml-chroot "${TARGET}" /bin/bash /tmp/ngcp-installer-deployment.sh ; then
     logit "installer: success"
   else
     logit "installer: error"
-    die "Error during installation of ngcp. Find details at: $TARGET/tmp/ngcp-installer.log $TARGET/tmp/ngcp-installer-debug.log"
+    die "Error during installation of ngcp. Find details at: ${TARGET}/tmp/ngcp-installer.log ${TARGET}/tmp/ngcp-installer-debug.log"
   fi
 
   # upload db dump only if we're deploying a trunk version
