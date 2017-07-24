@@ -122,7 +122,7 @@ stringInString() {
 }
 
 checkBootParam() {
-  stringInString " $1" "$CMD_LINE"
+  stringInString " $1=" "$CMD_LINE"
   return "$?"
 }
 
