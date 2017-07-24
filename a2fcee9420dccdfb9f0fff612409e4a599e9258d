@@ -16,6 +16,24 @@
       "revId": "a2fcee9420dccdfb9f0fff612409e4a599e9258d",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_6fdd8b14",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-07-24T12:36:00Z",
+      "side": 1,
+      "message": "Nope. you are right. see the next patchset.",
+      "parentUuid": "7adec928_2f76233f",
+      "revId": "a2fcee9420dccdfb9f0fff612409e4a599e9258d",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
