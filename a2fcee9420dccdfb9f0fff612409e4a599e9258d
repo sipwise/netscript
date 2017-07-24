@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7adec928_2f76233f",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2017-07-24T11:59:32Z",
+      "side": 1,
+      "message": "are you sure all parameters need a value?",
+      "revId": "a2fcee9420dccdfb9f0fff612409e4a599e9258d",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
