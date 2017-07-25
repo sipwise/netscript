@@ -50,6 +50,23 @@
       "revId": "f4dece8ee036bf3da06470436f56de122db2c923",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_52c1562d",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-07-25T14:19:22Z",
+      "side": 1,
+      "message": "Isn\u0027t this failing for the \"ngcpoption \" case?\nTest-code:\n\nstringInString() {\n  local to_test_\u003d\"$1\"   # matching pattern\n  local source_\u003d\"$2\"    # string to search in\n  case \"$source_\" in *$to_test_*) return 0;; esac\n  return 1\n}\n\ncheckBootParam() {\n  # new:\n  stringInString \" $1\u003d\" \"${CMD_LINE} \" || stringInString \" $1 \" \"${CMD_LINE} \"\n  # old:\n  #stringInString \" $1\" \"$CMD_LINE\"\n  return \"$?\"\n}\n\nRC\u003d0\nCMD_LINE\u003d\"foo bar baz\u003dngcp \" checkBootParam baz || RC\u003d$(( $RC + 1 ))\nCMD_LINE\u003d\"foo bar baz\u003dngcp\" checkBootParam baz || RC\u003d$(( $RC + 2 ))\nCMD_LINE\u003d\"foo bar baz\u003dngcp \" checkBootParam \"baz\u003dngcp\" || RC\u003d$(( $RC + 4 ))\nCMD_LINE\u003d\"foo bar baz\u003dngcp \" checkBootParam \"baz\u003dngcp \" || RC\u003d$(( $RC + 8 ))\nCMD_LINE\u003d\"foo bar baz\u003dngcp \" checkBootParam \"bar \" || RC\u003d$(( $RC + 16 ))                                                                                                                                                                     \nexit $RC",
+      "revId": "f4dece8ee036bf3da06470436f56de122db2c923",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
