@@ -46,6 +46,30 @@
       "revId": "9b13936829002f46d6de50507b43c3fea708179b",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_b2d1bacf",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-07-25T14:50:49Z",
+      "side": 1,
+      "message": "\u003e CMD_LINE\u003d\"foo bar baz\u003dngcp \" checkBootParam \"bar \" \n\nis an incorrect example, correct one:\n\n\u003e CMD_LINE\u003d\"foo bar baz\u003dngcp \" checkBootParam \"bar\" \n\ncheckBootParam should be called with param name without the space. And PS5 works for me in this case.",
+      "parentUuid": "7adec928_5274f6fc",
+      "range": {
+        "startLine": 125,
+        "startChar": 79,
+        "endLine": 125,
+        "endChar": 109
+      },
+      "revId": "9b13936829002f46d6de50507b43c3fea708179b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
