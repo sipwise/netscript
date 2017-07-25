@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7adec928_92091e98",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-07-25T14:26:54Z",
+      "side": 1,
+      "message": "to fix \"ngcpoption \" case I believe we can do:\n  \n  stringInString \" $1\u003d\" \" ${CMD_LINE} \" || stringInString \" $1 \" \" ${CMD_LINE} \"\n\n\n(space before ${CMD_LINE})\nack?",
+      "range": {
+        "startLine": 125,
+        "startChar": 79,
+        "endLine": 125,
+        "endChar": 109
+      },
+      "revId": "9b13936829002f46d6de50507b43c3fea708179b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
