@@ -94,6 +94,30 @@
       "revId": "9b13936829002f46d6de50507b43c3fea708179b",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_f288a2c8",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-07-25T15:09:13Z",
+      "side": 1,
+      "message": "Well, it depends on the expected behavior. :)\n\nIIRC why checkBootParam isn\u0027t behaving as strict as you try to implement it is that it allows magic like:\n\n  checkBootParam \"debian\"\n\nwhere boot options like debianinstall and debiandeploy are identified then, and if you want to have a strict check for exactly \"debian\" then you\u0027d do:\n\n  checkBootParam \"debian \"\n\nWe don\u0027t use \"foo \" in our code AFAICT, though the behavior change by this commit might hide something now (and the code diverges from the one used in Grml upstream, JFYI).",
+      "parentUuid": "7adec928_b2d1bacf",
+      "range": {
+        "startLine": 125,
+        "startChar": 79,
+        "endLine": 125,
+        "endChar": 109
+      },
+      "revId": "9b13936829002f46d6de50507b43c3fea708179b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
