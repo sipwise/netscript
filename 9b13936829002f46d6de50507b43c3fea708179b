@@ -22,6 +22,30 @@
       "revId": "9b13936829002f46d6de50507b43c3fea708179b",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_5274f6fc",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-07-25T14:45:44Z",
+      "side": 1,
+      "message": "I don\u0027t think this changes anything:\n\n  CMD_LINE\u003d\"foo bar baz\u003dngcp \" checkBootParam \"bar \" \n\nstill fails for me, doesn\u0027t it for you?\nBTW, would be interesting to see how much time we would lose to switch to a \"proper\" tool like grep.",
+      "parentUuid": "7adec928_92091e98",
+      "range": {
+        "startLine": 125,
+        "startChar": 79,
+        "endLine": 125,
+        "endChar": 109
+      },
+      "revId": "9b13936829002f46d6de50507b43c3fea708179b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
