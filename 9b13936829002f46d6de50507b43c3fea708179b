@@ -70,6 +70,30 @@
       "revId": "9b13936829002f46d6de50507b43c3fea708179b",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_52e236a0",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-07-25T14:55:52Z",
+      "side": 1,
+      "message": "BTW, PS5 is being tested here https://jenkins.mgm.sipwise.com/job/daily-build-matrix-runner/705/parameters/\n\nso far looks good.",
+      "parentUuid": "7adec928_b2d1bacf",
+      "range": {
+        "startLine": 125,
+        "startChar": 79,
+        "endLine": 125,
+        "endChar": 109
+      },
+      "revId": "9b13936829002f46d6de50507b43c3fea708179b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
