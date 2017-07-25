@@ -142,6 +142,30 @@
       "revId": "9b13936829002f46d6de50507b43c3fea708179b",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_d272c6e4",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-07-25T15:24:35Z",
+      "side": 1,
+      "message": "crap, fixing typos... my gyps is killing me.\n\nI regret I am lost.\n\nIt is sipwise deployment.sh, so I do not really care about upstream where code is copied from. We can send pull request there if you want :-)\n\nUsing checkBootParam \"debian \" and checkBootParam \"debian\" sounds wired. You must have indeoendent functions for strict and fuzzy matches in this case IMHO.\n\nAlso, IMHO, matching \u0027debianinstall\u0027 on request\n\u003e checkBootParam \"debian\"\nis a but, IMHO.\n\nWhile to be on safe side, I can add space triming inside checkBootParam on $1 before the use. Will it be better?\n\nP.S. what is our plan here?",
+      "parentUuid": "7adec928_12ad0e32",
+      "range": {
+        "startLine": 125,
+        "startChar": 79,
+        "endLine": 125,
+        "endChar": 109
+      },
+      "revId": "9b13936829002f46d6de50507b43c3fea708179b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
