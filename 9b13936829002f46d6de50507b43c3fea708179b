@@ -166,6 +166,30 @@
       "revId": "9b13936829002f46d6de50507b43c3fea708179b",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_924f5e92",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-07-25T15:33:05Z",
+      "side": 1,
+      "message": "\u003e crap, fixing typos... my gyps is killing me.\n \u003e \n \u003e I regret I am lost.\n \u003e \n \u003e It is sipwise deployment.sh, so I do not really care about upstream\n \u003e where code is copied from. We can send pull request there if you\n \u003e want :-)\n\nIt\u0027s not about that, there are further issues:\n\n* Grml invokes its own checkBootParam during bootup, so we might see inconsistent behavior between our boot options with Grml stuff vs. our netscript stuff\n* If Grml receives improvements/bug fixes we can no longer just c/p them to our own code\n\n \u003e Using checkBootParam \"debian \" and checkBootParam \"debian\" sounds\n \u003e wired. You must have indeoendent functions for strict and fuzzy\n \u003e matches in this case IMHO.\n\nI don\u0027t disagree, I\u0027m just telling you what has been the behavior since ~2004. :)\n\n \u003e Also, IMHO, matching \u0027debianinstall\u0027 on request\n \u003e \u003e checkBootParam \"debian\"\n \u003e is a but, IMHO.\n\nsee above\n\n \u003e While to be on safe side, I can add space triming inside\n \u003e checkBootParam on $1 before the use. Will it be better?\n\nI\u0027m not sure this helps us, currently my main concerns are that we might have the \"foo\" vs foo*\" patterns hidden, we\u0027ve to double-check on that.\n\n \u003e P.S. what is our plan here?\n\nLet\u0027s discuss this tomorrow in more detail.",
+      "parentUuid": "7adec928_d272c6e4",
+      "range": {
+        "startLine": 125,
+        "startChar": 79,
+        "endLine": 125,
+        "endChar": 109
+      },
+      "revId": "9b13936829002f46d6de50507b43c3fea708179b",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
