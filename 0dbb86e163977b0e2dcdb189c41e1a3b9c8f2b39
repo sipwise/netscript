@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5adbc538_20a1e4a9",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 2336,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-07-26T23:39:18Z",
+      "side": 1,
+      "message": "We also need the libreadline6 package from jessie then though?",
+      "revId": "0dbb86e163977b0e2dcdb189c41e1a3b9c8f2b39",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
