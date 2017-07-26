@@ -590,11 +590,11 @@ if checkBootParam ngcpnonwrecfg ; then
   RESTART_NETWORK=false
 fi
 
-if checkBootParam debianrepo ; then
+if checkBootParam "debianrepo " ; then
   DEBIAN_REPO_HOST=$(getBootParam debianrepo)
 fi
 
-if checkBootParam sipwiserepo ; then
+if checkBootParam "sipwiserepo " ; then
   SIPWISE_REPO_HOST=$(getBootParam sipwiserepo)
 fi
 
