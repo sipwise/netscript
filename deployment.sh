@@ -72,6 +72,7 @@ VAGRANT=false
 ADJUST_FOR_LOW_PERFORMANCE=false
 ENABLE_VM_SERVICES=false
 FILESYSTEM="ext4"
+GPG_KEY_SERVER="pool.sks-keyservers.net"
 DEBIAN_REPO_HOST="debian.sipwise.com"
 DEBIAN_REPO_TRANSPORT="https"
 SIPWISE_REPO_HOST="deb.sipwise.com"
@@ -1323,8 +1324,8 @@ else
   echo "Fetching debootstrap keyring as GPG key '${GPG_KEY}'..."
   logit "Fetching debootstrap keyring as GPG key '${GPG_KEY}'..."
 
-  if ! gpg --keyserver pool.sks-keyservers.net --recv-keys "${GPG_KEY}" ; then
-    die "Failed to fetch GPG key '${GPG_KEY}'"
+  if ! gpg --keyserver "${GPG_KEY_SERVER}" --recv-keys "${GPG_KEY}" ; then
+    die "Failed to fetch GPG key '${GPG_KEY}' from '${GPG_KEY_SERVER}'"
   fi
 
   if ! gpg -a --export "${GPG_KEY}" | apt-key add - ; then
@@ -2337,8 +2338,10 @@ EOF
 deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ ${DEBIAN_RELEASE} main PC1 dependencies
 EOF
 
-  # F438280EF8D349F is a key for: https://deb.sipwise.com/puppetlabs jessie main PC1 dependencies
-  chroot ${TARGET} apt-key adv --recv-keys --keyserver pool.sks-keyservers.net 6F6B15509CF8E59E6E469F327F438280EF8D349F
+  PUPPET_GPG_KEY="6F6B15509CF8E59E6E469F327F438280EF8D349F"
+  if ! chroot ${TARGET} apt-key adv --recv-keys --keyserver "${GPG_KEY_SERVER}" "${PUPPET_GPG_KEY}" ; then
+    die "Failed to fetch GPG key '${PUPPET_GPG_KEY}' from '${GPG_KEY_SERVER}'"
+  fi
 
   chroot ${TARGET} apt-get update
   chroot ${TARGET} apt-get -y install puppet-agent openssh-server lsb-release ntpdate
