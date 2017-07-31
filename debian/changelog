@@ -1,3 +1,12 @@
+ngcp-netscript (5.4.1.1+0~mr5.4.1.1) unstable; urgency=medium
+
+  [ Alexander Lutay ]
+  * [5574dfa] TT#18174 Fix silent ngcp-installer errors due to forgotten descriptors into chroot
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 31 Jul 2017 14:35:44 +0200
+
 ngcp-netscript (5.4.1.0+0~mr5.4.1.0) unstable; urgency=medium
 
   [ Michael Prokop ]
