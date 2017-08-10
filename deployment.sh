@@ -2331,6 +2331,11 @@ EOF
 
   chroot $TARGET apt-get -y install resolvconf libnss-myhostname
 
+  if [ "$DEBIAN_RELEASE" = "stretch" ] && [ ! -x "${TARGET}/usr/bin/dirmngr" ] ; then
+    echo  "Installing dirmngr on Debian Stretch otherwise 'apt-key adv --recv-keys' is failing to fetch GPG key"
+    chroot $TARGET apt-get -y install dirmngr
+  fi
+
   echo "Installing 'puppet-agent' with dependencies"
 
   # puppetlabs hasn't provided packages for Debian Stretch yet
