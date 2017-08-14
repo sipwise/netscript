@@ -409,11 +409,6 @@ if checkBootParam ngcpmgmt ; then
   RETRIEVE_MGMT_CONFIG=true
 fi
 
-if checkBootParam ngcptrunk ; then
-  TRUNK_VERSION=true
-fi
-export TRUNK_VERSION # make sure it's available within grml-chroot subshell
-
 ## detect environment {{{
 CHASSIS="No physical chassis found"
 if dmidecode| grep -q 'Rack Mount Chassis' ; then
@@ -481,6 +476,10 @@ fi
 # existing ngcp releases (like 2.2) with according repository and installer
 if checkBootParam ngcpvers ; then
   SP_VERSION=$(getBootParam ngcpvers)
+  if [ "${SP_VERSION:-}" = "trunk" ] ; then
+    TRUNK_VERSION=true
+  fi
+  export TRUNK_VERSION # make sure it's available within grml-chroot subshell
 fi
 
 if checkBootParam nongcp ; then
