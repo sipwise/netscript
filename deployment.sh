@@ -253,8 +253,8 @@ grml_debootstrap_upgrade() {
 install_vbox_iso() {
   echo "Downloading virtualbox-guest-additions ISO"
 
-  local vbox_checksum="1b206b76050dccd3ed979307230f9ddea79551e1c0aba93faee77416733cdc8a" # sha256
-  local vbox_iso="VBoxGuestAdditions_5.1.14.iso"
+  local vbox_checksum="6df8c8ab6e7ac3a70a5e29116f8a5dcdb7dfbd0b226ef849a5cd9502e956b06f" # sha256
+  local vbox_iso="VBoxGuestAdditions_5.1.26.iso"
 
   mkdir -p "/usr/share/virtualbox/"
   vbox_isofile="/usr/share/virtualbox/${vbox_iso}"
