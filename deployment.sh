@@ -2350,6 +2350,10 @@ EOF
   chroot ${TARGET} apt-get update
   chroot ${TARGET} apt-get -y install puppet-agent openssh-server lsb-release ntpdate
 
+  if [ "$DEBIAN_RELEASE" = "stretch" ]; then
+    chroot ${TARGET} ln -s /proc/self/mounts /etc/mtab || true
+  fi
+
   cat > ${TARGET}/etc/puppetlabs/puppet/puppet.conf<< EOF
 # This file has been created by deployment.sh
 [main]
