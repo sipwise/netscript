@@ -2349,6 +2349,7 @@ EOF
 
   chroot ${TARGET} apt-get update
   chroot ${TARGET} apt-get -y install puppet-agent openssh-server lsb-release ntpdate
+  chroot ${TARGET} ln -s /proc/mounts /etc/mtab
 
   cat > ${TARGET}/etc/puppetlabs/puppet/puppet.conf<< EOF
 # This file has been created by deployment.sh
