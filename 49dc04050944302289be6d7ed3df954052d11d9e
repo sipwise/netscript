@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fab399f4_4f3c4d94",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 2352,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2017-08-30T12:09:57Z",
+      "side": 1,
+      "message": "AFAICT this should be pointing towards\n /proc/self/mounts nowadays?",
+      "revId": "49dc04050944302289be6d7ed3df954052d11d9e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
