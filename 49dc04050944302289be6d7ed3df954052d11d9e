@@ -16,6 +16,24 @@
       "revId": "49dc04050944302289be6d7ed3df954052d11d9e",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fab399f4_8f14a5f6",
+        "filename": "deployment.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 2352,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2017-08-30T12:25:38Z",
+      "side": 1,
+      "message": "yes, you are right. \n\nThis is from stretch\nskipot@npm-registry1:~$ ls -l /etc/mtab \nlrwxrwxrwx 1 root root 19 Aug 18 15:41 /etc/mtab -\u003e ../proc/self/mounts\n\nFixed.",
+      "parentUuid": "fab399f4_4f3c4d94",
+      "revId": "49dc04050944302289be6d7ed3df954052d11d9e",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
