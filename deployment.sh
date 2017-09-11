@@ -2176,7 +2176,66 @@ check_puppet_rc () {
   fi
 }
 
+check_puppet_rerun() {
+  local repeat=false
+
+  if ! checkBootParam nopuppetrepeat && [ "$(get_deploy_status)" = "error" ] ; then
+    echo "Do you want to [r]epeat puppet run or [c]ontinue?"
+    while true; do
+      read a
+      case "${a,,}" in
+        r)
+          echo "Repeating puppet run."
+          repeat=true
+          set_deploy_status "puppet"
+          break
+          ;;
+        c)
+          echo "Continue without repeating puppet run."
+          break
+          ;;
+        * ) echo -n "Please answer 'r' to repeat or 'c' to continue: " ;;
+      esac
+      unset a
+    done
+  fi
+
+  return ${repeat}
+}
+
+check_puppetserver_time() {
+  while true; do
+    offset=$(ntpdate -q "$PUPPET_SERVER" | sed -n '1s/.*offset \(.*\),.*/\1/p' | tr -d -)
+    seconds=${offset%.*}
+    if (( seconds < 10 )) ; then
+      echo "All OK. Time offset between $PUPPET_SERVER and current server is $seconds seconds only."
+    elif checkBootParam nopuppetrepeat ; then
+      echo "WARNING: time offset between $PUPPET_SERVER and current server is $seconds seconds."
+      echo "(ignoring due to boot option nopuppetrepeat)"
+      break
+    else
+      echo "WARNING: time difference between the current server and $PUPPET_SERVER is bigger than 10 seconds."
+      echo "Please synchronize time and [r]echeck or [c]ontinue with puppet run."
+      read a
+      case "${a,,}" in
+        r)
+          echo "Repeating time offset check."
+          break
+          ;;
+        c)
+          echo "Continue ignoring time offset check."
+          break
+          ;;
+        * ) echo -n "Please answer 'r' to recheck or 'c' to continue: " ;;
+      esac
+      unset a
+    fi
+  done
+}
+
 puppet_install_from_git () {
+  local repeat
+
   : "${PUPPET_GIT_REPO?ERROR: variable 'PUPPET_GIT_REPO' is NOT defined, cannot continue.}"
   : "${PUPPET_LOCAL_GIT?ERROR: variable 'PUPPET_LOCAL_GIT' is NOT defined, cannot continue.}"
   : "${PUPPET_GIT_BRANCH?ERROR: variable 'PUPPET_GIT_BRANCH' is NOT defined, cannot continue.}"
@@ -2230,81 +2289,58 @@ puppet_install_from_git () {
   cp -a "${PUPPET_LOCAL_GIT}"/* "${TARGET}/${PUPPET_CODE_PATH}"
   rm -rf "${PUPPET_LOCAL_GIT:?}"
 
+  repeat=true
   while $repeat ; do
     repeat=false
-
     echo "Initializing Hiera config..."
     grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" \
           -e "include puppet::hiera" 2>&1 | tee -a /tmp/puppet.log
     check_puppet_rc "${PIPESTATUS[0]}" "2"
+    repeat=$(check_puppet_rerun)
+  done
 
+  repeat=true
+  while $repeat ; do
+    repeat=false
     echo "Running Puppet core deployment..."
     grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" --tags core,apt \
           "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
     check_puppet_rc "${PIPESTATUS[0]}" "2"
+    repeat=$(check_puppet_rerun)
+  done
 
-    echo "Running Puppet deployment..."
+  repeat=true
+  while $repeat ; do
+    repeat=false
+    echo "Running Puppet main deployment..."
     grml-chroot $TARGET puppet apply --test --modulepath="${PUPPET_CODE_PATH}/modules" \
           "${PUPPET_CODE_PATH}/manifests/site.pp" 2>&1 | tee -a /tmp/puppet.log
     check_puppet_rc "${PIPESTATUS[0]}" "2"
-
-    if ! checkBootParam nopuppetrepeat && [ "$(get_deploy_status)" = "error" ] ; then
-      echo "Do you want to [r]epeat puppet run? (Press any other key to continue without repeating.)"
-      read a
-      case "$a" in
-        r)
-          echo "Repeating puppet run."
-          repeat=true
-          set_deploy_status "puppet"
-          ;;
-        *)
-          echo "Continue without repeating puppet run."
-          ;;
-      esac
-      unset a
-    fi
+    repeat=$(check_puppet_rerun)
   done
 }
 
 puppet_install_from_puppet () {
-  local repeat=true
+  local repeat
 
+  check_puppetserver_time
+
+  repeat=true
   while $repeat ; do
-    offset=$(ntpdate -q "$PUPPET_SERVER" | sed -n '1s/.*offset \(.*\),.*/\1/p' | tr -d -)
-    seconds=${offset%.*}
-    echo "Time offset between $PUPPET_SERVER and current server is $seconds seconds."
-    if (( seconds > 10 )) && ! checkBootParam nopuppetrepeat; then
-      echo "Time difference between the current server and $PUPPET_SERVER is bigger than \
-10 seconds. Please synchronize time and press any key to retry puppet run."
-      read a
-      unset a
-      continue
-    fi
-
     repeat=false
     echo "Running Puppet core deployment..."
     grml-chroot $TARGET puppet agent --test --tags core,apt 2>&1 | tee -a /tmp/puppet.log
     check_puppet_rc "${PIPESTATUS[0]}" "2"
+    repeat=$(check_puppet_rerun)
+  done
 
-    echo "Running Puppet deployment..."
+  repeat=true
+  while $repeat ; do
+    repeat=false
+    echo "Running Puppet main deployment..."
     grml-chroot $TARGET puppet agent --test 2>&1 | tee -a /tmp/puppet.log
     check_puppet_rc "${PIPESTATUS[0]}" "2"
-
-    if ! checkBootParam nopuppetrepeat && [ "$(get_deploy_status)" = "error" ] ; then
-      echo "Do you want to [r]epeat puppet run? (Press any other key to continue without repeating.)"
-      read a
-      case "$a" in
-        r)
-          echo "Repeating puppet run."
-          repeat=true
-          set_deploy_status "puppet"
-          ;;
-        *)
-          echo "Continue without repeating puppet run."
-          ;;
-      esac
-      unset a
-    fi
+    repeat=$(check_puppet_rerun)
   done
 }
 
