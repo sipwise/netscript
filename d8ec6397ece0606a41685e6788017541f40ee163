@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fab399f4_d53e2b29",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 2229,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2017-09-11T10:05:17Z",
+      "side": 1,
+      "message": "both actions look the same so repeating won\u0027t happen here and instead ignoring will always happen.",
+      "range": {
+        "startLine": 2221,
+        "startChar": 6,
+        "endLine": 2229,
+        "endChar": 12
+      },
+      "revId": "d8ec6397ece0606a41685e6788017541f40ee163",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
