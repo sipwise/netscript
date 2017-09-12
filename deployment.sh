@@ -1376,7 +1376,7 @@ echo y | grml-debootstrap \
   --filesystem "${FILESYSTEM}" \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
-  --debopt "--keyring=${KEYRING}" $EXTRA_DEBOOTSTRAP_OPTS \
+  --debopt "--keyring=${KEYRING} --exclude=systemd-sysv --include=sysvinit-core" $EXTRA_DEBOOTSTRAP_OPTS \
   --keep_src_list \
   --defaultinterfaces \
   -r "$DEBIAN_RELEASE" \
