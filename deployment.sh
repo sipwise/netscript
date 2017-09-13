@@ -223,6 +223,34 @@ install_apt_transport_https () {
     -y --no-install-recommends install apt-transport-https
 }
 
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=776917
+debootstrap_upgrade() {
+  local required_version=1.0.87
+  local present_version
+
+  present_version=$(dpkg-query --show --showformat="\${Version}" debootstrap)
+
+  if dpkg --compare-versions "${present_version}" lt "${required_version}" ; then
+    echo "deboostrap version $present_version is older than minimum required version $required_version - upgrading."
+
+    # use temporary apt database for speed reasons
+    local TMPDIR
+    TMPDIR=$(mktemp -d)
+    mkdir -p "${TMPDIR}/statedir/lists/partial" "${TMPDIR}/cachedir/archives/partial"
+    local debsrcfile
+    debsrcfile=$(mktemp)
+    echo "deb ${SIPWISE_REPO_TRANSPORT}://${SIPWISE_REPO_HOST}/debian stretch main" >> "$debsrcfile"
+
+    DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+      -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
+      -o Dir::Etc::sourceparts=/dev/null update
+
+    DEBIAN_FRONTEND='noninteractive' apt-get -o dir::cache="${TMPDIR}/cachedir" \
+      -o dir::state="${TMPDIR}/statedir" -o dir::etc::sourcelist="$debsrcfile" \
+      -o Dir::Etc::sourceparts=/dev/null -y install debootstrap
+  fi
+}
+
 grml_debootstrap_upgrade() {
   local required_version=0.74
   local present_version
@@ -766,6 +794,9 @@ install_sipwise_key
 
 set_deploy_status "installing_apt_transport_https"
 install_apt_transport_https
+
+set_deploy_status "debootstrap_upgrade"
+debootstrap_upgrade
 
 set_deploy_status "grml_debootstrap_upgrade"
 grml_debootstrap_upgrade
