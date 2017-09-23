@@ -1135,7 +1135,7 @@ else
   fi
 fi
 
-# relevant only while deployment, will be overriden later
+# relevant only while deployment, will be overridden later
 if [ -n "$HOSTNAME" ] ; then
   cat > /etc/hosts << EOF
 127.0.0.1       grml    localhost
@@ -1480,7 +1480,7 @@ fi
 # make sure `hostname` and `hostname --fqdn` return data from chroot
 grml-chroot $TARGET hostname -F /etc/hostname
 
-# make sure installations of packages works, will be overriden later again
+# make sure installations of packages works, will be overridden later again
 cat > $TARGET/etc/hosts << EOF
 127.0.0.1       localhost
 127.0.0.1       $HOSTNAME
