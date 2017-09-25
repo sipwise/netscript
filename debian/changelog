@@ -1,3 +1,12 @@
+ngcp-netscript (4.5.6.1+0~mr4.5.6.1) unstable; urgency=medium
+
+  [ Alexander Lutay ]
+  * [099cd6b] TT#5851 Stops using git deamon on git.mgm (wget it from builder.mgm)
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 25 Sep 2017 14:31:16 +0200
+
 ngcp-netscript (4.5.6.0+0~mr4.5.6.0) unstable; urgency=medium
 
   * New release.
