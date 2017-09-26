@@ -1354,9 +1354,16 @@ else
   echo "Fetching debootstrap keyring as GPG key '${GPG_KEY}'..."
   logit "Fetching debootstrap keyring as GPG key '${GPG_KEY}'..."
 
-  if ! gpg --keyserver "${GPG_KEY_SERVER}" --recv-keys "${GPG_KEY}" ; then
-    die "Failed to fetch GPG key '${GPG_KEY}' from '${GPG_KEY_SERVER}'"
-  fi
+  TRY=60
+  while ! gpg --keyserver "${GPG_KEY_SERVER}" --recv-keys "${GPG_KEY}" ; do
+    if [ ${TRY} -gt 0 ] ; then
+      TRY=$((TRY-5))
+      echo "Waiting for gpg keyserver '${GPG_KEY_SERVER}' availability ($TRY seconds)..."
+      sleep 5
+    else
+      die "Failed to fetch GPG key '${GPG_KEY}' from '${GPG_KEY_SERVER}'"
+    fi
+  done
 
   if ! gpg -a --export "${GPG_KEY}" | apt-key add - ; then
     die "Failed to import GPG key '${GPG_KEY}' as apt-key"
@@ -2408,9 +2415,17 @@ deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ ${DEBIAN_RELEASE}
 EOF
 
   PUPPET_GPG_KEY="6F6B15509CF8E59E6E469F327F438280EF8D349F"
-  if ! chroot ${TARGET} apt-key adv --recv-keys --keyserver "${GPG_KEY_SERVER}" "${PUPPET_GPG_KEY}" ; then
-    die "Failed to fetch GPG key '${PUPPET_GPG_KEY}' from '${GPG_KEY_SERVER}'"
-  fi
+
+  TRY=60
+  while ! chroot ${TARGET} apt-key adv --recv-keys --keyserver "${GPG_KEY_SERVER}" "${PUPPET_GPG_KEY}" ; do
+    if [ ${TRY} -gt 0 ] ; then
+      TRY=$((TRY-5))
+      echo "Waiting for gpg keyserver '${GPG_KEY_SERVER}' availability ($TRY seconds)..."
+      sleep 5
+    else
+      die "Failed to fetch GPG key '${PUPPET_GPG_KEY}' from '${GPG_KEY_SERVER}'"
+    fi
+  done
 
   chroot ${TARGET} apt-get update
   chroot ${TARGET} apt-get -y install puppet-agent openssh-server lsb-release ntpdate
