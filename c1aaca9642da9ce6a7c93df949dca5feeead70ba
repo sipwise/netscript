@@ -22,6 +22,30 @@
       "revId": "c1aaca9642da9ce6a7c93df949dca5feeead70ba",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_cdab09d5",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 953,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-09-27T11:56:26Z",
+      "side": 1,
+      "message": "yes, while it is incorrect (c) sales@\ndiscussed long time ago.",
+      "parentUuid": "dab895d6_e2053c15",
+      "range": {
+        "startLine": 947,
+        "startChar": 0,
+        "endLine": 953,
+        "endChar": 2
+      },
+      "revId": "c1aaca9642da9ce6a7c93df949dca5feeead70ba",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
