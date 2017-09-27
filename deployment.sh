@@ -898,6 +898,7 @@ if "$PRO_EDITION" ; then
   [ -n "$IP1" ] || IP1=$DEFAULT_IP1
   [ -n "$IP2" ] || IP2=$DEFAULT_IP2
   [ -n "$IP_HA_SHARED" ] || IP_HA_SHARED=$DEFAULT_IP_HA_SHARED
+  MANAGEMENT_IP="${IP_HA_SHARED}"
   case "$ROLE" in
     sp1) INTERNAL_IP=$IP1 ;;
     sp2) INTERNAL_IP=$IP2 ;;
@@ -980,6 +981,7 @@ if "$PRO_EDITION" ; then
   Int sp2 host IP:   $IP2
   Int sp shared IP:  $IP_HA_SHARED
   Int netmask:       $INTERNAL_NETMASK
+  MGMT address:      $MANAGEMENT_IP
 " | tee -a /tmp/installer-settings.txt
 fi
 
@@ -1671,7 +1673,6 @@ gen_installer_config () {
   if "$CARRIER_EDITION" ; then
     cat > ${TARGET}/etc/ngcp-installer/config_deploy.inc << EOF
 CROLE="${CROLE}"
-MANAGEMENT_IP="${MANAGEMENT_IP}"
 FILL_APPROX_CACHE="${FILL_APPROX_CACHE}"
 VLAN_BOOT_INT="${VLAN_BOOT_INT}"
 VLAN_SSH_EXT="${VLAN_SSH_EXT}"
@@ -1707,6 +1708,7 @@ DEFAULT_INTERNAL_NETMASK="${DEFAULT_INTERNAL_NETMASK}"
 INTERNAL_NETMASK="${INTERNAL_NETMASK}"
 EXTERNAL_NETMASK="${EXTERNAL_NETMASK}"
 RETRIEVE_MGMT_CONFIG="${RETRIEVE_MGMT_CONFIG}"
+MANAGEMENT_IP="${MANAGEMENT_IP}"
 EOF
   fi
 
