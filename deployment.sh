@@ -944,10 +944,12 @@ echo "Deployment Settings:
 
   Install ngcp:      $NGCP_INSTALLER"
 
-if "$CE_EDITION" ; then
-  echo "  sip:provider:      CE"
+if "$CARRIER_EDITION" ; then
+  echo "  sip:carrier"
 elif "$PRO_EDITION" ; then
   echo "  sip:provider:      PRO"
+elif "$CE_EDITION" ; then
+  echo "  sip:provider:      CE"
 fi
 
 echo "
