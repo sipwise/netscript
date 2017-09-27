@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dab895d6_e2053c15",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 953,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2017-09-27T10:50:14Z",
+      "side": 1,
+      "message": "May be it\u0027s better to have unique output for all cases?\nSo for carrier it will be \"  sip:provider:      CARRIER\"",
+      "range": {
+        "startLine": 947,
+        "startChar": 0,
+        "endLine": 953,
+        "endChar": 2
+      },
+      "revId": "c1aaca9642da9ce6a7c93df949dca5feeead70ba",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
