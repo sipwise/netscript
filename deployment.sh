@@ -898,7 +898,8 @@ if "$PRO_EDITION" ; then
   [ -n "$IP1" ] || IP1=$DEFAULT_IP1
   [ -n "$IP2" ] || IP2=$DEFAULT_IP2
   [ -n "$IP_HA_SHARED" ] || IP_HA_SHARED=$DEFAULT_IP_HA_SHARED
-  MANAGEMENT_IP="${IP_HA_SHARED}"
+  # Use $IP_HA_SHARED as $MANAGEMENT_IP on PRO (it is comming from boot option 'ngcpmgmt' on Carrier)
+  [ -n "$MANAGEMENT_IP" ] || MANAGEMENT_IP="${IP_HA_SHARED}"
   case "$ROLE" in
     sp1) INTERNAL_IP=$IP1 ;;
     sp2) INTERNAL_IP=$IP2 ;;
