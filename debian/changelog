@@ -1,3 +1,32 @@
+ngcp-netscript (6.0.0.0+0~mr6.0.0.0) unstable; urgency=medium
+
+  [ Alexander Lutay ]
+  * [4580172] TT#17961 Use jessie puppetlabs packages for stretch puppet installations
+  * [d70725a] TT#18174 Fix silent ngcp-installer errors due to forgotten descriptors into chroot
+  * [843fb05] TT#19158 Fix a85768bc86: debianrepo/sipwiserepo options has '=' at the end
+  * [cc97907] TT#17961 Installing puppet-agent independently from debootstrap.
+  * [ade16ba] TT#17961 Unify GPG key fetching code
+  * [b7802b5] TT#17961 Install dirmngr on Debian Stretch for 'apt-key adv --recv-keys'
+  * [6d47ca2] TT#20300 Discontinue GRML boot option 'ngcptrunk' (use common 'ngcpvers=trunk')
+  * [92b0a2d] TT#21004 Update VBoxGuestAdditions from 5.1.14 to 5.1.26
+  * [0b32246] TT#21805 Trigger next puppet section only if previous one has no errors
+  * [d58deef] TT#21890 Upgrade debootstrap to 1.0.89 from Stretch (to use sysv in NGCP)
+  * [4318d13] TT#22415 Retry connect to public GPG keyserver in case of random failures
+  * [c1aaca9] TT#22650 Fix Carrier installation type debug output
+  * [7791340] TT#22435 Bypass MANAGEMENT_IP to PRO ngcp-installer (use IP_HA_SHARED IP address here)
+  * [aefb806] TT#22435 Fix 7791340: do not redefine $MANAGEMENT_IP on Carrier (it is defined already)
+
+  [ Michael Prokop ]
+  * [a85768b] TT#19158 Make check on debianrepo + sipwiserepo boot options more explicit
+  * [c519bfa] TT#22411 Fix spelling mistakes/typos
+
+  [ Sergii Kipot ]
+  * [3f95ce0] TT#20663 Fix Facter error while running in chroot
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 02 Oct 2017 23:40:50 +0200
+
 ngcp-netscript (5.5.0.0+0~mr5.5.0.0) unstable; urgency=medium
 
   [ Michael Prokop ]
