@@ -2413,10 +2413,8 @@ EOF
   fi
 
   echo "Installing 'puppet-agent' with dependencies"
-
-  # puppetlabs hasn't provided packages for Debian Stretch yet
   cat >> ${TARGET}/etc/apt/sources.list.d/puppetlabs.list << EOF
-deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ ${DEBIAN_RELEASE} main PC1 dependencies
+deb ${DEBIAN_REPO_TRANSPORT}://${DEBIAN_REPO_HOST}/puppetlabs/ ${DEBIAN_RELEASE} main puppet dependencies
 EOF
 
   PUPPET_GPG_KEY="6F6B15509CF8E59E6E469F327F438280EF8D349F"
