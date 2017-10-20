@@ -52,6 +52,24 @@
       "revId": "803ad45948024ae9311b82d7c846e79149622295",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_d5461923",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2017-10-20T11:42:48Z",
+      "side": 1,
+      "message": "puppet repo will be replaced with PC1 later by apt module so at the end everything should be equal. Anyway we are going to migrate to stretch so adding support for both PC1 and puppet at the current point doesn\u0027t make sense.",
+      "parentUuid": "dab895d6_d5cff9ae",
+      "revId": "803ad45948024ae9311b82d7c846e79149622295",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
