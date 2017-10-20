@@ -34,6 +34,24 @@
       "revId": "803ad45948024ae9311b82d7c846e79149622295",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_d5cff9ae",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-10-20T11:36:37Z",
+      "side": 1,
+      "message": "but on production jessie hosts we are still using PC1, isn\u0027t it? so nightly tests will not be identical to production one then.",
+      "parentUuid": "dab895d6_ba6d1207",
+      "revId": "803ad45948024ae9311b82d7c846e79149622295",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
