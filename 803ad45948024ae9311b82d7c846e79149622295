@@ -16,6 +16,24 @@
       "revId": "803ad45948024ae9311b82d7c846e79149622295",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_ba6d1207",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2017-10-20T09:13:23Z",
+      "side": 1,
+      "message": "It will work for jessie as well. I noted this in commit message",
+      "parentUuid": "dab895d6_7a129ab5",
+      "revId": "803ad45948024ae9311b82d7c846e79149622295",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
