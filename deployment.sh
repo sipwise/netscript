@@ -1384,12 +1384,11 @@ cat > /etc/debootstrap/etc/apt/sources.list << EOF
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
 EOF
 
-echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
-echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
-
-if [ "$DEBIAN_RELEASE" != "jessie" ] ; then
-  echo "deb ${DBG_MIRROR} ${DEBIAN_RELEASE}-debug main contrib non-free" >> /etc/debootstrap/etc/apt/sources.list
-fi
+{
+  echo "deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free"
+  echo "deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free"
+  echo "deb ${DBG_MIRROR} ${DEBIAN_RELEASE}-debug main contrib non-free"
+} >> /etc/debootstrap/etc/apt/sources.list
 
 # GRUB versions until Debian/wheezy generate an invalid device.map
 # entry if /dev/disk/by-id/lvm-pv-uuid-* is present, resulting in
@@ -1623,11 +1622,8 @@ EOF
 deb ${MIRROR} ${DEBIAN_RELEASE} main contrib non-free
 deb ${SEC_MIRROR} ${DEBIAN_RELEASE}-security main contrib non-free
 deb ${MIRROR} ${DEBIAN_RELEASE}-updates main contrib non-free
+deb ${DBG_MIRROR} ${DEBIAN_RELEASE}-debug main contrib non-free
 EOF
-
-  if [ "$DEBIAN_RELEASE" != "jessie" ] ; then
-    echo "deb ${DBG_MIRROR} ${DEBIAN_RELEASE}-debug main contrib non-free" >> "$TARGET/etc/apt/sources.list.d/debian.list"
-  fi
 
   # support testing rc releases without providing an according installer package ahead
   if [ -n "$AUTOBUILD_RELEASE" ] ; then
