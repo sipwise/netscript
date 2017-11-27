@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baada198_e447ff1b",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1391,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2017-11-27T15:59:59Z",
+      "side": 1,
+      "message": "(Just an idea, not something that I consider necessary to change).\n\nPerhaps it could be added as a separate file in sources.list.d?  I don\u0027t know if you considered the approach, it could be better to support some cases like removing the file if the system upgraded to other release, instead of editing the main file.",
+      "range": {
+        "startLine": 1391,
+        "startChar": 5,
+        "endLine": 1391,
+        "endChar": 42
+      },
+      "revId": "3d3fad2a4fd3f8206668ed0933a851ba21980acd",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
