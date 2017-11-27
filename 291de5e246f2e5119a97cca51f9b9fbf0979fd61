@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baada198_046233d8",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1392,
+      "author": {
+        "id": 1000020
+      },
+      "writtenOn": "2017-11-27T14:57:44Z",
+      "side": 0,
+      "message": "we are still using jessie for devops-recovery task. So if this condition is removed nonexistence source will be added for jessie case.",
+      "range": {
+        "startLine": 1390,
+        "startChar": 0,
+        "endLine": 1392,
+        "endChar": 2
+      },
+      "revId": "291de5e246f2e5119a97cca51f9b9fbf0979fd61",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
