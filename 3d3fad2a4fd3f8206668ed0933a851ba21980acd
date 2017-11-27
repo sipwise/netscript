@@ -22,6 +22,30 @@
       "revId": "3d3fad2a4fd3f8206668ed0933a851ba21980acd",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baada198_e46e1f96",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1391,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-11-27T16:12:54Z",
+      "side": 1,
+      "message": "AFAIK debootstrap can work with one sorce.list file only. while I can be wrong here. Anyway I am not sure which problem you are trying to fix?\n\nThe issue described by skipot@ here is related to the fact of shared usage for multiply components which has different defaults at the moment... I will wait until we migrate ti stretch here, otherwise cleanup itself is useless.\n\nI have extracted really important part to https://gerrit.mgm.sipwise.com/#/c/17215/",
+      "parentUuid": "baada198_e447ff1b",
+      "range": {
+        "startLine": 1391,
+        "startChar": 5,
+        "endLine": 1391,
+        "endChar": 42
+      },
+      "revId": "3d3fad2a4fd3f8206668ed0933a851ba21980acd",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
