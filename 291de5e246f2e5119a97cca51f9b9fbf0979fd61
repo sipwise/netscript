@@ -22,6 +22,30 @@
       "revId": "291de5e246f2e5119a97cca51f9b9fbf0979fd61",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baada198_64876f62",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1392,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-11-27T15:03:10Z",
+      "side": 0,
+      "message": "You are right... pending here till the end of internal migration on stretch. Removed reviwers.",
+      "parentUuid": "baada198_046233d8",
+      "range": {
+        "startLine": 1390,
+        "startChar": 0,
+        "endLine": 1392,
+        "endChar": 2
+      },
+      "revId": "291de5e246f2e5119a97cca51f9b9fbf0979fd61",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
