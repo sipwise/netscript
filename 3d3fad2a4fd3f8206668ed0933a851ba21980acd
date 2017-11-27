@@ -46,6 +46,30 @@
       "revId": "3d3fad2a4fd3f8206668ed0933a851ba21980acd",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baada198_249c9769",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1391,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2017-11-27T16:23:05Z",
+      "side": 1,
+      "message": "\u003e AFAIK debootstrap can work with one sorce.list file only. while I\n \u003e can be wrong here. Anyway I am not sure which problem you are\n \u003e trying to fix?\n\nAs I said it was just an idea, nothing important.  As a matter of style or convenience, not only for apt but in any program that supports \"conf.d\" dirs, people lately usually split configuration in different files, as it\u0027s easier to e.g. remove the set of changes together.\n\nIf there\u0027s any good reason to keep it in the main source.list file, as the one that you mention, it\u0027s OK; and it was just an idea.\n\n(My +1 is that I\u0027m not familiar with the code, and that you need to wait for other systems to migrate, so +2 is not useful at this point).",
+      "parentUuid": "baada198_e46e1f96",
+      "range": {
+        "startLine": 1391,
+        "startChar": 5,
+        "endLine": 1391,
+        "endChar": 42
+      },
+      "revId": "3d3fad2a4fd3f8206668ed0933a851ba21980acd",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
