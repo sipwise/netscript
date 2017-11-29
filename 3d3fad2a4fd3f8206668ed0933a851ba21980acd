@@ -70,6 +70,30 @@
       "revId": "3d3fad2a4fd3f8206668ed0933a851ba21980acd",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baada198_eda28399",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 1391,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-11-29T12:02:29Z",
+      "side": 1,
+      "message": "this is a debootstrap source list file. AFAIK it didn\u0027t accept multiply files in the past, maybe modern debootstrap can do this.\n\nanyway I see no reason to touch it here,\nas we are using \"conf.d\" in production (after the installation is over).",
+      "parentUuid": "baada198_249c9769",
+      "range": {
+        "startLine": 1391,
+        "startChar": 5,
+        "endLine": 1391,
+        "endChar": 42
+      },
+      "revId": "3d3fad2a4fd3f8206668ed0933a851ba21980acd",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
