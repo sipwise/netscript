@@ -293,7 +293,7 @@ install_vbox_iso() {
 
 set_custom_grub_boot_options() {
   echo "Adjusting default GRUB boot options (enabling net.ifnames=0)"
-  sed -ie 's/^GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 net.ifnames=0"/' "${TARGET}/etc/default/grub"
+  sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 net.ifnames=0"/' "${TARGET}/etc/default/grub"
 
   echo "Invoking update-grub"
   grml-chroot $TARGET update-grub
