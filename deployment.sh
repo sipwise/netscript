@@ -200,7 +200,7 @@ install_sipwise_key() {
 install_apt_transport_https () {
   echo "Installing apt-transport-https"
 
-  if dpkg -s apt-transport-https 2>&1 | grep -qE "^Installed" ; then
+  if [ "$(dpkg-query -f "\${db:Status-Status} \${db:Status-Eflag}" -W apt-transport-https 2>/dev/null)" = 'installed ok' ]; then
     echo "apt-transport-https is already installed, nothing to do about it."
     return 0
   fi
