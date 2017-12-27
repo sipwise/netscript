@@ -86,6 +86,7 @@ VLAN_SIP_EXT=1719
 VLAN_SIP_INT=1720
 VLAN_HA_INT=1721
 VLAN_RTP_EXT=1722
+NGCP_INIT_SYSTEM="sysv"
 
 ### helper functions {{{
 get_deploy_status() {
@@ -681,6 +682,11 @@ fi
 if checkBootParam debootstrapkey ; then
   GPG_KEY=$(getBootParam debootstrapkey)
 fi
+
+if checkBootParam ngcpinitsystem ; then
+  NGCP_INIT_SYSTEM=$(getBootParam ngcpinitsystem)
+  logit "Using init system '${NGCP_INIT_SYSTEM}' as requested via boot option ngcpinitsystem"
+fi
 ## }}}
 
 ## interactive mode {{{
@@ -778,6 +784,7 @@ for param in "$@" ; do
     *ngcpvlanrtpext*) VLAN_RTP_EXT="${param//ngcpvlanrtpext=/}";;
     *ngcpppainstaller*) NGCP_PPA_INSTALLER="${param//ngcpppainstaller=/}";;
     *ngcpppa*) NGCP_PPA="${param//ngcpppa=/}";;
+    *ngcpinitsystem*) NGCP_INIT_SYSTEM="${param//ngcpinitsystem=/}";;
   esac
   shift
 done
@@ -1724,6 +1731,7 @@ SIPWISE_REPO_TRANSPORT="${SIPWISE_REPO_TRANSPORT}"
 NAMESERVER="$(awk '/^nameserver/ {print $2}' /etc/resolv.conf)"
 NGCP_PPA="${NGCP_PPA}"
 DEBUG_MODE="${DEBUG_MODE}"
+NGCP_INIT_SYSTEM="${NGCP_INIT_SYSTEM}"
 EOF
 
   cat "${TARGET}/etc/ngcp-installer/config_deploy.inc" > /tmp/ngcp-installer-cmdline.log
