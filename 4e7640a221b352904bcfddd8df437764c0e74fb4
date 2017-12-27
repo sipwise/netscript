@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa98f980_38093196",
+        "filename": "deployment.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 688,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2017-12-27T16:23:17Z",
+      "side": 1,
+      "message": "system :D",
+      "range": {
+        "startLine": 688,
+        "startChar": 20,
+        "endLine": 688,
+        "endChar": 27
+      },
+      "revId": "4e7640a221b352904bcfddd8df437764c0e74fb4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
