@@ -1,3 +1,20 @@
+ngcp-netscript (6.2.0.0+0~mr6.2.0.0) unstable; urgency=medium
+
+  [ Manuel Montecelo ]
+  * [3a7fe2d] TT#25551 Improve the way to detect installed packages
+  * [4844134] TT#28474 usage of "sed -ie": /etc/default/grube [sic] present in VMs
+
+  [ Alexander Lutay ]
+  * [16e31e8] TT#29056 Add NGCP/GRML boot option ngcpinitsystem to choose the init system
+
+  [ Sergii Kipot ]
+  * [84ddabd] TT#29456 Add netscript-jessie Dockerfile
+  * [56db1a5] TT#29456 Add  netscript Dockerfile for stretch
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 29 Jan 2018 21:54:17 +0100
+
 ngcp-netscript (6.1.0.0+0~mr6.1.0.0) unstable; urgency=medium
 
   [ Sergii Kipot ]
