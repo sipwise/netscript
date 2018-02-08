@@ -72,6 +72,7 @@ VAGRANT=false
 ADJUST_FOR_LOW_PERFORMANCE=false
 ENABLE_VM_SERVICES=false
 FILESYSTEM="ext4"
+ROOTFS_SIZE="4G" # FIXME
 GPG_KEY_SERVER="pool.sks-keyservers.net"
 DEBIAN_REPO_HOST="debian.sipwise.com"
 DEBIAN_REPO_TRANSPORT="https"
@@ -253,7 +254,7 @@ debootstrap_upgrade() {
 }
 
 grml_debootstrap_upgrade() {
-  local required_version=0.74
+  local required_version=0.75 # required for efi support
   local present_version
 
   present_version=$(dpkg-query --show --showformat="\${Version}" grml-debootstrap)
@@ -329,6 +330,21 @@ ensure_augtool_present() {
     -o dir::etc="${TMPDIR}/etc" -o dir::state="${TMPDIR}/statedir" \
     -o dir::etc::trustedparts="/etc/apt/trusted.gpg.d/" \
     -y --no-install-recommends install augeas-tools
+}
+
+# check for EFI support or try to enable it
+efi_support() {
+  if lsmod | grep -q efivars ; then
+    einfo "EFI support detected." ; eend 0
+    return 0
+  fi
+
+  if modprobe efivars &>/dev/null ; then
+    einfo "EFI support enabled now." ; eend 0
+    return 0
+  fi
+
+  return 1
 }
 ### }}}
 
@@ -594,6 +610,10 @@ if checkBootParam ngcplvm ; then
   LVM=true
 fi
 
+if checkBootParam rootfssize ; then
+  ROOTFS_SIZE=$(getBootParam rootfssize)
+fi
+
 if checkBootParam ngcphalt ; then
   HALT=true
 fi
@@ -771,6 +791,7 @@ for param in "$@" ; do
     *ngcpbonding*) BONDING=true;;
     *ngcphalt*) HALT=true;;
     *ngcpreboot*) REBOOT=true;;
+    *rootfssize=*) ROOTFS_SIZE="${param//rootfssize=/}";;
     *vagrant*) VAGRANT=true;;
     *lowperformance*) ADJUST_FOR_LOW_PERFORMANCE=true;;
     *enablevmservices*) ENABLE_VM_SERVICES=true;;
@@ -1170,73 +1191,174 @@ echo "root:sipwise" | chpasswd
 ## partition disk
 set_deploy_status "disksetup"
 
-# 2000GB = 2097152000 blocks in /proc/partitions - so make a rough estimation
-if [ "$(awk "/ ${DISK}$/ {print \$3}" /proc/partitions)" -gt 2000000000 ] ; then
-  TABLE=gpt
-else
-  TABLE=msdos
-fi
-
 if "$LVM" ; then
-  # make sure lvcreate understands the --yes option
-  lv_create_opts=''
-  lvm_version=$(dpkg-query -W -f="\${Version}\n" lvm2) || die "Unknown package lvm2"
-  setupstorage_version=$(dpkg-query --show --showformat="\${Version}" fai-setup-storage) || die "Unknown package fai-setup-storage"
-
-  if dpkg --compare-versions "$setupstorage_version" ge 5.0 ; then
-    logit "Installed fai-setup-storage version ${setupstorage_version} doesn't need the LVM '--yes' workaround."
-  elif dpkg --compare-versions "$lvm_version" lt 2.02.106 ; then
-    logit "Installed lvm2 version ${lvm_version} doesn't need the '--yes' workaround."
-  else
-    logit "Enabling '--yes' workaround for lvm2 version ${lvm_version}."
-    lv_create_opts='lvcreateopts="--yes"'
-  fi
-
   if "$NGCP_INSTALLER" ; then
     VG_NAME="ngcp"
   else
     VG_NAME="vg0"
   fi
+fi
 
-  cat > /tmp/partition_setup.txt << EOF
-disk_config ${DISK} disklabel:${TABLE} bootable:1
-primary -       4096-   -       -
+clear_partition_table() {
+  local blockdevice
+  blockdevice="/dev/${DISK}"
 
-disk_config lvm
-vg ${VG_NAME}       ${DISK}1
-${VG_NAME}-root     /       -95%      ext3 rw
-${VG_NAME}-swap     swap    RAM:50%   swap sw $lv_create_opts
-EOF
+  echo "Wiping disk signatures from ${blockdevice}"
+  wipefs -a "${blockdevice}"
 
-  # make sure setup-storage/parted doesn't fail if LVM is already present
-  blockdev --rereadpt "/dev/${DISK}"
-  for disk in "/dev/${DISK}"* ; do
+  # make sure parted doesn't fail if LVM is already present
+  blockdev --rereadpt "$blockdevice"
+  for disk in "$blockdevice"* ; do
+    existing_pvs=$(pvs "$disk" -o vg_name --noheadings 2>/dev/null || true)
+    if [ -n "$existing_pvs" ] ; then
+      for pv in $existing_pvs ; do
+	logit "Getting rid of existing VG $pv on partition $part"
+	vgremove -ff "$pv"
+      done
+    fi
+
     logit "Removing possibly existing LVM/PV label from $disk"
     pvremove "$disk" --force --force --yes || true
   done
   dd if=/dev/zero of="/dev/${DISK}" bs=1M count=1
   blockdev --rereadpt "/dev/${DISK}"
+}
 
-  export LOGDIR='/tmp/setup-storage'
-  mkdir -p $LOGDIR
+set_up_partition_table() {
+  clear_partition_table
 
-  # /usr/lib/fai/fai-disk-info is available as of FAI 4.0,
-  # older versions shipped /usr/lib/fai/disk-info which doesn't
-  # support the partition setup syntax we use in our setup
-  if ! [ -x /usr/lib/fai/fai-disk-info ] ; then
-    die "You are using an outdated ISO, please update it to have fai-setup-storage >=4.0.6 available."
-  fi
+  local blockdevice
+  blockdevice="/dev/${DISK}"
 
-  disklist=$(/usr/lib/fai/fai-disk-info | sort)
-  export disklist
-  PATH=/usr/lib/fai:${PATH} setup-storage -f /tmp/partition_setup.txt -X || die "Failure during execution of setup-storage"
+  echo "Creating partition table"
+  parted -a optimal -s "${blockdevice}" mklabel gpt
+  parted -a optimal -s "${blockdevice}" mkpart primary fat16 2048s 512M
+  parted -a optimal -s "${blockdevice}" "name 1 'EFI System'"
+  EFI_PARTITION="${blockdevice}"1
+
+  parted -a optimal -s "${blockdevice}" mkpart primary 513M 100%
+  parted -a optimal -s "${blockdevice}" "name 2 'Linux LVM'"
+  parted -a optimal -s "${blockdevice}" set 2 boot on
+  parted -a optimal -s "${blockdevice}" set 2 lvm on
+}
+
+create_pv_and_vg() {
+  local blockdevice
+  blockdevice="/dev/${DISK}"
+
+  echo "Creating PV + VG"
+  pvcreate -ff -y "${blockdevice}"2
+  vgcreate "${VG_NAME}" "${blockdevice}"2
+  vgchange -a y "${VG_NAME}"
+}
+
+create_ngcp_partitions() {
+  local memory swap_size
+
+  memory=$(awk '/MemTotal:/ {print $2}' /proc/meminfo)
+  swap_size=$(( memory / 2 / 1024)) # 50% of RAM in MB
+
+  # root1
+  echo "Creating LV 'root1' with ${ROOTFS_SIZE}"
+  lvcreate --yes -n root1 -L "${ROOTFS_SIZE}" "${VG_NAME}"
+
+  echo "Creating ${FILESYSTEM} filesystem on /dev/${VG_NAME}/root1"
+  mkfs."${FILESYSTEM}" -FF /dev/"${VG_NAME}"/root1
+
+  # root2
+  echo "Creating LV 'root2' with ${ROOTFS_SIZE}"
+  lvcreate --yes -n root2 -L "${ROOTFS_SIZE}" "${VG_NAME}"
+
+  echo "Creating ${FILESYSTEM} filesystem on /dev/${VG_NAME}/root2"
+  mkfs."${FILESYSTEM}" -FF /dev/"${VG_NAME}"/root2
+
+  # swap
+  echo "Creating LV swap with ${swap_size}"
+  lvcreate --yes -n swap -L ${swap_size} "${VG_NAME}"
+
+  echo "Creating swap space on /dev/${VG_NAME}/swap"
+  mkswap /dev/"${VG_NAME}"/swap
+
+  # data
+  local vg_free data_size
+  vg_free=$(vgs "${VG_NAME}" -o vg_free --noheadings --nosuffix --units B)
+  data_size=$(( vg_free * 18 / 20 / 1024 / 1024 )) # 90% of free space (in MB), remaining 10% is kept free
+  echo "Creating LV data with ${data_size}M"
+  lvcreate --yes -n data -L "${data_size}M" "${VG_NAME}"
+
+  echo "Creating ${FILESYSTEM} on /dev/${VG_NAME}/data"
+  mkfs."${FILESYSTEM}" -FF /dev/"${VG_NAME}"/data
+
+  # used later by installer
+  ROOT_FS="/dev/mapper/${VG_NAME}-root1"
+  SWAP_PARTITION="/dev/mapper/${VG_NAME}-swap"
+  DATA_PARTITION="/dev/mapper/${VG_NAME}-data"
+}
+
+create_debian_partitions() {
+  local memory
+  memory=$(awk '/MemTotal:/ {print $2}' /proc/meminfo)
+
+  # rootfs
+  local root_size=8G
+  echo "Creating LV root with ${root_size}"
+  lvcreate --yes -n root -L "${root_size}" "${VG_NAME}"
+
+  echo "Creating ${FILESYSTEM} on /dev/${VG_NAME}/root"
+  mkfs."${FILESYSTEM}" -FF /dev/"${VG_NAME}"/root
+
+  # swap
+  local swap_size=$(( memory / 2 / 1024)) # 50% of RAM in MB
+  echo "Creating LV swap with ${swap_size}"
+  lvcreate --yes -n swap -L ${swap_size} "${VG_NAME}"
+
+  echo "Creating swap on /dev/${VG_NAME}/swap"
+  mkswap /dev/"${VG_NAME}"/swap
 
   # used later by installer
   ROOT_FS="/dev/mapper/${VG_NAME}-root"
   SWAP_PARTITION="/dev/mapper/${VG_NAME}-swap"
+}
 
-else # no LVM
-  parted -s -a optimal "/dev/${DISK}" mktable "$TABLE" || die "Failed to set up partition table"
+display_partition_table() {
+  local blockdevice
+  blockdevice="/dev/${DISK}"
+
+  echo "Displaying partition table for reference:"
+  parted -s "${blockdevice}" unit GiB print
+  lsblk "${blockdevice}"
+}
+
+lvm_setup() {
+  local saved_options
+  saved_options="$(set +o)"
+  # be restrictive in what we execute
+  set -euo pipefail
+
+  if "$NGCP_INSTALLER" ; then
+    VG_NAME="ngcp"
+    set_up_partition_table
+    create_pv_and_vg
+    create_ngcp_partitions
+    display_partition_table
+  else
+    VG_NAME="vg0"
+    set_up_partition_table
+    create_pv_and_vg
+    create_debian_partitions
+    display_partition_table
+  fi
+
+  # used later by installer
+  ROOT_FS="/dev/mapper/${VG_NAME}-root1"
+  SWAP_PARTITION="/dev/mapper/${VG_NAME}-swap"
+
+  # restore original options/behavior
+  eval "$saved_options"
+}
+
+plain_disk_setup() {
+  parted -s -a optimal "/dev/${DISK}" mktable gpt || die "Failed to set up partition table"
   # hw-raid with rootfs + swap partition
   parted -s -a optimal "/dev/${DISK}" 'mkpart primary ext4 2048s 95%' || die "Failed to set up primary partition"
   parted -s -a optimal "/dev/${DISK}" 'mkpart primary linux-swap 95% -1' || die "Failed to set up swap partition"
@@ -1251,7 +1373,14 @@ else # no LVM
 
   # for later usage in /etc/fstab use /dev/disk/by-label/ngcp-swap instead of /dev/${DISK}2
   SWAP_PARTITION="/dev/disk/by-label/ngcp-swap"
+}
+
+if "$LVM" ; then
+  lvm_setup
+else # no LVM
+  plain_disk_setup
 fi
+
 
 # otherwise e2fsck fails with "need terminal for interactive repairs"
 echo FSCK=no >>/etc/debootstrap/config
@@ -1418,27 +1547,39 @@ if [ "$DEBIAN_RELEASE" = "stretch" ] && [ ! -r /usr/share/debootstrap/scripts/st
   ln -s /usr/share/debootstrap/scripts/sid /usr/share/debootstrap/scripts/stretch
 fi
 
+mount "${ROOT_FS}" "${TARGET}"
+if [ -n "${DATA_PARTITION}" ] ; then
+  mkdir -p "${TARGET}/data"
+  mount "${DATA_PARTITION}" "${TARGET}"/data
+fi
+
+if [ -n "${EFI_PARTITION}" ] ; then
+  if efi_support ; then
+    logit "EFI support present, enabling EFI support within grml-debootstrap"
+    EFI_OPTION="--efi $EFI_PARTITION"
+  else
+    logit "EFI support NOT present, not enabling EFI support within grml-debootstrap"
+  fi
+fi
+
 # install Debian
 # shellcheck disable=SC2086
 echo y | grml-debootstrap \
   --arch "${ARCH}" \
   --grub "/dev/${DISK}" \
-  --filesystem "${FILESYSTEM}" \
   --hostname "${TARGET_HOSTNAME}" \
   --mirror "$MIRROR" \
   --debopt "--keyring=${KEYRING}" $EXTRA_DEBOOTSTRAP_OPTS \
   --keep_src_list \
   --defaultinterfaces \
   -r "$DEBIAN_RELEASE" \
-  -t "$ROOT_FS" \
+  -t "$TARGET" \
+  $EFI_OPTION \
   --password 'sipwise' 2>&1 | tee -a /tmp/grml-debootstrap.log
 
 if [ "${PIPESTATUS[1]}" != "0" ]; then
   die "Error during installation of Debian ${DEBIAN_RELEASE}. Find details via: mount $ROOT_FS $TARGET ; ls $TARGET/debootstrap/*.log"
 fi
-
-sync
-mount "$ROOT_FS" "$TARGET"
 
 # MT#13711
 case "$DEBIAN_RELEASE" in
@@ -1465,6 +1606,14 @@ echo "Enabling swap partition $SWAP_PARTITION via /etc/fstab"
 cat >> "${TARGET}/etc/fstab" << EOF
 $SWAP_PARTITION                      none           swap       sw,pri=0  0  0
 EOF
+
+# provide useable /data partition
+if [ -n "$DATA_PARTITION" ] ; then
+  echo "Enabling data partition $DATA_PARTITION via /etc/fstab"
+  cat >> "${TARGET}/etc/fstab" << EOF
+$DATA_PARTITION /data               auto           noatime               0  0
+EOF
+fi
 
 case "$DEBIAN_RELEASE" in
   lenny|squeeze|wheezy)
@@ -2485,6 +2634,9 @@ fi
 
 # don't leave any mountpoints
 sync
+if mountpoint "${TARGET}/data" >/dev/null 2>&1 ; then
+  umount "${TARGET}/data" 2>/dev/null || true
+fi
 umount ${TARGET}/proc       2>/dev/null || true
 umount ${TARGET}/sys        2>/dev/null || true
 umount ${TARGET}/dev/pts    2>/dev/null || true
