@@ -86,7 +86,7 @@ VLAN_SIP_EXT=1719
 VLAN_SIP_INT=1720
 VLAN_HA_INT=1721
 VLAN_RTP_EXT=1722
-NGCP_INIT_SYSTEM="sysv"
+NGCP_INIT_SYSTEM="systemd"
 
 ### helper functions {{{
 get_deploy_status() {
