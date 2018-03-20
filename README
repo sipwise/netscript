@@ -1,0 +1,6 @@
+repository discontinued
+-----------------------
+
+This script deployment.sh has been moved to
+Git repository 'deployment-iso' to be builtin
+into Install CD image.
