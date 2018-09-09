@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9af37de9_b8eb38b0",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 1616,
+      "author": {
+        "id": 1000018
+      },
+      "writtenOn": "2018-09-09T20:44:24Z",
+      "side": 1,
+      "message": "if efi should we add EFI part to fstab as /boot?",
+      "range": {
+        "startLine": 1610,
+        "startChar": 1,
+        "endLine": 1616,
+        "endChar": 2
+      },
+      "revId": "7284accd1ddd048720f389213bb991ddf691c1be",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
