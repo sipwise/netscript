@@ -22,6 +22,30 @@
       "revId": "7284accd1ddd048720f389213bb991ddf691c1be",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9af37de9_0e12feb4",
+        "filename": "deployment.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 1616,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2018-09-11T11:42:59Z",
+      "side": 1,
+      "message": "grml-debootstrap takes care of that for us! :)",
+      "parentUuid": "9af37de9_b8eb38b0",
+      "range": {
+        "startLine": 1610,
+        "startChar": 1,
+        "endLine": 1616,
+        "endChar": 2
+      },
+      "revId": "7284accd1ddd048720f389213bb991ddf691c1be",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
