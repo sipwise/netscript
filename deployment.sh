@@ -2128,7 +2128,12 @@ vagrant_configuration() {
       sed -i 's|^[#\s]*AuthorizedKeysFile.*$|AuthorizedKeysFile %h/.ssh/sipwise_vagrant_key|g' "${TARGET}/etc/ssh/sshd_config"
       ;;
     *)
-      sed -i 's|^[#\s]*\(AuthorizedKeysFile.*\)$|\1 %h/.ssh/sipwise_vagrant_key|g' "${TARGET}/etc/ssh/sshd_config"
+      if grep -qE "AuthorizedKeysFile.*sipwise_vagrant_key" "${TARGET}/etc/ssh/sshd_config" >/dev/null 2>&1; then
+        echo "The sipwise_vagrant_key alread available in ${TARGET}/etc/ssh/sshd_config"
+      else
+        echo "Adding sipwise_vagrant_key to ${TARGET}/etc/ssh/sshd_config"
+        sed -i 's|^[#\s]*\(AuthorizedKeysFile.*\)$|\1 %h/.ssh/sipwise_vagrant_key|g' "${TARGET}/etc/ssh/sshd_config"
+      fi
       ;;
   esac
 
