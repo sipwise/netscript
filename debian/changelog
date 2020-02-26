@@ -1,3 +1,10 @@
+ngcp-netscript (4.4.1.4+0~mr4.4.1.4) unstable; urgency=medium
+
+  [ Mykola Malkov ]
+  * [b98b336] TT#54410 Get rid of hardcoded checksum of sipwise.gpg file
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Wed, 26 Feb 2020 16:59:49 +0100
+
 ngcp-netscript (4.4.1.3+0~mr4.4.1.3) unstable; urgency=medium
 
   [ Kirill Solomko ]
