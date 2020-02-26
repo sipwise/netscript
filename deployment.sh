@@ -138,18 +138,29 @@ loadNfsIpArray() {
 }
 
 install_sipwise_key() {
-  if "$PRO_EDITION" ; then
-    wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://${SIPWISE_REPO_HOST}/sppro/sipwise.gpg
-  else
-    wget -O /etc/apt/trusted.gpg.d/sipwise.gpg http://${SIPWISE_REPO_HOST}/spce/sipwise.gpg
-  fi
+  local tmp_key
+  tmp_key="$(mktemp)"
 
-  md5sum_sipwise_key_expected=bcd09c9ad563b2d380152a97d5a0ea83
-  md5sum_sipwise_key_calculated=$(md5sum /etc/apt/trusted.gpg.d/sipwise.gpg | awk '{print $1}')
+  for x in 1 2 3; do
+    if "$PRO_EDITION" ; then
+      wget -q -T 10 --retry-connrefused --tries=3 --no-verbose -O "${tmp_key}" http://${SIPWISE_REPO_HOST}/sppro/sipwise.gpg
+    else
+      wget -q -T 10 --retry-connrefused --tries=3 --no-verbose -O "${tmp_key}" http://${SIPWISE_REPO_HOST}/spce/sipwise.gpg
+    fi
+    chmod 644 "${tmp_key}"
+    local sipwise_key_checksum
+    sipwise_key_checksum=$(sha256sum "${tmp_key}" | awk '{print $1}')
+    echo "Sipwise keyring downloaded with checksum (sha256sum: [${sipwise_key_checksum}]). Is it correct and should be imported into the system? [y/N]"
 
-  if [ "$md5sum_sipwise_key_calculated" != "$md5sum_sipwise_key_expected" ] ; then
-    die "Error validating sipwise keyring for apt usage (expected: [$md5sum_sipwise_key_expected] - got: [$md5sum_sipwise_key_calculated])"
-  fi
+    if "${INTERACTIVE}"; then
+      local a
+      read -r a
+      if [[ "${a,,}" != "y" ]] ; then
+        echo "The key wasn't accepted, retrying... ${x}/3"
+        continue
+      fi
+    fi
+
 }
 
 # see MT#6253
