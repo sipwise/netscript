@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d8da0a0e_ede86765",
+        "filename": "deployment.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 183,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-02-26T14:13:43Z",
+      "side": 1,
+      "message": "I\u0027d have a \"wget_command\" with this string, or a function or something, to always keep in sync with lines for Pro",
+      "range": {
+        "startLine": 183,
+        "startChar": 6,
+        "endLine": 183,
+        "endChar": 78
+      },
+      "revId": "35bfe45d247c69c014b63fd96a7003519f765a08",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
+    }
+  ]
+}
